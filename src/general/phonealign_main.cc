@@ -168,6 +168,9 @@ static int aligntracks(const EST_Track &itrack,
 	return -1;
     }
 
+//    printf("itrack.num_frames %d otrack.num_frames %d\n",
+//	   itrack.num_frames(), otrack.num_frames());
+
     EST_FMatrix dpt(itrack.num_frames(),otrack.num_frames());
     EST_IMatrix dpp(itrack.num_frames(),otrack.num_frames());
 //    float skew = (float)itrack.num_frames()/(float)otrack.num_frames();

@@ -68,7 +68,7 @@ then
    POSITION=$2
 fi
 
-cat $1 |
+cat $1 | grep "(" |
 awk '{if (NR >= '$POSITION') print $0}' |
 while read lll
 do

@@ -626,7 +626,7 @@ To test the new voice start Festival as
 festival festvox/cmu_time_awb_ldom.scm '(voice_cmu_time_awb_ldom)'
 @end example
 The function @file{(saytime)} can now be called and it should
-say the current time.
+say the current time, or @code{(saythistime "11:23")}.
 
 Note this synthesizer can @emph{only} say the phrases that it has phones
 for which basically means it can only say the time in the format given

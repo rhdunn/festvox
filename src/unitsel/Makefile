@@ -36,9 +36,11 @@
 ############################################################################
 TOP=../../
 DIRNAME=src/unitsel
-SCRIPTS = make_mcep
+SCHEMEFILES = CLUNITS_clunits.scm build_clunits.scm
+SCRIPTS = setup_clunits make_mcep
+OTHERS = unitsel.desc
 
-FILES = Makefile $(SCRIPTS)
+FILES = Makefile $(SCRIPTS) $(SCHEMEFILES) $(OTHERS)
 
 ALL = 
 

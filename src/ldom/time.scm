@@ -36,12 +36,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (saytime)
-  (let ((actual-time (get-the-time))
-	round-time time-string)
+  "(saytime)
+Say the current time with the current voice."
+  (saythetime (get-the-time)))
+
+(define (saythistime time)
+  "(saythistime)
+Say the givens time, e.g. \"11:23\" with the current voice."
+  (if (not (string-matches time "[012][0-9]?:[0-5][0-9]"))
+      (error "not a valid date" time))
+  (saythetime
+   (read-from-string
+    (format 
+     nil
+     "(%s %s)"
+     (string-before time ":")
+     (string-after time ":")))))
+
+(define (saythetime actual-time)
+  (let (round-time time-string)
+;    (format t "%l\n" actual-time)
     (set! round-time (round-up-time actual-time))
     ;;; Construct the time expression
     (set! time-string
-	  (string-append
+          (string-append
 	   "The time is now, "
 	   (approx actual-time)
 	   (minute-string round-time)

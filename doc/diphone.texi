@@ -39,42 +39,46 @@ number of phones.  However, in natural human languages, there are
 phonotactic constraints -- some phone-phone pairs, even whole classes of
 phones-phone combinations, may not occur at all.  These gaps are common
 in the world's languages.  The exact definition of @emph{never exist} is
-problematic.  Humans can often generate those so-called non-existent
-diphones if they try, and one must always think about phone pairs that
-cross over word boundaries as well, but even then, certain combinations
-cannot exist; for example, /hh/ /ng/ in English is probably impossible
-(we would probably insert a schwa).  /ng/ may really only appear after
-the vowel in a syllable (in coda position); however, in other languages it
-can appear in syllable-initial position.  /hh/ cannot appear at the 
-end of a syllable, though sometimes it may be pronounced when trying to add
-aspiration to open vowels.
+also problematic.  Humans can often generate those so-called
+non-existent diphones if they try, and one must always think about phone
+pairs that cross over word boundaries as well, but even then, certain
+combinations cannot exist; for example, /hh/ /ng/ in English is probably
+impossible (we would probably insert a schwa).  /ng/ may really only
+appears after the vowel in a syllable (in coda position); however, in
+other languages it can appear in syllable-initial position.  /hh/ cannot
+appear at the end of a syllable, though sometimes it may be pronounced
+when trying to add aspiration to open vowels.
 
 Diphone synthesis, and more generally any concatenative synthesis
-method, make an absolutely fixed choice about which units exist, and in
+method, makes an absolutely fixed choice about which units exist, and in
 circumstances where something else is required, a mapping is necessary.
-When humans are given a context where an unusual phone is desired, they
-will (often) attempt to produce it even though it falls outside their
-basic phonetic vocabulary.  The articulatory system is flexible enough
-control to produce (or attempt to produce) unfamiliar phones, as we all
-share the same underlying physical structures.  Concatenative
-synthesizers, however, have a fixed inventory, and cannot reasonably be
-made to produce anything outside their pre-defined vocabulary.  Formant
-and articulatory synthesizers have the advantage here.
+When humans are given a context where an unusual phone is desired, for
+example in a foreign word, they will (often) attempt to produce it even
+though it falls outside their basic phonetic vocabulary.  The
+articulatory system is flexible enough to produce (or attempt to
+produce) unfamiliar phones, as we all share the same underlying physical
+structures.  Concatenative synthesizers, however, have a fixed
+inventory, and cannot reasonably be made to produce anything outside
+their pre-defined vocabulary.  Formant and articulatory synthesizers
+have the advantage here.  This is a basic trade off, concatenative
+synthesizers typically produce much more natural synthesis than formants
+synthesizer but at the cost of being only able to produce those phones
+defined within their inventory.
 
 @cindex mapping unknown phones
 Since we wish to build voices for arbitrary text-to-speech systems which
 may include unusual phones, some mapping, typically at the lexical
 level, can be used to ensure all the required diphones lie within the
 recorded inventory.  The resulting voice will therefore be limited, and
-unusual phones will lie outside its range.  This in many cases if
+unusual phones will lie outside its range.  This in many cases is
 acceptable though if the voice is specifically to be used for
 pronouncing Scottish place names it would be advisable to include the
 /X/ phone as in "loch".
 
 @cindex consonant clusters
 In addition to the base phones, various allophonic variations may also
-be considered.  Flapping, as when the /t/ becoming a [D] in the word
-"butter") is an example of an allophonic variation reduction which
+be considered.  Flapping, as when the /t/ becoming a /dx/ in the word
+"butter" is an example of an allophonic variation reduction which
 occurs naturally in American English, and including flaps in the phone
 set makes the synthetic speech more natural.  Stressed and unstressed
 vowels in Spanish, consonant cluster /r/ verses lone /r/ in English,
@@ -102,10 +106,10 @@ Demi-syllable databases and mixed inventory methods such as Hadifix
 @cite{portele96} may give better results under some conditions.  Still,
 controlling the inventory and using acoustic measures rather than
 linguistic knowledge to define the space of possible units in your
-inventory is work like Whistler @cite{huang97}.  The most extreme view
-where the unit inventory is not predefined at all but based solely on
-what is available in general speech databases is CHATR
-@cite{campbell96}.
+inventory has also been attempted as in work like Whistler
+@cite{huang97}.  The most extreme view where the unit inventory is not
+predefined at all but based solely on what is available in general
+speech databases is CHATR @cite{campbell96}.
 
 @cindex unit selection
 Although generalized unit selection can produce @emph{much} better
@@ -116,7 +120,7 @@ inventory is trivial, while in a system like CHATR, selection of the
 appropriate unit is a significantly difficult problem.  (See @ref{Unit
 selection databases} for more discussion of such techniques).  With a
 harder selection task, it is more likely that mistakes will be made,
-which in unit selection can given some selections which are much worse
+which in unit selection can give some selections which are much worse
 worse that diphones, even though other examples may be better.
 
 @node Defining a diphone list, Recording the diphones, Diphone introduction, Diphone databases
@@ -196,15 +200,16 @@ are restricted to the coda.
 While one can collect all the diphones without considering where they
 fall in a syllable, it often makes sense to collect diphones in
 different syllabic contexts.  Consonant clusters are the obvious next
-set to consider; thus the example DARPAbet schema includes simple consonant
-clusters with explicit syllable boundaries.  We also include syllabic
-consonants though these may be harder to pronounce in all contexts.  You
-can add other phenomena too, but this is at the cost of not only making
-the list longer (and making it take longer to record), but making it
-harder to produce. You must consider how easy it is for your voice
-talent to pronounce them, and how consistent they can be about it.  For
-example, not all American speakers produce flaps (/dx/) in all of the
-same contexts, and its quite difficult for some to pronounce them, which
+set to consider; thus the example DARPAbet schema includes simple
+consonant clusters with explicit syllable boundaries.  We also include
+syllabic consonants though these may be harder to pronounce in all
+contexts.  You can add other phenomena too, but this is at the cost of
+not only making the list longer (and making it take longer to record),
+but making it harder to produce. You must consider how easy it is for
+your voice talent to pronounce them, and how consistent they can be
+about it.  For example, not all American speakers produce flaps (/dx/)
+in all of the same contexts (and some may produce them even when you ask
+them not to), and its quite difficult for some to pronounce them, which
 can lead to production/transcription mismatches.
 
 @cindex foreign phones
@@ -254,7 +259,7 @@ list of names if more than one diphone is being extracted from that
 file).  The file id is used to in the filename for the waveform, label
 file, and any other parameters files associated with the nonsense word.
 We usually make this distinct for the particular speaker we are going to
-record, e.g. their initials and possible the language they are speaking.
+record, e.g. their initials and possibly the language they are speaking.
 
 The prompt is presented to the speaker at recording time, and here it
 contains a string of the phones in the nonsense word from which the
@@ -291,7 +296,7 @@ and playing them to your voice talent at collection time.  This helps
 the speaker in two ways -- if they mimic the prompt they are more likely
 to keep a fixed prosodic style; it also reduces the number of errors
 where the speaker vocalizes the wrong diphone.  Of course for new
-languages where a set of diphones doesn't already exists, producing
+languages where a set of diphones doesn't already exist, producing
 prompts is not easy, however giving approximations with diphone sets
 from other languages may work.  The problem then is that in producing
 prompts from a different phone set, the speaker is likely to mimic the
@@ -329,9 +334,9 @@ For the DARPAbet diphone list for KAL, we have:
 @lisp
 (define (Diphone_Prompt_Setup)
  "(Diphone_Prompt_Setup)
-Called before synthesizing the prompt waveforms.  Defined for KAL
-speaker using ked diphone set (US English) and setting F0."
- (voice_ked_diphone)  ;; US male voice
+Called before synthesizing the prompt waveforms.  Uses the kal_dphone
+voice for prompting and sets F0."
+ (voice_kal_diphone)  ;; US male voice
  (set! FP_F0 90)      ;; lower F0 than ked
  )
 @end lisp
@@ -351,7 +356,7 @@ duration of the phones.
   "(Diphone_Prompt_Word utt)
 Specify specific modifications of the utterance before synthesis
 specific to this particular phone set."
-  ;; No syllabics in ked so flip them to non-syllabic form
+  ;; No syllabics in kal so flip them to non-syllabic form
   (mapcar
    (lambda (s)
      (let ((n (item.name s)))
@@ -390,9 +395,8 @@ Another useful example of the setup functions is to generate prompts for
 a language for which no synthesizer exists yet -- to "bootstrap" from
 one language to another. A simple mapping can be given between the
 target phoneset and an existing synthesizer's phone set.  We don't know
-if this will be sufficient to actually use as prompts, but it appears it
-is suitable to use these prompts for automatic alignment; we have had
-some success with cross-language prompting.
+if this will be sufficient to actually use as prompts, but we have found
+that it is suitable to use these prompts for automatic alignment.
 
 The example here is using the @code{voice_kal_diphone} speaker,
 a US English speaker, to produce prompts for japanese phone set,
@@ -522,7 +526,7 @@ conditions can be set up again if needed.  Everything should be as
 well-defined as possible, as far as gain settings, microphone distances,
 and so on.  Anechoic chambers are best, but general recording studios
 will do.  We've even done recording in an open room, with care this
-works (make sure there's little background noise from computers, ait
+works (make sure there's little background noise from computers, air
 conditioning, outside traffic etc).  Of course open rooms aren't ideal
 but they are better than open noisey rooms.  
 
@@ -540,8 +544,8 @@ for each prompt.  Ideally this can be done while recording on a
 file-by-file basis, but as that may not be practical and some other
 technique can be used, such as recording onto DAT and transferring the
 data to disk (and downsampling) later.  Files might contain 50-100
-nonsense words each.  We hand label the words, taking into account any
-duplicates caused be errors in the recording.  The program
+nonsense words each.  In this case we hand label the words, taking into
+account any duplicates caused be errors in the recording.  The program
 @file{ch_wave} in the Edinburgh Speech Tools (EST) offers a function to
 split a large file into individual files based on a label file.  We can
 use this to get our individual files.  You may also add an identifiable
@@ -549,19 +553,21 @@ noise during recording and automatically detect that as a split point,
 as is often done at the Oregon Graduate Instititute..  They typically
 use two different noises that can easily be distinguished and use one
 for @samp{OK} and @samp{BAD} this can make the splitting of the files
-into the individual nonsense words easier.  Note you that will also need
-to split the electroglottograph (EGG) signal exactly the same way,
-if you are using one.
+into the individual nonsense words easier.  Note you will also need
+to split the electroglottograph (EGG) signal exactly the same way, if
+you are using one.
 
 No matter how you split these, you should be aware that there will still
 often be mistakes, and checking by listening will help. 
 
 We now almost always record directly to disk on a computer using a sound
 card; see @ref{Recording under Unix}.  There can be a reduction in the
-quality of the recording due to poorly quality audio hardware in
-computers (and often too much noise), though at least the hardware issue
-is getting to be less of a problem these days.  There are lots of 
-advantages to recording directly to disk.
+quality of the recording due to poor quality audio hardware in computers
+(and often too much noise), though at least the hardware issue is
+getting to be less of a problem these days.  There are lots of
+advantages to recording directly to disk, as the stage of digitising,
+transfering and spliting the offline records is laborious and prone to
+error.
 
 @node Labelling the diphones, Extracting the pitchmarks, Recording the diphones, Diphone databases
 @section Labelling the diphones
@@ -570,22 +576,22 @@ advantages to recording directly to disk.
 @cindex diphone labelling
 Labelling nonsense words is @emph{much} easier than labelling continuous
 speech, whether it is by hand or automatically.  With nonsense words, it
-is completely defined which phones are there (or not, it is an error)
-and they are (hopefully) clearly articulated.
+is completely defined which phones are there and they are (hopefully)
+clearly articulated.
 
 @cindex hand labelling diphones
 We have had significant experience in hand labelling diphones, and with
 the right tools it can be done fairly quickly (e.g. 20 hours for 2500
 nonsense words) even if it is a mind-numbing exercise which your voice
 talent may offer you little sympathy for after you've made them babble
-for hours in a box with electrodes on their throat (optional), and can't
-realistically be done for more than an hour or two at any one time.  As
-a minimum, the start of the preceding phone to the first phone in the
-diphone, the changeover, and the end of the second phone in the diphone
-should be labelled.  Note we recommend phone boundary labelling as that
-is much better defined than phone middle marking.  The diphone will, by
-default be extracted from the middle of phone one to the middle of phone
-two.
+for hours in a box with electrodes on their throat (optional).  But
+labelling can't realistically be done for more than an hour or two at
+any one time.  As a minimum, the start of the preceding phone to the
+first phone in the diphone, the changeover, and the end of the second
+phone in the diphone should be labelled.  Note we recommend phone
+boundary labelling as that is much better defined than phone middle
+marking.  The diphone will, by default be extracted from the middle of
+phone one to the middle of phone two.
 
 @cindex closures
 @cindex stops
@@ -633,20 +639,21 @@ audible buzz can be introduced.
 @cindex aligning
 Because labelling of diphone nonsense words is such a constrained task
 we have included a program for automatically providing a labelling for
-the spoken prompts.  This requires that prompts can be generated for the
+the spoken prompts.  This requires that prompts be generated for the
 diphone database.  The aligner uses those prompts to do the aligning.
 Though its not actually necessary that the prompts were used as prompts
-they do need to be generated for the alignment process.  This is not the
+they do need to be generated for this alignment process.  This is not the
 only means for alignment; you may also, for instance, use a speech
 recognizer, such as CMU Sphinx, to segment (align) the data.
 
 The idea behind the aligner is to take the prompt and the spoken form
 and derive mel-scale cepstral parameterizations (and their deltas) of
-the files.  Then a DTW algorithm is used to find the best alignment
-between these two sets of features.  Then the prompt label file is used
-to index through the alignment to give a label file for the spoken
-nonsense word.  This is largely based on the techniques described in
-@cite{malfrere97}.
+the files.  Then a DTW (dynamic time warping) algorithm is used to find
+the best alignment between these two sets of features.  Then the prompt
+label file is used to index through the alignment to give a label file
+for the spoken nonsense word.  This is largely based on the techniques
+described in @cite{malfrere97}, though this general technique has been
+used for many years.
 
 We have tested this aligner on a number of existing hand-labelled
 databases to compare the quality of the alignments with respect to
@@ -812,7 +819,7 @@ though this can even flip from file to file.  If you find inverted
 signals, you should add @code{-inv} to the arguments to
 @file{pitchmark}.
 
-The object is produce a single mark at the peak of each pitch period and
+The object is to produce a single mark at the peak of each pitch period and
 "fake" or "phantom" periods during unvoiced regions.  The basic command
 we have found that works for us is
 @example
@@ -959,8 +966,9 @@ faster to synthesize 8Khz utterances than 16Khz ones.
 
 @cindex LPC coefficient order
 The number of LPC coefficients used to represent each pitch period can
-be changed depending on sample rate you choose.  Hearsay (and reasonable
-experience) has the number as
+be changed depending on sample rate you choose.  Hearsay, reasonable
+experience, and perhaps some theoretical underpining, suggests the
+following formula for calculating the order
 @example
 (sample_rate/1000)+2
 @end example
@@ -1015,7 +1023,7 @@ could be a byte swap problem or a format problem for your files.
 Can your nonsense word file be played and displayed as is?  Can
 your LPC residual files be played and displayed.  Residual files should
 look like very low powered waveform files and sound very buzzy when
-played but basically recognizable if you know what is being said
+played but almost recognizable if you know what is being said
 (sort of like Kenny from South Park).
 
 If you can recognize some of what is being said but it is fairly
@@ -1101,7 +1109,8 @@ the EGG signal, or by the more complicated approach of extracting
 them from the speech signal itself.
 @item Build parameter files:
 If you don't have PSOLA, extract the LPC parameters and residuals
-from the speech signal.
+from the speech signal, with power normalization if you feel its
+necessary.
 @item Build database itself:
 Build the diphone index, correcting any obvious labelling errors
 then test the database itself.  Running significant tests to
@@ -1120,20 +1129,20 @@ When building a new diphone based voice for a supported language, such
 as English, the upper parts of the systems can mostly be taken from
 existing voices, thus making the building task simpler.  Of course,
 things can still go wrong, and its worth checking everything at each
-stage.  This section gives the basic walkthrough for build a new US
+stage.  This section gives the basic walkthrough for building a new US
 English voice.  Support for building UK (southern, RP dialect) is also
 provided this way.  For building non-US/UK synthesizers see @ref{Full
 example} for a similar walkthrough but less language specific.
 
-Recording a whole diphone usually takes a number of hours, @emph{if}
+Recording a whole diphone set usually takes a number of hours, @emph{if}
 everything goes to plan.  Construction of the voice after recording may
 take another couple of hours, though much of this is CPU bound.  Then
 hand-correction may take at least another few hours (depending on the
 quality).  Thus if all goes well it is possible to construct a new voice
-in a days work though usually something goes wrong and it takes longer.
-The more time you spend making sure the data is correctly aligned 
-and labeled, the better the results will be.  While something can 
-be made quickly, it can take much longer to do it very well.
+in a day's work though usually something goes wrong and it takes longer.
+The more time you spend making sure the data is correctly aligned and
+labeled, the better the results will be.  While something can be made
+quickly, it can take much longer to do it very well.
 
 For those of you who have ignored the rest of this document and are just
 hoping to get by by reading this, good luck.  It may be possible to do
@@ -1187,7 +1196,7 @@ institution we recommend you use @file{net}.  There is an ISO standard
 for language names, though unfortunately it doesn't allow distinction
 between US and UK English, so in general we recommend you use the two
 letter form, though for US English use @file{us} and UK English use
-@file{uk}.  The speaker name may or may nor be there actually name.
+@file{uk}.  The speaker name may or may nor be there actual name.
 
 The setup script builds the basic directory structure and copies in various
 skeleton files.  For languages @file{us} and @file{uk} it copies in
@@ -1219,7 +1228,7 @@ festival -b festvox/diphlist.scm festvox/us_schema.scm \
      '(diphone-gen-schema "us" "etc/usdiph.list")'
 @end example
 @cindex nonsense word prompts
-We use a synthesized voice tobuild waveforms of the prompts, both for
+We use a synthesized voice to build waveforms of the prompts, both for
 actual prompting and for alignment.  If you want to
 change the prompt voice (e.g. to a female) edit @file{festvox/us_schema.scm}.
 Near the end of the file is the function @code{Diphone_Prompt_Setup}.
@@ -1329,7 +1338,7 @@ emulabel etc/emu_lab us_0314
 After correcting labels you must re-run the @file{make_diph_index}
 command.   You should also re-run the @file{find_powerfacts} stage
 and @file{make_lpc} stages as these too depend on the labels, but
-thi stakes longer to run and perhaps that need only be done when
+this takes longer to run and perhaps that need only be done when
 you've corrected many labels.
 
 To test the voice's basic functionality with
@@ -1345,7 +1354,7 @@ gone wrong.
 @cindex making a diphone group file
 @cindex group files
 Finally, once you have corrected the errors (did we mention you need to
-check and correct the errors?), you can build a final voice suitable
+check and correct the errors?), you can build a final voice suitable for
 distribution.  First you need to create a group file which contains only
 the subparts of spoken words which contain the diphones.
 @example
@@ -1354,9 +1363,9 @@ festival festvox/cmu_us_awb_diphone.scm '(voice_cmu_us_awb_diphone)'
 festival (us_make_group_file "group/awblpc.group" nil)
 ...
 @end example
-The @code{us_} in the function names stands for @code{UniSyn}
-(the unit concatenation subsystem in Festival) and nothing to
-do with US English.
+The @code{us_} in this function name confusingly stands for
+@code{UniSyn} (the unit concatenation subsystem in Festival) and nothing
+to do with US English.
 
 To test this edit @file{festvox/cmu_us_awb_diphone.scm} and 
 change the choice of databases used from separate to grouped.  This is

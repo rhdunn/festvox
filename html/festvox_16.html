@@ -1,199 +1,509 @@
 <HTML>
 <HEAD>
 <!-- This HTML file has been created by texi2html 1.52
-     from ../doc/festvox.texi on 10 July 2000 -->
+     from ../doc/festvox.texi on 2 August 2000 -->
 
-<TITLE>Building Voices in the Festival Speech Synthesis System - 16  Evaluation</TITLE>
+<TITLE>Building Voices in the Festival Speech Synthesis System - 16  Full example</TITLE>
 </HEAD>
 <BODY bgcolor="#ffffff">
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_15.html">previous</A>, <A HREF="festvox_17.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_15.html">previous</A>, <A HREF="festvox_17.html">next</A>, <A HREF="festvox_21.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 <P><HR><P>
 
 
-<H1><A NAME="SEC115" HREF="festvox_toc.html#TOC115">16  Evaluation</A></H1>
+<H1><A NAME="SEC115" HREF="festvox_toc.html#TOC115">16  Full example</A></H1>
 
 <P>
-Now that you have built your voice, how can you tell if it works, and
-how can you find out what you need to make it better.  This chapter
-deals with some issues of evaluating a voice in Festival.  Some
-of the points here also apply to testing and improving existing voices
-too.
+In this chapter we work through a full example of creating a
+voice given that most of the basic construction work (model
+building) has been done.  Pariticularly this discusses the scheme
+files, and conventions for keeping a voices together and how
+you can go about packaging it for general use.
 
 </P>
 <P>
-The evaluation of speech synthesis is notoriously hard.  Evaluation in
-speech recognition was the major factor in making general speech
-recognition work.  Rigourous tests of well defined data made the
-evaluation of different techniques possible.  Though in spite of its
-success the strict evaluation criteria as used in speech recognition can
-cloud the ultimate goal.  It is important always to remember that tests
-are they to evaluate a systems performance rather than become the task
-itself.  Just as techniques can overtrain on data it is possible to over
-train on the test data too thus loosing the generality and purpose
-of the evaluation.
+Ultimately a voice in Festival will consist of a diphone database, a
+lexicon (and lts rules) and a number of scheme files that offer the
+complete voice.  When people other than the developer of a voice wish to
+use your newly developed voice it is only that small set of files that
+are required and need to be distributed (freely or otherwise).  By convention
+we have distributed diphone group files, a single file holding the index, 
+and diphone data itself, and a set scheme files that describe the voice
+(and its necessary models).
 
 </P>
 <P>
-In speech recongition a simple (though naive) measure of phones or words
-correct gives a reasonable indicator of how well a speech recognition
-system works.  In synthesis this a lot harder.  A word can have multiple
-pronunciations, so it is much harder to autmatically test if a
-synthesizer's phoneme accuracy, besides much of the quality is not just
-in if it is corretc but if its sounds good.  This is effectly the cruz
-of the matter.  The only really synthesis evaluation technique is having
-a human listen to the result.  Humans individually are not very reliably
-testers of systems, but humans in general are.  However it is usually
-not feasible to have testers listen to large amounts of synthetic speech
-and return a general goodness score.  More specific tests are required.
+Basic skeleton files are included in the festvox distribution.
+If you are unsure how to go about building the basic files it
+is recommended you follow this schema and modify these to your
+particular needs.
 
 </P>
 <P>
-Although listening tests are the ultimate because they are expensive in
-resources (undergraduates are not willing to listing to bad synthesis
-all day for free), and the design of listening tests is a non-trivial
-task, there are a number of more general tests which can be run at less
-expenses and can help greatly.
+By convention a voice name consist of an institution name (like
+<EM>cmu</EM>, <EM>cstr</EM>, etc), if you don't have an insitution
+just use <EM>net</EM>.  Second you need to identify the language,
+there is an ISO two letter standard for it fails to distinguish
+dialects (such as US and UK English) so it need not be strictly 
+followed.  However a short identifier for the language is probably
+prefered.  Third you identify the speaker, we have typically used 
+three letter initials which are the initials of the person speaker but
+any name is reasonable.  If you are going to build a US or UK English
+voice you should look section <A HREF="festvox_9.html#SEC52">9.10  US/UK English Walkthrough</A>.
 
 </P>
 <P>
-It is common that a new voice in Festival (or any other speech synthesis
-systems), has limitations and it is wise to test what the limitations
-are and decide if such limitations are acceptable or not.  This depends
-a lot on what you wish to use your voice for.  For example if the voice
-a Scottish English voice to be primarily used as the output of a Chinese
-speech tranlation system, the vocabulary is constained by the
-translation system itself so a large lexicon is probabaly not much of an
-issue, but the vocabulary will include many anglosized (calenodianized
-?) versions of Chinese names, which are not common in standard English
-so letter-to-sound rules should be made more sensitive for that input.
-If the system is to be used to read address lists, it should be able to
-tokenize names and address appropriately, and if it is to be used in a
-dialogue system the intonation model should be able to deal with
-questions and continuations properly.  Optimizing your voices for the
-most common task, and minimizing the errors is what evaluation is for.
+The basic processes you will need to address
 
-</P>
+<UL>
+<LI>construct basic template files
 
+<LI>generate phoneset definition
 
-<H2><A NAME="SEC116" HREF="festvox_toc.html#TOC116">16.1  Does it work at all?</A></H2>
+<LI>generate diphone schema file
+
+<LI>generate prompts
+
+<LI>record speaker
+
+<LI>label nonsense words
+
+<LI>extract picthmarks and LPC coeffcient
+
+<LI>test phone synthesis
+
+<LI>add lexicon/LTS support
+
+<LI>add tokenization
+
+<LI>add prosody (phrasing, durations and intonation)
+
+<LI>test and evaluate voice
+
+<LI>package for distribution
+
+</UL>
 
 <P>
-It is very easy to build a voice and get it to say a few phrases and
-think that the job is done.  As you build the voice it is worth testing
-each part as you built it to ensure it basically performs as expected.
-But once its all together more general tests are needed.
-
-</P>
-<P>
-Try to find around 100-500 sentences to play through it.  Its amazing
-home many general problems are thrown up when you extend your test set.
-The next stage is to play so <EM>real</EM> text.  That may be news text
-from the web, output from your speech translation system, or some email.
-Initially it is worth just synthesizing the whole set without even
-listening to it.  Problems in analysis and missing diphones etc may be
-shown up just in the processing of the text.  Then you want to listen to
-the output and identify problems.  This make take some amoutn of
-investogation.  What you want to do is identify <EM>where</EM> the problem
-is, is it bad tex analysis, bad lexical entry, a prosody problem, or a
-waveform synthesis problem.  You may need to synthesizes parts
-of the text in isolation (e.g. using the Festival function
-<CODE>SayText</CODE> and look at the structure of the utterance generated,
-e.g. using the function <CODE>utt.features</CODE>.  FOr example
-to see what words have been identified from the text analysis
+As with all parts of <TT>`festvox'</TT>: you must set the following 
+enviroment variables to where you have installed versions of
+the Edinburgh Speech Tools and the festvox distribution
 
 <PRE>
-(utt.features utt1 'Word '(name))
+export ESTDIR=/home/awb/projects/1.4.1/speech_tools
+export FESTVOXDIR=/home/awb/projects/festvox
 </PRE>
 
 <P>
-Or to see the phones generated
+In this example we will build a Japanese voice based on awb (a gaijin).
+First create a directory to hold the voice.
 
 <PRE>
-(utt.features utt1 'Segment '(name))
+mkdir ~/data/cmu_ja_awb_diphone
+cd ~/data/cmu_ja_awb_diphone
 </PRE>
 
 <P>
-Thus you can view selected parts of an utterance and find out
-if it is being created as you intended.  For some things
-a graphical display of the utterance may help.  The display
-system Fringe has support for this.
+You will need in the regions of 500M of space to build a voice.
+Actually for Japanese its probably considerably less, but you must
+be aware that voice building does require disk space.
 
 </P>
 <P>
-Once you identify <EM>where</EM> the problem is you need to decide how to
-fix it (or if it is worth fixing).  Adding new entries to the lexicon
-can be a simple fix but there will always be things missing.  A
-systematic study of missing parts of the lexicon is more worthwhile than
-trying to individually fix every bad pronunciation.  For English we used
-Festival to analysis some very large text databases to find out which
-words are not in the lexicon.  Then we looked at the distribution of the
-unknown words and then check the most frequent against the letter to
-sound rules and those which were proounced wrongly were added to the
-lexicon explicitly.  This technique helps to fill genuine gaps in the
-lexicon but such tests will always be biased to the types of
-data used for the tests.
-
-</P>
-<P>
-<A NAME="IDX247"></A>
-In our English checks we used Wall Street Journal and Time magazine
-articles (around 10 millions words in total).  Many unusual
-words apear only in one article (e.g proper names) which are less
-important to add to the lexicon, but unusual words that appear 
-across articales are more likely to appear again so should
-be added. 
-
-</P>
-<P>
-Be aware that using data will cause your coverage to be biased towards
-that type of data.  Our databases are mostly collected in the early 90s
-and hence have good coverage for the Gulf War, and the changes in
-Eastern Europe but our ten million words have no occurences of the words
-<SAMP>`Sojourner'</SAMP> or <SAMP>`Lewinski'</SAMP> whcih only appear in stories later
-in the decade.
-
-</P>
-<P>
-A script is provided in <TT>`src/general/find_unknowns'</TT> which will
-analyze given text to find which words do not appear in the current
-lexicon.  You should use the <CODE>-eval</CODE> option to specify the
-selection of your voice.  Note this checks to see which words are not in
-the lexicon itself, it replaces what ever letter-to-sound/ unknown word
-function you specified and saves any words for which that function is
-called in the given output file.   For example
+Construct the basic directory structure and skeleton files
+with the command
 
 <PRE>
-find_unknowns -eval '(voice_ked_diphone)' -output cmudict.unknown \
-          wsj/wsj-raw/00/*
+$FESTVOXDIR/src/diphones/setup_diphone cmu ja awb
 </PRE>
 
 <P>
-Normally you would run this over your database then cummulate the
-unknown words, then rerun the unknown words synthesizing each and
-listening to them to evaluate if your LTS system produces reasonable
-results.  Fur those words which do have acceptable pronunciations add
-them to your lexicon.
+The three arguments are, institution, language and speaker name.
 
 </P>
-
-
-<H2><A NAME="SEC117" HREF="festvox_toc.html#TOC117">16.2  Sematically unpredictable sentences</A></H2>
-
 <P>
-<A NAME="IDX248"></A>
-<A NAME="IDX249"></A>
-One technique that has been used to evaluation speech synthesis
-quality is testing against semantically unpredictable sentences.
+The next stage is define the phoneset in
+<TT>`festvox/cmu_ja_phones.scm'</TT>.  In many cases the phoneset for a
+language has been defined, and it is wise to follow convention when it
+exists.  Note that the default phonetic features in the skeleton file
+may need to be modified for other languages.  For Japanese, there are
+standards and here we use a set similar to the ATR phoneset used by many
+in Japan for speech processing. (This file is included, but <EM>not</EM>
+automatically installed, in <TT>`$FESTVOXDIR/src/vox_diphone/japanese'</TT>
 
 </P>
+<P>
+Now you must write the code that generates the diphone schema file.
+You can look at the examples in <TT>`festvox/src/diphones/*_schema.scm'</TT>.
+This stage is actually the first <EM>difficult</EM> part, getting
+thsi right can be tricky.  Finding all possible phone-phone in a language
+isn't as easy as it seems (especially as many possible ones
+don't actually exist).   The file <TT>`festvox/ja_schema.scm'</TT> is created
+providing the function <CODE>diphone-gen-list</CODE> which returns
+a list of nonsense words, each consisting of a list of, list of diphones
+and a list of phones in the nonsense word.  For example
 
 <PRE>
-%%%%%%%%%%%%%%%%%%%%%%
-Discussion to be added 
-%%%%%%%%%%%%%%%%%%%%%%
+festival&#62; (diphone-gen-list)
+((("k-a" "a-k") (pau t a k a k a pau))
+ (("g-a" "a-g") (pau t a g a g a pau))
+ (("h-a" "a-h") (pau t a h a h a pau))
+ (("p-a" "a-p") (pau t a p a p a pau))
+ (("b-a" "a-b") (pau t a b a b a pau))
+ (("m-a" "a-m") (pau t a m a m a pau))
+ (("n-a" "a-n") (pau t a n a n a pau))
+ ...)
 </PRE>
 
+<P>
+In addition to generating the diphone schema the <TT>`ja_schema.scm'</TT>
+also should provied the functions <CODE>Diphone_Prompt_Setup</CODE>, which 
+is called before generating the prompts, and <CODE>Diphone_Prompt_Word</CODE>,
+which is called before waveform synthesis of each nonsense word. 
+
+</P>
+<P>
+<CODE>Diphone_Prompt_Setup</CODE>, should be used to select a speaker to
+generate the prompts.  Note even though you may not use the prompts when
+recording they are necessary for labelling the spoken speech, so you
+still need to generate them.  If you haeva synthesizer already int eh
+language use ti to generate the prompts (assuming you can get it to
+generate from phone lists also generate label files).  Often the MBROLA
+project already has a waveform synthesizer for the language so you can
+use that.  In this case we are going to use a US English voice
+(kal_diphone) to generate the prompts.  For Japanese that's probably ok
+as the Japanese phoneset is (mostly) a subset of the English phoneset,
+though using the generated prompts to prompt the user is probably not a
+good idea.
+
+</P>
+<P>
+The second function <CODE>Diphone_Prompt_Word</CODE>, is used to map the
+Japanese phone set to the US English phone set so that waveform
+synthesis will work.  In this case a simple map of Japanese phone
+to one or more English phones is given and the code simple
+changes the phone name in the segment relation (and adds a new
+new segment in the multi-phone case).
+
+</P>
+<P>
+Now we can generate the diphone schema list.
+
+<PRE>
+festival -b festvox/diphlist.scm festvox/ja_schema.scm \
+     '(diphone-gen-schema "ja" "etc/jadiph.list")'
+</PRE>
+
+<P>
+Its is worth checking <TT>`etc/jadiph.list'</TT> by hand to you are sure it
+contains all the diphone you wish to use.
+
+</P>
+<P>
+The diphone schema file, in this case <TT>`etc/jadiph.list'</TT>, is a
+fundamentally key file for almost all the following scripts.  Even if
+you generate the diphone list by some method other than described above,
+you should generate a schema list in exactly this format so that
+everything esle will work, modifying the other scripts for some other
+format is almost certainly a waste of your time.
+
+</P>
+<P>
+The schema file has the following format
+
+<PRE>
+( ja_0001 "pau t a k a k a pau"  ("k-a" "a-k"))
+( ja_0002 "pau t a g a g a pau"  ("g-a" "a-g") )
+( ja_0003 "pau t a h a h a pau"  ("h-a" "a-h") )
+( ja_0004 "pau t a p a p a pau"  ("p-a" "a-p") )
+( ja_0005 "pau t a b a b a pau"  ("b-a" "a-b") )
+( ja_0006 "pau t a m a m a pau"  ("m-a" "a-m") )
+( ja_0007 "pau t a n a n a pau"  ("n-a" "a-n") )
+( ja_0008 "pau t a r a r a pau"  ("r-a" "a-r") )
+( ja_0009 "pau t a t a t a pau"  ("t-a" "a-t") )
+...
+</PRE>
+
+<P>
+In this case it has 297 nonsense words.
+
+</P>
+<P>
+<A NAME="IDX240"></A>
+Next we can generate the prompts and their label files with the
+following command
+The to synthesize the prompts
+
+<PRE>
+festival -b festvox/diphlist.scm festvox/ja_schema.scm \
+      '(diphone-gen-waves "prompt-wav" "prompt-lab" "etc/jadiph.list")'
+</PRE>
+
+<P>
+Occasionally when you are building the prompts some diphones requested 
+in the prompt voice don't actually exists (especially when you are
+doing cross-language prompting).  Thus the generated prompt has some
+default diphone (typically silence-silence added).  This is mostly
+ok, as long as its not happening multiple times in the same nonsence
+word.  The speaker just should be aware that some prompts aren't actually
+correct (which of course is going to be true for all prompts in the
+cross-language prompting case).
+
+</P>
+<P>
+The stage is to record the prompts.  See section <A HREF="festvox_15.html#SEC113">15.3  Recording under Unix</A> for
+details on how to do this under Unix (and in fact other techniques too).
+This can done with the command
+
+<PRE>
+bin/prompt_them etc/jadiph.list
+</PRE>
+
+<P>
+Depending on whether you want the prompts actually to be played or
+not, you can edit <TT>`bin/prompt_them'</TT> to comment out the playing
+of the prompts.
+
+</P>
+<P>
+Note a third argument can be given to state which nonse word to begin
+prompting from.  This if you have already recorded the first 100 you
+can continue with
+
+<PRE>
+bin/prompt_them etc/jadiph.list 101
+</PRE>
+
+<P>
+<A NAME="IDX241"></A>
+The recorded prompts can the be labelled by
+
+<PRE>
+bin/make_labs prompt-wav/*.wav
+</PRE>
+
+<P>
+And the diphone index may be built by
+
+<PRE>
+bin/make_diph_index etc/awbdiph.list dic/awbdiph.est
+</PRE>
+
+<P>
+<A NAME="IDX242"></A>
+If no EGG signal has been collected you can extract the 
+pitchmarks by
+
+<PRE>
+bin/make_pm_wave wav/*.wav
+</PRE>
+
+<P>
+If you do have an EGG signal then use the following instead
+
+<PRE>
+bin/make_pm lar/*.lar
+</PRE>
+
+<P>
+A program to move the predicted pitchmarks to the nearest 
+peak in the waveform is also provided.  This is almost always
+a good idea, even for EGG extracted pitch marks
+
+<PRE>
+bin/make_pm_fix pm/*.pm
+</PRE>
+
+<P>
+Getting good pitchmarks is important to the quality of the synthesis,
+see section <A HREF="festvox_15.html#SEC114">15.4  Extracting pitchmarks from waveforms</A> for more discussion.
+
+</P>
+<P>
+Because there is often a power mismatch through a set of diphone
+we provided a simple method for finding what general power difference
+exist between files.  This finds the mean power for each vowel in 
+each file and calculates a factor with respect to the overal mean
+vowel power.  A table of power modifiers for each file can
+be calculated by
+
+<PRE>
+bin/find_powerfactors lab/*.lab
+</PRE>
+
+<P>
+The factors cacluated by this are saved in <TT>`etc/powfacts'</TT>.
+
+</P>
+<P>
+Then build the pitch-synchronous LPC coefficients, which used
+the power factors if they've been calculated.
+
+<PRE>
+bin/make_lpc wav/*.wav
+</PRE>
+
+<P>
+<A NAME="IDX243"></A>
+This should get you to the stage where you can test the basic waveform
+synthesizer.  There is still much to do but initial tests (and correction
+of labelling errors etc) can start now.  Start festival as
+
+<PRE>
+festival festvox/cmu_ja_awb_diphone.scm "(voice_cmu_ja_awb_diphone)"
+</PRE>
+
+<P>
+and then enter string of phones 
+
+<PRE>
+festival&#62; (SayPhones '(pau k o N n i ch i w a pau))
+</PRE>
+
+<P>
+In addition to the waveform generate part you must also provide text
+analysis for your language.  Here, for the sake of simplicity we assume
+that the Japanese is provided in romanized form with spaces between each
+word.  This is of course not the case for normal Japanese (and we are
+working on a proper Japanese front end).  But at present this shows the
+general idea.  Thus we edit <TT>`festvox/cmu_ja_token.scm'</TT> and add
+(simple) support for numbers.
+
+</P>
+<P>
+As the relationship between romaji (romanized Japanese) and phones
+is almost trivial we write a set of letter-to-sound rules, by hand
+that expand words into their phones.  This is added to 
+<TT>`festvox/cmu_ja_lex.scm'</TT>.
+
+</P>
+<P>
+For the time being we just use the default intonation model, though
+simple rule drive improvements are possible.  See
+<TT>`festvox/cmu_ja_awb_int.scm'</TT>.  For duration, we add a mean value
+for each phone in the phoneset to <TT>`fextvox/cmu_ja_awb_dur.scm'</TT>.
+
+</P>
+<P>
+These three japanese specific files are included in the distribution
+in <TT>`festvox/src/vox_diphone/japanese/'</TT>.
+
+</P>
+<P>
+Now we have a basic synthesizer, although there is much to
+do, we can now type (romanized) text to it.
+
+<PRE>
+festival festvox/cmu_ja_awb_diphone.scm "(voice_cmu_ja_awb_diphone)"
+...
+festival&#62; (SayText "boku wa gaijin da yo.")
+</PRE>
+
+<P>
+The next part is to test and improve these various initial subsystems,
+lexicons, text analysis prosody, and correct waveform synthesis problem.
+This is ane endless task but you should spend significantly more time on
+it that we have done for this example.
+
+</P>
+<P>
+Once you are happy with the completed voice you can package it for
+distribution.  The first stage is to generate a group file
+for the diphone database.  This extracts the subparts of the nonsense words
+and puts them into a single file offering something smaller and quicker to 
+access.  The groupfile can be built as follows.
+
+<PRE>
+festival festvox/cmu_ja_awb_diphone.scm "(voice_cmu_ja_awb_diphone)"
+...
+festival (us_make_group_file "group/awblpc.group" nil)
+...
+</PRE>
+
+<P>
+The <CODE>us_</CODE> in the function names stands for <CODE>UniSyn</CODE>
+(the unit concatenation subsystem in Festival) and nothing to
+do with US English.
+
+</P>
+<P>
+To test this edit <TT>`festvox/cmu_ja_awb_diphone.scm'</TT> and 
+change the choice of databases used from separate to grouped.  This
+is done by commenting out the line (around line 81)
+
+<PRE>
+(set! cmu_ja_awb_db_name (us_diphone_init cmu_ja_awb_lpc_sep))
+</PRE>
+
+<P>
+and uncommented the line (around line 84)
+
+<PRE>
+(set! cmu_ja_awb_db_name (us_diphone_init cmu_ja_awb_lpc_group))
+</PRE>
+
+<P>
+<A NAME="IDX244"></A>
+The next stage is to integrate this new voice so that festival may find it
+automatically.  To do this you should add a symbolic link
+from the voice directory of Festival's English voices to the
+directory containing the new voice.  Frist cd to
+festival's voice directory (this will vary depending on where your
+version of festival is installed)
+
+<PRE>
+cd /home/awb/projects/1.4.1/festival/lib/voices/japanese/
+</PRE>
+
+<P>
+creating the language directory if it does not already exists.
+Add a symbolic link back to where your voice was built
+
+<PRE>
+ln -s /home/awb/data/cmu_ja_awb_diphone
+</PRE>
+
+<P>
+Now this new voice will be available for anyone runing that version festival
+started from any directory, without the need for any explicit arguments
+
+<PRE>
+festival
+...
+festival&#62; (voice_cmu_ja_awb_diphone)
+...
+festival&#62; (SayText "ohayo gozaimasu.")
+...
+</PRE>
+
+<P>
+<A NAME="IDX245"></A>
+The final stage is to generate a distribution file so the voice may
+be installed on other's festival installations.  Before you do
+this you must add a file <TT>`COPYING'</TT> to the directory you
+built the diphone database in.  This should state the terms and conditions
+in which people may use, distribute and modify the voice.
+
+</P>
+<P>
+Generate the distribution tarfile in the directory above the festival
+installation (the one where <TT>`festival/'</TT> and <TT>`speech_tools/'</TT>
+directory is).
+
+<PRE>
+cd /home/awb/projects/1.4.1/
+tar zcvf festvox_cmu_ja_awb_lpc.tar.gz \
+  festival/lib/voices/japanese/cmu_ja_awb_diphone/festvox/*.scm \
+  festival/lib/voices/japanese/cmu_ja_awb_diphone/COPYING \
+  festival/lib/voices/japanese/cmu_ja_awb_diphone/group/awblpc.group
+</PRE>
+
+<P>
+<A NAME="IDX246"></A>
+The completed files from building this crude Japanese example
+are available at <A HREF="http://www.festvox.org/examples/cmu_ja_awb_diphone/">http://www.festvox.org/examples/cmu_ja_awb_diphone/</A>.
+
+</P>
 <P><HR><P>
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_15.html">previous</A>, <A HREF="festvox_17.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_15.html">previous</A>, <A HREF="festvox_17.html">next</A>, <A HREF="festvox_21.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 </BODY>
 </HTML>

@@ -62,6 +62,21 @@ FV_LANG=$2
 FV_VOX=$3
 SKELFESTVOXDIR=$FESTVOXDIR/src/vox_diphone/festvox
 
+if [ "0" != `ls | wc -l` ]
+then
+   echo "I'm going to make a whole bunch of new directories in"
+   echo "    "`pwd`
+   echo "This directory is currently non-empty, are you sure this is "
+   echo "the directory you want these new directories built in?"
+   echo -n "Answer y/n? "
+   read answer
+   if [ "$answer" != "y" ]
+   then
+       echo "setup aborted"
+       exit -1
+   fi
+fi
+
 # Build the directory structure
 $FESTVOXDIR/src/general/make_dirs
 
@@ -85,6 +100,65 @@ cp -p $FESTVOXDIR/src/general/traintest bin
 cp -p $FESTVOXDIR/src/general/emu_lab.tpl etc/emu_lab.tpl
 cp -p $FESTVOXDIR/src/general/emu_pm.tpl etc/emu_pm.tpl
 cp -p $FESTVOXDIR/src/general/emu_f0.tpl etc/emu_f0.tpl
+
+if [ -d $FESTVOXDIR/src/vox_files/$FV_LANG ]
+then
+   FV_LANG_SKELS=$FV_LANG
+else
+   FV_LANG_SKELS=general
+fi
+
+# Language/Vox scheme files
+echo Generating language/voice specific scheme files
+for i in $FESTVOXDIR/src/vox_files/$FV_LANG_SKELS/INST_*_VOX_*.scm
+do
+   fname=`basename $i | sed 's/INST/'$FV_INST'/g' | sed 's/LANG/'$FV_LANG'/g' | sed 's/VOX/'$FV_VOX'/g'`
+   cat $i |
+   sed 's%INST%'$FV_INST'%g' |
+   sed 's%LANG%'$FV_LANG'%g' |
+   sed 's%VOX%'$FV_VOX'%g' |
+   sed 's%ESTDIR%'$ESTDIR'%g' |
+   sed 's%CURRENTDIR%'$CURRENTDIR'%g' >festvox/$fname
+done
+
+# Diphone specific files
+if [ -f $FESTVOXDIR/src/vox_files/$FV_LANG_SKELS/$FV_LANG"_schema.scm" ]
+then
+   cp -p $FESTVOXDIR/src/vox_files/$FV_LANG_SKELS/$FV_LANG"_schema.scm" festvox/$FV_LANG"_schema.scm"
+fi
+
+if [ -f $FESTVOXDIR/src/vox_files/$FV_LANG_SKELS/INST_*_VOX_diphone.scm-diphone ]
+then
+   cat $FESTVOXDIR/src/vox_files/$FV_LANG_SKELS/INST_*_VOX_diphone.scm-diphone |
+   sed 's%INST%'$FV_INST'%g' |
+   sed 's%LANG%'$FV_LANG'%g' |
+   sed 's%VOX%'$FV_VOX'%g' |
+   sed 's%ESTDIR%'$ESTDIR'%g' |
+   sed 's%CURRENTDIR%'$CURRENTDIR'%g' >festvox/$FV_INST"_"$FV_LANG"_"$FV_VOX"_diphone.scm"
+fi
+
+case $FV_LAG in
+   us)
+      cp -p $FESTVOXDIR/src/diphones/us_schema.scm festvox/us_schema.scm
+      ;;
+   uss2)
+      cp -p $FESTVOXDIR/src/vox_diphone/festvox/cmusphinx2_phones.scm festvox/
+      ;;
+   uk)
+      cp -p $FESTVOXDIR/src/diphones/uk_schema.scm festvox/uk_schema.scm
+      ;;
+   *)
+      if [ -f $FESTVOXDIR/src/diphones/$FV_LANG"_schema.scm" ]
+      then
+         cp -p $FESTVOXDIR/src/diphones/$FV_LANG"_schema.scm" festvox
+      fi
+      ;;
+esac
+
+echo "Set up for "$FV_INST"_"$FV_LANG"_"$FV_VOX" diphone complete"
+
+
+exit
 
 # Language/Vox scheme files
 case $FV_LANG in

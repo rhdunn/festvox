@@ -42,7 +42,7 @@ TEXT= festvox.texi refs.texi intro.texi copy.texi utt.texi \
       diphone.texi unitsel.texi general.texi \
       prosody.texi lexicons.texi text.texi resources.texi \
       eval.texi exam.texi ldom.texi phonetable.texi scheme.texi \
-      festival.texi speech.texi
+      festival.texi speech.texi waveform.texi
 IMAGESPNG = wave_clean.png wave_noisey.png \
             pm_raw_01.png pm_bad_01.png pm_raw_zoom01.png \
             pm_raw_zoom02.png pm_raw_zoom03.png

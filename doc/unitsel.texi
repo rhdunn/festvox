@@ -1,7 +1,7 @@
 @chapter Unit selection databases
 
 @cindex unit selection
-This chapter discussed some of the options for building waveform
+This chapter discusses some of the options for building waveform
 synthesizers using unit selection techniques in Festival.  This is still
 very much an on-going research question and we are still adding new
 techniques as well as improving existing ones often so the techniques
@@ -33,11 +33,11 @@ a different level of articulation from segments taken from word internal
 position.  Stressing and accents also cause differences.  Rather than
 try to explicitly list the desired inventory of all these phenomena and
 then have to record all of them a potential alternative is to take a
-natural distribution of speech and (semi-)automatifcally find the
+natural distribution of speech and (semi-)automatically find the
 distinctions that actually exist rather predefining them.
 
 The theory is obvious but the design of such systems and finding the
-approrpiate selection criteria, weighting the costs of relative candidates
+appropriate selection criteria, weighting the costs of relative candidates
 is a non-trivial problem.  However tecniques like this often produce
 very high quality, very natural sounding synthesis.  However they also
 can produce some very bad synthesis too, when the database has unexpected
@@ -50,7 +50,11 @@ considered research systems.  Unless you are specifically interested or
 have the expertise in developing new selection techniques it is not
 recommended that you try these, if you need a working voice within a
 month and can't afford to miss that deadline then the diphone option is
-safe, well tried and stable.
+safe, well tried and stable.  In you need higher quality and know
+something about what you need to say, then we recommend the limited
+domain techniques discussed in the following chapter.  The limited
+domain synthesis offers the high quality of unit selection but 
+avoids much (all ?) of the bad selections.
 
 @section Cluster unit selection
 
@@ -60,7 +64,7 @@ try to cluster each phone type into groups of acoustically similar units
 based on the (non-acoustic) information available at synthesis time,
 such as phonetic context, prosodic features (F0 and duration) and higher
 level features such as stressing, word position, and accents.  The
-actually features used may easily be changed an experimented with as can
+actually features used may easily be changed and experimented with as can
 the definition of the definition of acoustic distance between the units
 in a cluster.  
 
@@ -111,7 +115,7 @@ Building the voice description itself
 @subsection Collecting databases for unit selection
 
 Unlike diphone database which are carefully constructed to ensure
-specific coverage one of the advantages of unit selection is that
+specific coverage, one of the advantages of unit selection is that
 a much more general database is desired.  However, although voices
 may be built from existing data not specifically gathered for
 synthesis there are still factors about the data that will help make
@@ -121,14 +125,14 @@ Like diphone databases the more cleanly and carefully the speech is
 recorded the better the synthesized voice will be.  As we are going to
 be selecting units from different parts of the database the more similar
 the recordings are, the less likely bad joins will occur.  However
-unlike diphones database prosodic variation is probably a good thing, as
-it is those variations that can make synthesis from unit selection sound
-more natural.  Good phonetic coverage is also useful, at least phone
-coverage if not complete diphone coverage.  Also synthesis using these
-techniques seem to retain aspects of the original database.  If the
-database is broadcast news stories, the synthesis from it will typically
-sound like read news stories (or more importantly will sound best when
-it is reading news stories).
+unlike diphones database, prosodic variation is probably a good thing,
+as it is those variations that can make synthesis from unit selection
+sound more natural.  Good phonetic coverage is also useful, at least
+phone coverage if not complete diphone coverage.  Also synthesis using
+these techniques seems to retain aspects of the original database.  If
+the database is broadcast news stories, the synthesis from it will
+typically sound like read news stories (or more importantly will sound
+best when it is reading news stories).
 
 @cindex Timit
 @cindex f2b
@@ -145,7 +149,8 @@ wish to make of the synthesizer, if its to be used in more restrictive
 environments (as is often the case) tailoring the database for the task
 is a very good idea.  If you are going to be reading a lot of telephone
 numbers, having a significant number of examples of read numbers will
-make synthesis of numbers sound much better.
+make synthesis of numbers sound much better (see the following
+chapter on makign such design more explicit).
 
 The database used as an example here is a TIMIT 460 sentence database
 read by an American male speaker.
@@ -178,8 +183,6 @@ the database (labels, utterances, pitch marks etc).
 The segmental labels.  This is usually the master label files,
 these may contain more information that the labels used by festival
 which will be in @file{festival/relations/Segment/}.
-@item wrd/
-Word label files.
 @item lar/
 The EGG files (larynograph files) if collected.
 @item pm/

@@ -247,6 +247,7 @@ computer).
 @example
 @c This should work, but doesn't for me
 @c @image{wave_noisey,,}
+
 @ifhtml
 <IMG SRC="wave_noisey.png">
 @end ifhtml

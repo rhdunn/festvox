@@ -88,7 +88,7 @@ do
        sort /tmp/$fname.bigrams.$npass | awk '{print $1}' |
        while read l
        do
-           grep $l $1
+           grep " "$l" " $1
        done >$1.selected          
        rm /tmp/$fname.bigrams.*
        exit
