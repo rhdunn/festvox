@@ -1,0 +1,34 @@
+
+This is all ALPHA level code
+
+Notes
+  You need a patched version of 1.3.0 (and speech tools)
+  or 1.3.1 when its released.
+
+     tar zxvf festival-1.3.0.tar.gz
+     patch -p0 < fest-1.3.0.1.patch
+     tar zxvf speech_tools-1.1.0.tar.gz
+     patch -p0 < sptools-1.1.0.1.patch
+
+  You may not need the argument -p0 on some versions of patch
+
+The variaous scripts refer to both the speech tools programs and
+programs in this directory, in order for them to find the 
+appropriate versions you should set the following two
+environment variables.  ESTDIR should point to your
+local versions of the speech tools and FESTVOXDIR
+should point to this directory.  e.g. In bash these can
+be set by 
+
+export ESTDIR=/home/awb/projects/speech_tools/
+export FESTVOXDIR=/home/awb/DOCS/reports/festvox/
+
+in csh
+
+setenv ESTDIR /home/awb/projects/speech_tools/
+setenv FESTVOXDIR /home/awb/DOCS/reports/festvox/
+
+There are also a few directory references to directories in Makefiles
+that need to be fixed.
+
+

@@ -1,0 +1,48 @@
+
+Building Voices in The Festival Speech Synthesis System
+
+Cookbook for building voices
+
+Introduction
+  overview of user
+  overview of what you need to do
+
+Each given with repsect to particular examples plus code
+  
+Recording databases
+  diphone db construction
+  general text db and labelling
+  Using UniSyn
+
+  clunit construction
+
+  Example walkthrough
+
+Building prosodic models
+  Intonation
+    rules/LR stuff
+    type of training data 
+  Duration
+    rules/trees
+  Phrasing 
+    tagging (fake) phrase break rules
+
+Lexicons
+  lexicon quality coverage, LTS rules
+
+Text analysis
+  numbers, symbols homographs
+  Guessing when necessary (polish)
+
+Packaging a voice for distribution
+
+  registering it on the Festival Web pages
+  
+Resources 
+  Lexicons, taking from existing voices
+  Phonesets
+  Diphone lists databases
+  Timit word lists and timit labelled DBs
+  Larger more generals DBs (Sole, f2b, ked weather etc)
+
+

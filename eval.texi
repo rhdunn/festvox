@@ -1,0 +1,147 @@
+@chapter Evaluation
+
+Now that you have built your voice, how can you tell if it works, and
+how can you find out what you need to make it better.  This chapter
+deals with some issues of evaluating a voice in Festival.  Some
+of the points here also apply to testing and improving existing voices
+too.
+
+The evaluation of speech synthesis is notoriously hard.  Evaluation in
+speech recognition was the major factor in making general speech
+recognition work.  Rigourous tests of well defined data made the
+evaluation of different techniques possible.  Though in spite of its
+success the strict evaluation criteria as used in speech recognition can
+cloud the ultimate goal.  It is important always to remember that tests
+are they to evaluate a systems performance rather than become the task
+itself.  Just as techniques can overtrain on data it is possible to over
+train on the test data too thus loosing the generality and purpose
+of the evaluation.
+
+In speech recongition a simple (though naive) measure of phones or words
+correct gives a reasonable indicator of how well a speech recognition
+system works.  In synthesis this a lot harder.  A word can have multiple
+pronunciations, so it is much harder to autmatically test if a
+synthesizer's phoneme accuracy, besides much of the quality is not just
+in if it is corretc but if its sounds good.  This is effectly the cruz
+of the matter.  The only really synthesis evaluation technique is having
+a human listen to the result.  Humans individually are not very reliably
+testers of systems, but humans in general are.  However it is usually
+not feasible to have testers listen to large amounts of synthetic speech
+and return a general goodness score.  More specific tests are required.
+
+Although listening tests are the ultimate because they are expensive in
+resources (undergraduates are not willing to listing to bad synthesis
+all day for free), and the design of listening tests is a non-trivial
+task, there are a number of more general tests which can be run at less
+expenses and can help greatly.
+
+It is common that a new voice in Festival (or any other speech synthesis
+systems), has limitations and it is wise to test what the limitations
+are and decide if such limitations are acceptable or not.  This depends
+a lot on what you wish to use your voice for.  For example if the voice
+a Scottish English voice to be primarily used as the output of a Chinese
+speech tranlation system, the vocabulary is constained by the
+translation system itself so a large lexicon is probabaly not much of an
+issue, but the vocabulary will include many anglosized (calenodianized
+?) versions of Chinese names, which are not common in standard English
+so letter to sound rules should be made more sensitive for that input.
+If the system is to be used to read address lists, it should be able to
+tokenize names and address appropriately, and if it is to be used in a
+dialogue system the intonation model should be able to deal with
+questions and continuations properly.  Optimizing your voices for the
+most common task, and minimizing the errors is what evaluation is for.
+
+@section Does it work at all?
+
+It is very easy to build a voice and get it to say a few phrases and
+think that the job is done.  As you build the voice it is worth testing
+each part as you built it to ensure it basically performs as expected.
+But once its all together more general tests are needed.
+
+Try to find around 100-500 sentences to play through it.  Its amazing
+home many general problems are thrown up when you extend your test set.
+The next stage is to play so @emph{real} text.  That may be news text
+from the web, output from your speech translation system, or some email.
+Initially it is worth just synthesizing the whole set without even
+listening to it.  Problems in analysis and missing diphones etc may be
+shown up just in the processing of the text.  Then you want to listen to
+the output and identify problems.  This make take some amoutn of
+investogation.  What you want to do is identify @emph{where} the problem
+is, is it bad tex analysis, bad lexical entry, a prosody problem, or a
+waveform synthesis problem.  You may need to synthesizes parts
+of the text in isolation (e.g. using the Festival function
+@code{SayText} and look at the structure of the utterance generated,
+e.g. using the function @code{utt.features}.  FOr example
+to see what words have been identified from the text analysis
+@lisp
+(utt.features utt1 'Word '(name))
+@end lisp
+Or to see the phones generated
+@lisp
+(utt.features utt1 'Segment '(name))
+@end lisp
+Thus you can view selected parts of an utterance and find out
+if it is being created as you intended.  For some things
+a graphical display of the utterance may help.  The display
+system Fringe has support for this.
+
+Once you identify @emph{where} the problem is you need to decide how to
+fix it (or if it is worth fixing).  Adding new entries to the lexicon
+can be a simple fix but there will always be things missing.  A
+systematic study of missing parts of the lexicon is more worthwhile than
+trying to individually fix every bad pronunciation.  For English we used
+Festival to analysis some very large text databases to find out which
+words are not in the lexicon.  Then we looked at the distribution of the
+unknown words and then check the most frequent against the letter to
+sound rules and those which were proounced wrongly were added to the
+lexicon explicitly.  This technique helps to fill genuine gaps in the
+lexicon but such tests will always be biased to the types of
+data used for the tests.
+
+@cindex lexical gaps
+In our English checks we used Wall Street Journal and Time magazine
+articles (around 10 millions words in total).  Many unusual
+words apear only in one article (e.g proper names) which are less
+important to add to the lexicon, but unusual words that appear 
+across articales are more likely to appear again so should
+be added. 
+
+Be aware that using data will cause your coverage to be biased towards
+that type of data.  Our databases are mostly collected in the early 90s
+and hence have good coverage for the Gulf War, and the changes in
+Eastern Europe but our ten million words have no occurences of the words
+@samp{Sojourner} or @samp{Lewinski} whcih only appear in stories later
+in the decade.
+
+A script is provided in @file{src/general/find_unknowns} which will
+analyze given text to find which words do not appear in the current
+lexicon.  You should use the @code{-eval} option to specify the
+selection of your voice.  Note this checks to see which words are not in
+the lexicon itself, it replaces what ever letter to sound/ unknown word
+function you specified and saves any words for which that function is
+called in the given output file.   For example
+@example
+find_unknowns -eval "(voice_ked_diphone)" -output cmudict.unknown \
+          wsj/wsj-raw/00/*
+@end example
+Normally you would run this over your database then cummulate the
+unknown words, then rerun the unknown words synthesizing each and
+listening to them to evaluate if your LTS system produces reasonable
+results.  Fur those words which do have acceptable pronunciations add
+them to your lexicon.
+
+@section Sematically unpredictable sentences
+
+@cindex sematically unpredictable sentences
+@cindex SUS test
+One technique that has been used to evaluation speech synthesis
+quality is testing against semantically unpredictable sentences.
+
+@example
+%%%%%%%%%%%%%%%%%%%%%%
+Discussion to be added 
+%%%%%%%%%%%%%%%%%%%%%%
+@end example
+
+
+

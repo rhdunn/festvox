@@ -1,0 +1,181 @@
+\input texinfo @c -*-texinfo-*-
+@c %**start of header
+@setfilename festvox.info
+@settitle Building Voices in the Festival Speech Synthesis System
+@finalout
+@setchapternewpage odd
+@c %**end of header
+
+@c This document was modelled on the numerous examples of texinfo
+@c documentation available with GNU software, primarily the hello
+@c world example, but many others too.  I happily acknowledge their
+@c aid in producing this document -- awb
+
+@set EDITION 1.0
+@set VERSION 1.3.1
+@set UPDATED 24th January 1999
+
+@ifinfo
+This file documents the processes and issues in building
+new voices in the @code{Festival} Speech Synthesis System a general
+text to speech system.
+
+Copyright (C) 1998-1999, Alan W Black and Kevin A. Lenzo.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX, or otherwise and
+print the results, provided the printed document carries copying
+permission notice identical to this one except for the removal of this
+paragraph (this paragraph not being relevant to the printed manual).
+
+@end ignore
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the authors.
+@end ifinfo
+
+@titlepage
+@title Building Voices in 
+@title the Festival Speech Synthesis System
+@subtitle Processes and issues in building speech synthesis voices
+@subtitle Edition @value{EDITION}, for Festival Version @value{VERSION}
+@subtitle @value{UPDATED}
+@author by Alan W Black and Kevin A. Lenzo
+@author Carnegie Mellon University
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1998-1999 Alan W Black and Kevin A. Lenzo, all rights
+reserved.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the authors
+@end titlepage
+
+@node Top, , , (dir)
+
+@ifinfo
+This file documents the @emph{Festival Speech Synthesis System}
+@value{VERSION}.  This document contains many gaps and is still in the
+process of being written.
+@end ifinfo
+
+@menu
+* Abstract::            initial comments
+* Copying::             Copying, use and acknowledgements
+* Introduction::        Goals and outline of document
+General concepts
+* Utterances::
+Building waveform synthesizers
+* Diphone databases::   Diphone schema, recording and labelling
+* Unit selection databases:: General unit selection models (clunits)
+Building speaker specific prosodic models
+* Building prosodic models::
+* Lexicons::            Lexicons, letter to sound rules and post-lexical rules
+* Text analysis::       Homographs, token to word rules
+* Full example::        
+* Evaluation::          Does it actually work and making it better
+* Resources::           Getting more help, tools, data etc
+* References::
+* Index::               
+@end menu
+
+@node Abstract, Copying, , Top
+@chapter Abstract
+
+This document provides documentation for the processes and
+issues in building a new voice in the Festival Speech
+Synthesis System.  This covers the necessary stages in building
+a voice either in an already supported language or in a completely
+new language.
+
+Although the task of building very high quality generalized text to
+speech voices is still a difficult task with many open research
+questions, we believe the building of reasonable quality voices,
+acceptable for many tasks, can be done with the information provided
+within this document.  Already Festival has been used to implement a
+number of different languages and voices, including: English (US and
+UK), Spanish (Castillean and Mexican), German, Polish, Greek, Welsh
+Gaelic and Basque.  These voices were often built in very short times (a
+few weeks) by people with only minimal knowledge of speech synthesis
+(e.g. Master's students).  Although the quality varies, the results all
+produce text to speech synthesizers of a quality capable of reading
+text, like online newspapers, at a level that native speakers can easily
+follow.
+
+Note this document is not a manual for the Festival Speech
+Synthesis System itself and assumes that the user has access
+to the Festival system and the Edinburgh Speech Tools.  Except 
+where explicitly mentioned constructing voices can be done using
+these tools alone.
+
+The latest details and a full software distribution of the Festival Speech
+Synthesis System, and related documents and resources (including this
+document) are available through its home page which may be found
+at @url{http://www.cstr.ed.ac.uk/projects/festival.html}
+
+@node Copying, Introduction, Abstract, Top
+@include copy.texi
+
+@node Introduction, Utterances, Copying, Top
+@include intro.texi
+
+@node Utterances, Diphone databases, Introduction, Top
+@include utt.texi
+
+@node Diphone databases, Unit selection databases, Utterances, Top
+@include diphone.texi
+
+@node Unit selection databases, Building prosodic models, Diphone databases, Top
+@include unitsel.texi
+
+@node Building prosodic models, Lexicons , Unit selection databases, Top
+@include prosody.texi
+
+@node Lexicons, Text analysis, Building prosodic models, Top
+@include lexicons.texi
+
+@node Text analysis, Full example , Lexicons, Top
+@include text.texi
+
+@node Full example, Evaluation, Text analysis, Top
+@include exam.texi
+
+@node Evaluation, Resources, Full example, Top
+@include eval.texi
+
+@node Resources, References, Evaluation, Top
+@include resources.texi
+
+@node References, Index, Resources, Top
+@include refs.texi
+
+@node Index, , References, Top
+@unnumbered Index
+
+@printindex cp
+
+@contents
+
+@bye

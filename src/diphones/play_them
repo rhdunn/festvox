@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cat $1 |
+while read line
+do
+   echo $line
+   na_play prompt-wav/`echo $line | awk '{print $1}' | tr -d "(\""`.wav
+done
