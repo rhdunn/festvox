@@ -31,55 +31,34 @@
 ##  THIS SOFTWARE.                                                       ##
 ##                                                                       ##
 ###########################################################################
-###                                                                       ##
-###  Make the directories assumes . is the db directory                   ##
-###                                                                       ##
-############################################################################
+##                                                                       ##
+##  Power normalise with a contour                                       ##
+##                                                                       ##
+###########################################################################
 
-##
-##  This make more directories than you may need
-##
+if [ ! "$ESTDIR" ]
+then
+   echo "environment variable ESTDIR is unset"
+   echo "set it to your local speech tools directory e.g."
+   echo '   bash$ export ESTDIR=/home/awb/projects/speech_tools/'
+   echo or
+   echo '   csh% setenv ESTDIR /home/awb/projects/speech_tools/'
+   exit 1
+fi
 
-mkdir bin
-mkdir wav
-mkdir lab
-mkdir lar
-mkdir lpc
-mkdir mcep
-mkdir pm
-mkdir pm_lab
-mkdir wrd
-mkdir f0
-mkdir dic
-mkdir etc
-mkdir group
-mkdir festival
-mkdir festival/relations
-mkdir festival/relations/Segment
-mkdir festival/relations/Phrase
-mkdir festival/relations/Target
-mkdir festival/relations/Syllable
-mkdir festival/relations/Word
-mkdir festival/relations/IntEvent
-mkdir festival/utts
-mkdir festival/coeffs
-mkdir festival/f0
-mkdir festival/disttabs
-mkdir festival/trees
-mkdir festival/feats
-mkdir festival/clunits
-mkdir festival/phrbrk
-mkdir festival/dur
-mkdir festival/accents
-mkdir emu
-mkdir emu/lab_hlb
-mkdir emu/pm_hlb
-mkdir scratch
-mkdir scratch/wav
-mkdir scratch/lab
-mkdir festvox
-mkdir versions
-mkdir prompt-wav
-mkdir prompt-lab
-mkdir prompt-cep
-mkdir cep
+if [ $# = 0 ]
+then
+   echo "Normalize power in waveforms"
+   echo "Usage:  bin/contour_powernormalize wav/*.wav"
+   echo "Will overwrite existing waveforms in wav/"
+   exit 1
+fi
+
+for i in $*
+do
+  fname=`basename $i .wav`
+  echo $fname
+  $FESTVOXDIR/src/general/powcont_norm -max 3.0 -wave wav/$fname.wav -powcont pow/$fname.lab -o wavn/$fname.wav
+done
+
+

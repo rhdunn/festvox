@@ -31,96 +31,106 @@
 /*                                                                       */
 /*************************************************************************/
 /*                                                                       */
-/*  Move the pitch mark to the nearest peak.  This shouldn't really be   */
-/*  necessary but it does help even for EGG extracted pms                */
+/*  Multi-pulse LPC, find a pulse equivalent for pitch-synchronous LPC   */
+/*  that sounds good                                                     */
 /*                                                                       */
 /*************************************************************************/
-
 
 #include "EST.h"
 
 int main(int argc,char **argv)
 {
-    EST_Wave w;
-    EST_Track pm_in, pm_out;
+    EST_Wave res, sig;
+    EST_Track lpc;
     EST_Option al;
     EST_StrList files;
-    int i,j,window,max;
-    float maxperiod, minperiod;
-    int k;
-    float lpos;
+    EST_String op,owave;
+    int i,j,p,v,s,e,ab,q;
+    float pow,abf;
 
     parse_command_line
 	(argc,argv,
 	 EST_String("[options]")+
 	 "Summary: move pitchmark with respect to wave\n"+
 	 "-h        Options help\n"+
-	 "-wave <ifile>\n"+
-	 "-pm <ifile>\n"+
-	 "-window <int> {16}\n"+
-	 "-max <float> {0.020}\n"+
-	 "-min <int> {0.0025}\n"+
+	 "-res <ifile>\n"+
+	 "-lpc <ifile>\n"+
+	 "-op <string>\n"+
+	 "-val <int>\n"+
 	 "-o <ofile> Output pm file\n",
 	 files,al);
 
-    window = al.ival("-window");
-    maxperiod = al.fval("-max");
-    minperiod = al.fval("-min");
-    window = al.ival("-window");
-    w.load(al.val("-wave"));
-    pm_in.load(al.val("-pm"));
-    pm_out.resize(pm_in.num_frames()+30,pm_in.num_channels());
-    pm_out.copy_setup(pm_in);
+    res.load(al.val("-res"));
+    lpc.load(al.val("-lpc"));
+    owave = al.val(al.val("-o"));
+    op = al.val("-op");
 
-    for (i=0; i<pm_in.num_frames(); i++)
+    if (op == "resynth")
     {
-	int pos = (int)(pm_in.t(i)*w.sample_rate());
-	for (max=pos,j=pos-window; 
-	     (j > 0) && (j < w.num_samples()) && (j < pos+window);
-	     j++)
-	    if (w(j) > w(max))
-		max = j;
-	pm_out.t(i) = ((float)max)/w.sample_rate();
+	lpc_filter_fast(lpc,res,sig);
+    }
+    if (op == "robot")
+    {
+	res.resize(res.num_samples(),1,0);  // no reseting of values
+	res.set_sample_rate(res.sample_rate());
+	v = al.ival("-val");
+	printf("num_samples is %d\n",sig.num_samples());
+
+	for (i=0; i<res.num_samples(); i++)
+	    sig.a(i) = 0;
+	s = 0;
+	e = (int)((float)res.sample_rate()/0.010);
+	for (s=0; s<sig.num_samples(); s+=e)
+	{
+	    pow = 0;
+	    for (i=s; i<s+e; i++)
+	    {
+		abf = pow = 0;
+		for (q=0; ((q+i)<e)&&q<v; q++)
+		{
+		    abf +=res.a(i+q);
+		    pow += res.a(i+q)*res.a(i+q);
+		}
+		pow = sqrt(pow/(float)q);
+		for (q=0; ((q+i)<e)&&q<v; q++)
+		    sig.a(i+q) = (short)(pow*(abf/fabs(abf)));
+		i+=q;
+	    }
+	    s = e;
+	}
+    }
+    else if (op == "spike")
+    {
+	sig.resize(res.num_samples(),1,0);  // no reseting of values
+	sig.set_sample_rate(res.sample_rate());
+	v = al.ival("-val");
+	printf("num_samples is %d\n",sig.num_samples());
+
+	for (i=0; i<sig.num_samples(); i++)
+	    sig.a(i) = 0;
+	s = 0;
+	for (j=0; j<lpc.num_frames(); j++)
+	{
+	    e = (int)(lpc.t(j)*(float)res.sample_rate());
+	    pow = 0;
+	    for (i=s; i<e; )
+	    {
+		abf = pow = 0;
+		for (q=0; ((q+i)<e)&&q<v; q++)
+		{
+		    abf +=res.a(i+q);
+		    pow += res.a(i+q)*res.a(i+q);
+		}
+		pow = sqrt(pow/(float)q);
+		for (q=0; ((q+i)<e)&&q<v; q++)
+		    sig.a(i+q) = (short)(pow*(abf/fabs(abf)));
+		i+=q;
+	    }
+	    s = e;
+	}
     }
 
-    lpos = 0.0;
-    for (k=i=0; i<pm_in.num_frames(); i++)
-    {
-	int pos = (int)(pm_in.t(i)*w.sample_rate());
-	if ((pm_in.t(i) - lpos) < minperiod)
-	{
-	    printf("skipping short period (%f) at time %f\n",
-		   (pm_in.t(i)-lpos), pm_in.t(i));
-	    continue;  // its too wee
-	}
-	else if ((pm_in.t(i)-lpos) > maxperiod)
-	{
-	    printf("splitting long period (%f) at time %f\n",
-		   (pm_in.t(i)-lpos), pm_in.t(i));
-	    pos = (int)((lpos+maxperiod)*w.sample_rate())-2*window;
-	    continue;
-	}
-	lpos = pm_in.t(i);
-#if 0
-	for (max=pos,j=pos-window; 
-	     (j > 0) && (j < w.num_samples()) && (j < pos+window);
-	     j++)
-	    if (w(j) > w(max))
-		max = j;
-	pm_out.t(k) = ((float)max)/w.sample_rate();
-	lpos = pm_out.t(k);
-	k++;
-
-	if (k>=pm_out.num_frames())
-	{
-	    printf("getting more pm space %d\n",k);
-	    pm_out.resize((int)((float)k*1.2),pm_out.num_channels());
-	}
-#endif
-    }
-
-    pm_out.resize(k,pm_in.num_channels());
-//    pm_out.save(al.val("-o"));
+    sig.save(al.val("-o"));
 
     return 0;
 }

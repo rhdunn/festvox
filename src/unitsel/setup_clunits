@@ -106,6 +106,10 @@ cp -p $FESTVOXDIR/src/general/make_pm_fix bin
 cp -p $FESTVOXDIR/src/general/make_f0 bin
 cp -p $FESTVOXDIR/src/general/find_powerfactors bin
 cp -p $FESTVOXDIR/src/general/simple_powernormalize bin
+cp -p $FESTVOXDIR/src/general/find_powercontours bin
+cp -p $FESTVOXDIR/src/general/contour_powernormalize bin
+cp -p $FESTVOXDIR/src/general/make_dist bin
+cp -p $FESTVOXDIR/src/general/make_cmn bin
 cp -p $FESTVOXDIR/src/general/traintest bin
 cp -p $FESTVOXDIR/src/general/emu_lab.tpl etc/emu_lab.tpl
 cp -p $FESTVOXDIR/src/general/emu_pm.tpl etc/emu_pm.tpl
@@ -133,6 +137,12 @@ then
 else
    FV_LANG_SKELS=general
 fi
+
+echo "FV_INST=$FV_INST" >etc/voice.defs
+echo "FV_LANG=$FV_LANG" >>etc/voice.defs
+echo "FV_NAME=$FV_NAME" >>etc/voice.defs
+echo "FV_VOICENAME=\$FV_INST\"_\"\$FV_LANG\"_\"\$FV_NAME" >>etc/voice.defs
+echo "FV_FULLVOICENAME=\$FV_VOICENAME\"_\"\$FV_TYPE" >>etc/voice.defs
 
 echo Generating clunits specific voice and build files
 for i in $FESTVOXDIR/src/unitsel/CLUNITS_clunits.scm \

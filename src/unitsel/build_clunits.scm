@@ -42,7 +42,7 @@
 (defvar INST_LANG_VOX::clunits_dir "CURRENTDIR")
 
 ;;; Basic voice definition file with voice defines and clunit
-;;; parameter definitoin for run time.
+;;; parameter definition for run time.
 (load "festvox/INST_LANG_VOX_clunits.scm")
 
 ;;; Add Build time parameters
@@ -222,6 +222,34 @@ them into the synthesizer utterance."
 		(item.feat (car actual-segments) "end"))
 	(error)))
       )
+
+    (mapcar
+     (lambda (a)
+      ;; shorten and split sliences
+      (while (and (string-equal (item.name a) silence)
+		  (> (item.feat a "segment_duration") 0.300))
+;              (format t "splitting %s silence of %f at %f\n"
+;		      (item.name a)
+;                      (item.feat a "segment_duration")
+;                      (item.feat a "end"))
+              (cond
+               ((string-equal "h#" (item.feat a "p.name"))
+                (item.set_feat (item.prev a) "end"
+                               (+ 0.150 (item.feat a "p.end"))))
+               ((and (string-equal silence (item.feat a "p.name"))
+                     (string-equal silence (item.feat a "p.p.name")))
+                (item.set_feat (item.prev a) "end"
+                               (+ 0.150 (item.feat a "p.end")))
+                (item.set_feat (item.prev a) "name" silence))
+               (t
+                (item.insert a
+                             (list silence
+                                   (list 
+                                    (list "end" 
+				      (+ 0.150 
+					(item.feat a "p.end")))))
+                             'before)))))
+     (utt.relation.items utt1 'Segment))
 
     (utt.relation.delete utt1 'actual-segment)
     (utt.set_feat utt1 "fileid" name)

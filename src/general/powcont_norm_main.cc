@@ -31,8 +31,12 @@
 /*                                                                       */
 /*************************************************************************/
 /*                                                                       */
-/*  Move the pitch mark to the nearest peak.  This shouldn't really be   */
-/*  necessary but it does help even for EGG extracted pms                */
+/*  Power normalised a waveform with a power contour specified as a      */
+/*  file of factors at points in the file                                */
+/*                                                                       */
+/*  This makes osme assumptions that aren't full general:                */
+/*     it doesn't normalized the from last label to end of waveform      */
+/*     (which is probably silence)                                       */
 /*                                                                       */
 /*************************************************************************/
 
@@ -42,85 +46,76 @@
 int main(int argc,char **argv)
 {
     EST_Wave w;
-    EST_Track pm_in, pm_out;
+    EST_Relation powcont;
     EST_Option al;
     EST_StrList files;
-    int i,j,window,max;
-    float maxperiod, minperiod;
-    int k;
-    float lpos;
+    EST_Item *powerpoint;
+    int i, end_sample, start_sample;
+    float factor,increment;
+    float maxthres = -1;
 
     parse_command_line
 	(argc,argv,
 	 EST_String("[options]")+
-	 "Summary: move pitchmark with respect to wave\n"+
+	 "Summary: normalise a waveform with a power contour labeled file\n"+
 	 "-h        Options help\n"+
 	 "-wave <ifile>\n"+
-	 "-pm <ifile>\n"+
-	 "-window <int> {16}\n"+
-	 "-max <float> {0.020}\n"+
-	 "-min <int> {0.0025}\n"+
+	 "-powcont <ifile>\n"+
+	 "-max <float> Absolute maximum/minimum (1/max) power modification\n"+
 	 "-o <ofile> Output pm file\n",
 	 files,al);
 
-    window = al.ival("-window");
-    maxperiod = al.fval("-max");
-    minperiod = al.fval("-min");
-    window = al.ival("-window");
     w.load(al.val("-wave"));
-    pm_in.load(al.val("-pm"));
-    pm_out.resize(pm_in.num_frames()+30,pm_in.num_channels());
-    pm_out.copy_setup(pm_in);
-
-    for (i=0; i<pm_in.num_frames(); i++)
+    powcont.load(al.val("-powcont"));
+    if (al.present("-max"))
     {
-	int pos = (int)(pm_in.t(i)*w.sample_rate());
-	for (max=pos,j=pos-window; 
-	     (j > 0) && (j < w.num_samples()) && (j < pos+window);
-	     j++)
-	    if (w(j) > w(max))
-		max = j;
-	pm_out.t(i) = ((float)max)/w.sample_rate();
+	maxthres = al.fval("-max");
+	for (powerpoint = powcont.head(); powerpoint; 
+	     powerpoint = next(powerpoint))
+	{
+	    if (fabs(powerpoint->F("name")) > maxthres)
+		powerpoint->set("name",maxthres);
+	    if (fabs(powerpoint->F("name")) < 1.0/maxthres)
+		powerpoint->set("name",1.0/maxthres);
+	}
     }
 
-    lpos = 0.0;
-    for (k=i=0; i<pm_in.num_frames(); i++)
+    powerpoint = powcont.head();
+    increment = 0.0;
+    end_sample = w.num_samples();
+    if (powerpoint == 0)
+	factor = 1.0;
+    else
     {
-	int pos = (int)(pm_in.t(i)*w.sample_rate());
-	if ((pm_in.t(i) - lpos) < minperiod)
-	{
-	    printf("skipping short period (%f) at time %f\n",
-		   (pm_in.t(i)-lpos), pm_in.t(i));
-	    continue;  // its too wee
-	}
-	else if ((pm_in.t(i)-lpos) > maxperiod)
-	{
-	    printf("splitting long period (%f) at time %f\n",
-		   (pm_in.t(i)-lpos), pm_in.t(i));
-	    pos = (int)((lpos+maxperiod)*w.sample_rate())-2*window;
-	    continue;
-	}
-	lpos = pm_in.t(i);
-#if 0
-	for (max=pos,j=pos-window; 
-	     (j > 0) && (j < w.num_samples()) && (j < pos+window);
-	     j++)
-	    if (w(j) > w(max))
-		max = j;
-	pm_out.t(k) = ((float)max)/w.sample_rate();
-	lpos = pm_out.t(k);
-	k++;
-
-	if (k>=pm_out.num_frames())
-	{
-	    printf("getting more pm space %d\n",k);
-	    pm_out.resize((int)((float)k*1.2),pm_out.num_channels());
-	}
-#endif
+	factor = powerpoint->F("name");
+	end_sample = (int)(powerpoint->F("end")*(float)w.sample_rate());
     }
 
-    pm_out.resize(k,pm_in.num_channels());
-//    pm_out.save(al.val("-o"));
+    for (i=0; i<w.num_samples(); i++,factor+=increment)
+    {
+	w.a(i) = (short)((float)w.a(i) * factor);
+//	printf("factor %f increment %f end_sample %d %d\n",
+//	       factor,increment,end_sample,i);
+	if (i == end_sample)
+	{
+	    powerpoint = next(powerpoint);
+	    if (powerpoint == 0)
+		break;
+	    start_sample = end_sample;
+	    end_sample = (int)(powerpoint->F("end") * (float)w.sample_rate());
+//	    printf("es %d ss %d end %f sample_rate %d\n",
+//		   end_sample,start_sample,powerpoint->F("end"),
+//		   w.sample_rate());
+	    increment = (powerpoint->F("name")-factor)/
+		((float)(end_sample-start_sample));
+//	    printf("f %f nf %f icr %f\n",
+//		   factor,
+//		   powerpoint->F("name"),
+//		   increment);
+	}
+    }
+
+    w.save(al.val("-o"));
 
     return 0;
 }

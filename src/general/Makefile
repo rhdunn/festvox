@@ -38,17 +38,20 @@ TOP=../../
 DIRNAME=src/general
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-SRCS = phonealign_main.cc fix_pm_main.cc smooth_f0_main.cc
+SRCS = phonealign_main.cc fix_pm_main.cc smooth_f0_main.cc mplpc_main.cc \
+       powcont_norm_main.cc cmn_main.cc
 EMUTPL = emu_lab.tpl emu_sg.tpl emu_f0.tpl emu_pm.tpl emu_single_f0.tpl
 SCRIPTS = find_unknowns.sh make_dirs make_lpc make_pm \
           make_pm_epochs make_pm_wave make_f0 \
           make_pmlab_pm make_pm_pmlab \
           display_sg display_f0 find_powerfactors \
           prompt_them make_labs play_them phonealign_test \
-          align_phones make_pm_fix simple_powernormalize traintest
+          align_phones make_pm_fix simple_powernormalize traintest \
+          find_powercontours contour_powernormalize \
+          make_dist guess_voice_defs make_cmn
 FILES = Makefile $(SCRIPTS) $(EMUTPL) $(SRCS) 
 
-ALL = find_unknowns phonealign fix_pm smooth_f0
+ALL = find_unknowns phonealign fix_pm smooth_f0 mplpc powcont_norm cmn
 
 include $(TOP)/config/common_make_rules
 
@@ -66,7 +69,7 @@ ESTLIBS=-L$(ESTDIR)/lib -lestools -lestbase -leststring $(COMPILERLIBS) -lm $(OS
 
 CXXFLAGS += $(ESTINC)
 
-LOCAL_CLEAN = phonealign fix_pm smooth_f0
+LOCAL_CLEAN = phonealign fix_pm smooth_f0 mplpc powcont_norm
 
 phonealign: phonealign_main.o $(LIBDEPS)
 	$(strip $(LINK_COMMAND)) -o phonealign phonealign_main.o $(ESTLIBS)
@@ -76,10 +79,26 @@ fix_pm: fix_pm_main.o $(LIBDEPS)
 	$(strip $(LINK_COMMAND)) -o fix_pm fix_pm_main.o $(ESTLIBS)
 fix_pm_main.o: fix_pm_main.cc 
 	$(strip $(CXX_COMMAND)) -c -o fix_pm_main.o fix_pm_main.cc
+fix_egg: fix_egg_main.o $(LIBDEPS)
+	$(strip $(LINK_COMMAND)) -o fix_egg fix_egg_main.o $(ESTLIBS)
+fix_egg_main.o: fix_egg_main.cc 
+	$(strip $(CXX_COMMAND)) -c -o fix_egg_main.o fix_egg_main.cc
 smooth_f0: smooth_f0_main.o $(LIBDEPS)
 	$(strip $(LINK_COMMAND)) -o smooth_f0 smooth_f0_main.o $(ESTLIBS)
 smooth_f0_main.o: smooth_f0_main.cc 
 	$(strip $(CXX_COMMAND)) -c -o smooth_f0_main.o smooth_f0_main.cc
+mplpc: mplpc_main.o $(LIBDEPS)
+	$(strip $(LINK_COMMAND)) -o mplpc mplpc_main.o $(ESTLIBS)
+mplpc_main.o: mplpc_main.cc 
+	$(strip $(CXX_COMMAND)) -c -o mplpc_main.o mplpc_main.cc
+powcont_norm: powcont_norm_main.o $(LIBDEPS)
+	$(strip $(LINK_COMMAND)) -o powcont_norm powcont_norm_main.o $(ESTLIBS)
+powcont_norm_main.o: powcont_norm_main.cc 
+	$(strip $(CXX_COMMAND)) -c -o powcont_norm_main.o powcont_norm_main.cc
+cmn: cmn_main.o $(LIBDEPS)
+	$(strip $(LINK_COMMAND)) -o cmn cmn_main.o $(ESTLIBS)
+cmn_main.o: cmn_main.cc 
+	$(strip $(CXX_COMMAND)) -c -o cmn_main.o cmn_main.cc
 
 find_unknowns: find_unknowns.sh
 	@echo making find_unknowns script

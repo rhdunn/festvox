@@ -48,7 +48,7 @@
 ###########################################################################
 TOP=.
 DIRNAME=.
-BUILD_DIRS = src doc docbook
+BUILD_DIRS = src doc
 ALL_DIRS=config festvox.org course $(BUILD_DIRS)
 OTHERS = README ACKNOWLEDGEMENTS ANNOUNCE-1.1 ANNOUNCE-1.2
 FILES = Makefile $(OTHERS)
@@ -56,7 +56,7 @@ FILES = Makefile $(OTHERS)
 ALL = $(BUILD_DIRS)
 
 # Try and say if config hasn't been created
-config_dummy := $(shell test -f config/config || { echo '*** '; echo '*** Please Copy config/config-dist to config and edit to set options ***'; echo '*** '; }  >&2)
+config_dummy := $(shell test -f config/config || { echo '*** '; echo '*** Making default config file ***'; echo '*** '; cat config/config-dist >config/config }  >&2)
 
 # force a check on the system file
 system_dummy := $(shell $(MAKE) -C $(TOP)/config -f make_system.mak TOP=.. system.mak)
@@ -98,7 +98,9 @@ time-stamp :
 	@ echo $(PROJECT_NAME) >.time-stamp
 	@ echo $(PROJECT_PREFIX) >>.time-stamp
 	@ echo $(PROJECT_VERSION) >>.time-stamp
-	@ echo $(PROJECT_DATA) >>.time-stamp
+	@ echo $(PROJECT_DATE) >>.time-stamp
 	@ echo $(PROJECT_STATE) >>.time-stamp
+	@ echo $(LOGNAME) >>.time-stamp
+	@ hostname >>.time-stamp
 	@ date >>.time-stamp
 

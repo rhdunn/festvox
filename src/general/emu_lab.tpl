@@ -21,7 +21,7 @@ labfile Phonetic :format ESPS :type SEGMENT :mark END :extension lab :time-facto
 ! modify this if you install this template file somewhere other than
 ! in the database directory
 path lab lab
-path hlb /tmp
+path hlb emu/lab_hlb
 path wav wav
 
 ! definition of associations between tracks and file extensions

@@ -106,7 +106,11 @@ Say the givens time, e.g. \"11:23\" with the current voice."
 	(min (car (cdr time)))
 	(sec (car (cdr (cdr time)))))
     (set! min (round-min (+ 2 min)))
-    (list hour min sec)))
+    (if (> min 55)
+	(if (> hour 23)
+	    (list 1 0 sec)
+	    (list (+ 1 hour) 0 sec))
+	(list hour min sec))))
 
 (define (round-min min)
 "Returns minutes rounded down to nearest 5 minute interval"
