@@ -1,0 +1,6 @@
+@chapter Festival Speech Synthesis System
+
+Overview of system, and background.
+
+Basic use, and layout of scheme/c++ etc.
+

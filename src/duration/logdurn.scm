@@ -30,50 +30,100 @@
 ;;; THIS SOFTWARE.                                                      ;;;
 ;;;                                                                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;                                                                     ;;;
-;;; Code for building data for prompts and aligning                     ;;;
-;;;                                                                     ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;  log and/or zscore duration
+;;;
 
-(define (do_prompt name text) 
-  (let ((utt1 (utt.synth (eval (list 'Utterance 'Text text)))))
-    (utt.save.segs utt1 (format nil "prompt-lab/%s.lab" name))
-    (utt.save.wave utt1 (format nil "prompt-wav/%s.wav" name))))
+(set! seg_dur_info (load "festival/dur/etc/durs.meanstd" t))
 
-(define (build_prompts file)
-  (voice_kal_diphone) 
- (let ((p (load file t)))
-    (mapcar
-     (lambda (l)
-       (format t "%s\n" (car l))
-       (do_prompt (car l) (cadr l)))
-     p)
-    t))
+(define (zscore_log_dur seg)
+  (let ((di (assoc (item.name seg) seg_dur_info)))
+    (cond
+     ((not di)
+      (format stderr "zscore_log_dur: %s no info found\n" 
+	      (item.name seg))
+      (/ (- (log 0.100)
+	    (car (cdr di)))
+	 (car (cdr (cdr di))))      )
+     (t
+      (/ (- (log (item.feat seg "segment_duration"))
+	    (car (cdr di)))
+	 (car (cdr (cdr di))))))))
 
-(define (build_utts file)
-  (voice_kal_diphone)
-  (let ((p (load file t)))
-    (mapcar
-     (lambda (l)
-       (format t "%s\n" (car l))
-       (align_utt (car l) (cadr l)))
-     p)
-    t))
+(define (zscore_dur seg)
+  (let ((di (assoc_string (item.name seg) seg_dur_info)))
+    (cond
+     ((not di)
+      (format stderr "zscore_dur: %s no info found\n" 
+	      (item.name seg))
+      (/ (- 0.100
+	    (car (cdr di)))
+	 (car (cdr (cdr di))))      )
+     (t
+      (/ (- (item.feat seg "segment_duration")
+	    (car (cdr di)))
+	 (car (cdr (cdr di))))))))
 
-(define (align_utt name text)
-  (let ((utt1 (utt.synth (eval (list 'Utterance 'Text text)))))
-    (utt.relation.load utt1 'actual-segment 
-		       (format nil "lab/%s.lab" name))
-    (mapcar
-     (lambda (a b)
-       (item.set_feat a "end" (item.feat b "end")))
-     (utt.relation.items utt1 'Segment)
-     (utt.relation.items utt1 'actual-segment))
-    (utt.relation.delete utt1 'actual-segment)
-    (utt.set_feat utt1 "fileid" name)
-    (utt.save utt1 (format nil "festival/utts/%s.utt" name))
-    t))
 
-(provide 'ldom)
 
+(define (onset_has_ctype seg type)
+  ;; "1" if onset contains ctype
+  (let ((syl (item.relation.parent seg 'SylStructure)))
+    (if (not syl)
+	"0" ;; a silence 
+	(let ((segs (item.relation.daughters syl 'SylStructure))
+	      (v "0"))
+	  (while (and segs 
+		      (not (string-equal 
+			    "+" 
+			    (item.feat (car segs) "ph_vc"))))
+		 (if (string-equal 
+		      type
+		      (item.feat (car segs) "ph_ctype"))
+		     (set! v "1"))
+		 (set! segs (cdr segs)))
+	  v))))
+
+(define (coda_has_ctype seg type)
+  ;; "1" if coda contains ctype
+  (let ((syl (item.relation.parent seg 'SylStructure)))
+    (if (not syl)
+	"0" ;; a silence 
+	(let ((segs (reverse (item.relation.daughters
+			      syl 'SylStructure)))
+	      (v "0"))
+	  (while (and segs 
+		      (not (string-equal 
+			    "+" 
+			    (item.feat (car segs) "ph_vc"))))
+		 (if (string-equal 
+		      type
+		      (item.feat (car segs) "ph_ctype"))
+		     (set! v "1"))
+		 (set! segs (cdr segs)))
+	  v))))
+
+(define (onset_stop seg)
+  (onset_has_ctype seg "s"))
+(define (onset_fric seg)
+  (onset_has_ctype seg "f"))
+(define (onset_nasal seg)
+  (onset_has_ctype seg "n"))
+(define (onset_glide seg)
+  (let ((l (onset_has_ctype seg "l")))
+    (if (string-equal l "0")
+	(onset_has_ctype seg "r")
+	"1")))
+
+(define (coda_stop seg)
+  (coda_has_ctype seg "s"))
+(define (coda_fric seg)
+  (coda_has_ctype seg "f"))
+(define (coda_nasal seg)
+  (coda_has_ctype seg "n"))
+(define (coda_glide seg)
+  (let ((l (coda_has_ctype seg "l")))
+    (if (string-equal l "0")
+	(coda_has_ctype seg "r")
+	"1")))
+  

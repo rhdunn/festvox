@@ -44,8 +44,6 @@
 (set! onset-only '(hh y w))
 (set! nocvcs '(y w r l m n ng))
 (set! coda-only '(ng))
-(set! syllabics '(el em en))
-(set! special '(dx))  ;; glottal stops ?
 (set! silence 'pau)
 ;; for consonant clusters
 (set! stops '(p b t d k g))
@@ -56,12 +54,13 @@
        (apply
 	append
 	(mapcar (lambda (b) (mapcar (lambda (a) (list a b)) stops)) liquids))
-       (mapcar (lambda (b) (list 's b)) '(l w n m p t k))
+       (mapcar (lambda (b) (list 's b)) '(l w n m p t k f))
        (mapcar (lambda (b) (list 'f b)) '(l r ))))
 (set! clusters2
       (mapcar (lambda (b) (list b 'y))  (append stops nasals '(s f v hh))))
 
 (set! cvc-carrier '((pau t aa ) (aa pau)))
+(set! ooer-carrier '((pau t aa ) (aa pau)))
 (set! vc-carrier '((pau t aa t) (aa pau)))
 (set! cv-carrier '((pau t aa ) (t aa pau)))
 (set! cc-carrier '((pau t aa ) (aa t aa pau)))
@@ -84,6 +83,9 @@
 (set! syllabics-carrier2 '((pau t aa t) (aa pau))) ;; syl-c
 (set! syllabics-carrier3 '((pau t aa t) (t aa pau))) ;; syl-v
 (set! syllabics-carrier4 '((pau t aa t) (t aa pau))) ;; syl-syl
+;;; taps
+(set! taps1 '((pau t ) ( dx ax l pau)))
+(set! taps2 '((pau t aa ) ( dx ax l pau)))
 
 ;;; These functions simply fill out the nonsense words
 ;;; from the carriers and vowel consonant definitions
@@ -152,6 +154,14 @@
 	(append (car cc-carrier) (list c1 '- c2) (car (cdr cc-carrier)))))
        (remove-list consonants coda-only)))
     (remove-list consonants onset-only))))
+
+(define (list-ooer)
+  (mapcar 
+   (lambda (o) 
+     (list
+      (list (string-append o "-" "er"))
+      (append (car ooer-carrier) (list o "er") (car (cdr ooer-carrier)))))
+   onset-only))
 
 (define (list-silv)
   (mapcar 
@@ -250,6 +260,24 @@
 	vowels))
        syllabics))))
 
+(define (list-taps)
+  (append
+   (mapcar
+    (lambda (v1)
+      (list
+       (if (string-equal v1 "aa")
+	   (list (string-append v1 "-dx")
+		 (string-append "dx-ax"))
+	   (list (string-append v1 "-dx")))
+       (append (car taps1) (list v1) (car (cdr taps1)))))
+    (delq 'ax vowels))
+   (mapcar
+    (lambda (c1)
+      (list
+       (list (string-append c1 "-dx"))
+       (append (car taps2) (list c1) (car (cdr taps2)))))
+    '(n r))))
+
 ;;; End of individual generation functions
 
 (define (diphone-gen-list)
@@ -263,11 +291,13 @@ Returns a list of nonsense words as phone strings."
    (list-ccs)  ;; consonant-consonant
    (list-ccclust1)   ;; consonant clusters
    (list-ccclust2)   ;; consonant clusters
+   (list-ooer) 
 ;   (list-syllabics)
    (list-silv)
    (list-silc)
    (list-csil)
    (list-vsil)
+   (list-taps)
    (list
     '(("pau-pau") (pau t aa t aa pau pau)))
 ;   (list-vcopen)    ;; open vowels
@@ -282,21 +312,8 @@ specific to this particulat phone set."
    (lambda (s)
      (let ((n (item.name s)))
        (cond
-	((string-equal n "el")
-	 (item.set_name s "l"))
-	((string-equal n "em")
-	 (item.set_name s "m"))
-	((string-equal n "en")
-	 (item.set_name s "n"))
-	((string-equal n "er")
-	 ;; ked doesn't deal with er properly so we need to insert 
-	 ;; an r after the er to get this to work reasonably
-	 (let ((newr (item.insert s (list 'r) 'after)))
-	   (item.set_feat newr "end" (item.feat s "end"))
-	   (item.set_feat s "end" 
-			  (/ (+ (item.feat s "segment_start")
-				(item.feat s "end"))
-			     2))))
+	((string-equal n "dx")
+	 (item.set_feat s "us_diphone" "d"))
 	)))
    (utt.relation.items utt 'Segment))
   )

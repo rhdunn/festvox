@@ -193,18 +193,20 @@ Set speaker to VOX in us from INST."
   (set! int_tone_cart_tree f2b_int_tone_cart_tree)
   (set! int_accent_cart_tree f2b_int_accent_cart_tree)
 
+  (Parameter.set 'Int_Method Intonation_Tree)
+
   (set! postlex_vowel_reduce_cart_tree 
 	postlex_vowel_reduce_cart_data)
   ;; F0 prediction
   (set! f0_lr_start f2b_f0_lr_start)
   (set! f0_lr_mid f2b_f0_lr_mid)
   (set! f0_lr_end f2b_f0_lr_end)
-  (Parameter.set 'Int_Method Intonation_Tree)
+
   (set! int_lr_params INST_uk_VOX_int_lr_params)
   (Parameter.set 'Int_Target_Method Int_Targets_LR)
   ;; Duration prediction
-  (set! duration_cart_tree INST_uk_dur_tree)
-  (set! duration_ph_info INST_uk_VOX_phone_durs)
+  (set! duration_cart_tree INST_uk_VOX::zdur_tree)
+  (set! duration_ph_info INST_uk_VOX::phone_durs)
   (Parameter.set 'Duration_Method 'Tree_ZScores)
   (Parameter.set 'Duration_Stretch 1.1)
 
@@ -233,6 +235,6 @@ Set speaker to VOX in us from INST."
    (description
     "COMMENT"
     )
-   (builtwith festvox-1.1)))
+   (builtwith festvox-1.2)))
 
 (provide 'INST_uk_VOX_diphone)

@@ -30,15 +30,20 @@
 ##  THIS SOFTWARE.                                                       ##
 ##                                                                       ##
 ###########################################################################
-###                                                                       ##
-###  Makefile for diphone specific scripts                                ##
-###                                                                       ##
-############################################################################
+###                                                                      ##
+###  Makefile for LDOM specific scripts, examples and template files     ##
+###                                                                      ##
+###########################################################################
 TOP=../../
 DIRNAME=src/ldom
-SCRIPTS = build_ldom setup_ldom
-SCMFILES = LDOM_ldom.scm LDOM_build.scm ldom.scm time.scm tel.scm
-LDOMDATA = time.data tel.data
+SCRIPTS = build_ldom setup_ldom data_select
+GENSCMFILES = LDOM_ldom.scm build_ldom.scm LDOM-mode.scm
+# these'll get deleted sometime
+OLDSCMFILES = LDOM-mode.scm
+EXAMPLESCMFILES = time.scm tel.scm
+SCMFILES = $(GENSCMFILES) $(EXAMPLESCMFILES) $(OLDSCMFILES)
+EXAMPLELDOMDATA = time.data tel.data 
+LDOMDATA = $(EXAMPLELDOMDATA)
 DATAFILES = all.desc ldom.desc
 FILES = Makefile $(SCRIPTS) $(SRCS) $(SCMFILES) $(DATAFILES) $(LDOMDATA)
 

@@ -30,23 +30,56 @@
 ##  THIS SOFTWARE.                                                       ##
 ##                                                                       ##
 ###########################################################################
-###                                                                       ##
-###  Makefile for general scripts                                         ##
-###                                                                       ##
-############################################################################
+##                                                                       ##
+##  Makefile for general scripts                                         ##
+##                                                                       ##
+###########################################################################
 TOP=../../
 DIRNAME=src/general
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-EMUTPL = emu_lab.tpl emu_sg.tpl emu_f0.tpl emu_pm.tpl
+SRCS = phonealign_main.cc fix_pm_main.cc smooth_f0_main.cc
+EMUTPL = emu_lab.tpl emu_sg.tpl emu_f0.tpl emu_pm.tpl emu_single_f0.tpl
 SCRIPTS = find_unknowns.sh make_dirs make_lpc make_pm \
-          make_pm_epochs make_pm_lab make_pm_wave \
-          display_sg
-FILES = Makefile $(SCRIPTS) $(EMUTPL)
+          make_pm_epochs make_pm_wave make_f0 \
+          make_pmlab_pm make_pm_pmlab \
+          display_sg display_f0 find_powerfactors \
+          prompt_them make_labs play_them phonealign_test \
+          align_phones make_pm_fix simple_powernormalize traintest
+FILES = Makefile $(SCRIPTS) $(EMUTPL) $(SRCS) 
 
-ALL = find_unknowns
+ALL = find_unknowns phonealign fix_pm smooth_f0
 
 include $(TOP)/config/common_make_rules
+
+# Try and say if EST's config is where its said to be
+estconfig_dummy := $(shell test -f $(ESTDIR)/config/config || { echo '*** '; echo '*** Speech Tools config not found in '; echo '*** $(ESTDIR)/config/config.'; echo '*** Check EST installation and/or ESTDIR in festvox/config/config '; echo '*** '; }  >&2)
+
+# GCC and systems settings got from EST's config
+EST=$(ESTDIR)
+include $(ESTDIR)/config/config
+include $(ESTDIR)/config/rules/defaults.mak
+include $(ESTDIR)/config/rules/compile_options.mak
+
+ESTINC=-I$(ESTDIR)/include
+ESTLIBS=-L$(ESTDIR)/lib -lestools -lestbase -leststring $(COMPILERLIBS) -lm $(OS_LIBS)
+
+CXXFLAGS += $(ESTINC)
+
+LOCAL_CLEAN = phonealign fix_pm smooth_f0
+
+phonealign: phonealign_main.o $(LIBDEPS)
+	$(strip $(LINK_COMMAND)) -o phonealign phonealign_main.o $(ESTLIBS)
+phonealign_main.o: phonealign_main.cc 
+	$(strip $(CXX_COMMAND)) -c -o phonealign_main.o phonealign_main.cc
+fix_pm: fix_pm_main.o $(LIBDEPS)
+	$(strip $(LINK_COMMAND)) -o fix_pm fix_pm_main.o $(ESTLIBS)
+fix_pm_main.o: fix_pm_main.cc 
+	$(strip $(CXX_COMMAND)) -c -o fix_pm_main.o fix_pm_main.cc
+smooth_f0: smooth_f0_main.o $(LIBDEPS)
+	$(strip $(LINK_COMMAND)) -o smooth_f0 smooth_f0_main.o $(ESTLIBS)
+smooth_f0_main.o: smooth_f0_main.cc 
+	$(strip $(CXX_COMMAND)) -c -o smooth_f0_main.o smooth_f0_main.cc
 
 find_unknowns: find_unknowns.sh
 	@echo making find_unknowns script

@@ -33,7 +33,7 @@
 ;;;   Basically copied from ked
 ;;;
 
-(set! INST_us_VOX_phone_durs
+(set! INST_us_VOX::phone_durs
 '(
   (uh 0.067 0.025)
   (hh 0.061 0.028)
@@ -88,7 +88,7 @@
 )
 )
 
-(set! INST_us_dur_tree
+(set! INST_us_VOX::zdur_tree
 '
 ((name is pau)
  ((emph_sil is +)

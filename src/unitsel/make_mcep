@@ -31,10 +31,10 @@
 ##  THIS SOFTWARE.                                                       ##
 ##                                                                       ##
 ###########################################################################
-###                                                                       ##
-###  Generate MEL-cepstrum acoustic parameter files for unit selection    ##
-###                                                                       ##
-############################################################################
+##                                                                       ##
+##  Generate MEL-cepstrum acoustic parameter files for unit selection    ##
+##                                                                       ##
+###########################################################################
 
 if [ ! "$ESTDIR" ]
 then

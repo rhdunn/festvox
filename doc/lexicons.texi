@@ -8,16 +8,16 @@ sound rules.
 @section Word pronunciations
 
 A pronunciation in Festival requires not just a list of
-phones but also a syllabic structure.  In some language sthe
+phones but also a syllabic structure.  In some languages the
 syllabic structure is very simple and well defined and
-can be unabiguously derived from a phone string.  In English
+can be unambiguously derived from a phone string.  In English
 however this may not always be the case (compound nouns
 being the difficult case).  
 
 The lexicon structure that is basically available in Festival takes both
 a word and a part of speech (and arbitrary token) to find the given
-pronunciation.  For English this is probabaly the optimal form, although
-there exist homogrpahs in the language, the word itself and a fairly
+pronunciation.  For English this is probably the optimal form, although
+there exist homographs in the language, the word itself and a fairly
 broad part of speech tag will mostly identify the proper pronunciation.
 
 An example entry is 
@@ -26,10 +26,10 @@ An example entry is
  n
  (((f @ ) 0) ((t o g) 1) ((r @ f) 0) ((ii) 0)))
 @end lisp
-Not that in addition to explicit marking of sylables a stress 
+Not that in addition to explicit marking of syllables a stress 
 value is also given (0 or 1).  In some languages lexical is
 fully predictable, in others highly irregular.  In some this
-field may be more approriately used for an other purpose,
+field may be more appropriately used for an other purpose,
 e.g. tone type in Chinese. 
 
 There may be other languages which require a more complex (less
@@ -37,12 +37,12 @@ complex) format and the decision to use some other format rather
 than this one is up to you.
 
 @cindex morphology
-Currently there is only residual support fo morphological analysis in
-Festival.  A finite state tranducer based analyser for English based on
+Currently there is only residual support for morphological analysis in
+Festival.  A finite state transducer based analyzer for English based on
 the work in @cite{ritchie92} is included in
 @file{festival/lib/engmorph.scm} and
 @file{festival/lib/engmorphsyn.scm}.  But this should be considered
-experimental at best.  Give the lack of such an analyser our lexicons
+experimental at best.  Give the lack of such an analyzer our lexicons
 need to list not only based forms of words but also all their
 morphological variants.  This is (more or less) acceptable in languages
 such as English or French but which languages with richer morphology
@@ -50,22 +50,22 @@ such as German it may seem an unnecessary requirement.  Agglutenative
 languages such as Finnish and Turkish this appears to be even more a
 restriction.  This is probably true but this current restriction
 not necessary hopeless.  We have successfully build very good
-letter to sound rules for German, a language with a rich morphology
-which allows the system to properly predict pronounciations of
-morhological variants of root words it has not seen before.
+letter-to-sound rules for German, a language with a rich morphology
+which allows the system to properly predict pronunciations of
+morphological variants of root words it has not seen before.
 We have not yet done any experiments with Finnish or Turkish
 but see this technique would work, (though of course developing
-a properly morphological analyser would be better).
+a properly morphological analyzer would be better).
 
 @section Lexicons and addenda
 
 The basic assumption in Festival is that you will have a large lexicon,
 tens of thousands of entries, that is a used as a standard part of an
-implementation of a voice.  Letter to sound rules are used as back up
+implementation of a voice.  Letter-to-sound rules are used as back up
 when a word is not explicitly listed.  This view is based on how English
 is best dealt with.  However this is a very flexible view, An explicit
-lexicon isn't necessary in Festival and it may be possibel to do much of
-the work in letter to sound rules.  This is how we have implemented
+lexicon isn't necessary in Festival and it may be possible to do much of
+the work in letter-to-sound rules.  This is how we have implemented
 Spanish.  However even when there is strong relationship between the
 letters in a word and their pronunciation we still find the a lexicon
 useful.  For Spanish we still use the lexicon for symbols such as
@@ -80,17 +80,17 @@ lexicon.
 @section Out of vocabulary words
 
 Because its impossible to list all words in a natural language for
-general text to speech you will need to provide something to pronounce
-out of vocabulary words.  In some language sthis is easy but in other's
+general text-to-speech you will need to provide something to pronounce
+out of vocabulary words.  In some languages this is easy but in other's
 it is very hard.  No matter what you do you @emph{must} provide
 something even if it is simply replacing the unknown word with the word
 @samp{unknown} (or its local language equivalent).  By default a lexicon
 in Festival will throw an error if a requested word isn't found.  To
 change this you can set the @code{lts_method}.  Most usefully you can
 reset this to the name of function, which takes a word and a part of
-speech specification and returns a word pronuciation as described above.
+speech specification and returns a word pronunciation as described above.
 
-FOr example is we are always going to return the 
+For example is we are always going to return the 
 word @code{unknown} but print a warning the the word is being
 ignored a suitable function is
 @lisp
@@ -112,7 +112,7 @@ information to be passed over to the listener.  This can be done
 with the out of vocabulary function, as follows.
 @lisp
 (define (mylex_lts_function word feats)
-"Deal with out of vocabulary wordm by spelling out the letters in the
+"Deal with out of vocabulary words by spelling out the letters in the
 word."
  (if (equal? 1 (length word))
      (begin
@@ -128,26 +128,26 @@ word."
          (car (cdr (cdr (lex.lookup letter 'n)))))
         (symbolexplode word))))))
 @end lisp
-A few point are worth noting in this function.  This recusively calls
+A few point are worth noting in this function.  This recursively calls
 the lexical lookup function on the characters in a word.  Each letter
-should appear in the lexicon with its pronuncitation (in isolation).
+should appear in the lexicon with its pronunciation (in isolation).
 But a check is made to ensure we don't recurse for ever.  The
 @code{symbolexplode} function assumes that that letters are single
 bytes, which may not be true for some languages and that function would
 need to be replaced for that language.  Note that we append the
-syllables of each of the letters int he word.  For long words this might
+syllables of each of the letters in the word.  For long words this might
 be too naive as there could be internal prosodic structure in such a
 spelling that this method would not allow for.  In that case you would
-want letters to be words thus the symbol expolsion to happen at the
+want letters to be words thus the symbol explosion to happen at the
 token to word level.  Also the above function assumes that the part of
 speech for letters is @code{n}.  This is only really important where
-letters are homographs in languages so this can be used to distingush
+letters are homographs in languages so this can be used to distinguish
 which pronunciation you require (cf. @samp{a} in English or @samp{y} in
 French).
 
-@section Letter to sound rules by hand
+@section Letter-to-sound rules by hand
 
-@cindex letter to sound rules by hand
+@cindex letter-to-sound rules by hand
 @cindex LTS
 For many languages there is a systematic relationship between the
 written form of a word and its pronunciation.  For some language this
@@ -162,11 +162,11 @@ unsuitable as a notation for hand specification.
 When writing a rule system it is often useful to do it in multiple
 passes.  The Spanish diphone voice distributed as
 @file{festvox_ellpc11k.tar.gz} offers a good example of such 
-a use. A set of cascaded LTS rule sets is used to trasnfer
+a use. A set of cascaded LTS rule sets is used to transfer
 the basic word to a full accented, syllabified string of symbols which
 is then converted into the bracketed from used by Festival.  The
-levels are normalisations (downcasing and accent normalization), 
-convertion to pronunciation, syllabification, stress and finally
+levels are normalizations (downcasing and accent normalization), 
+conversion to pronunciation, syllabification, stress and finally
 identifying weak vowels.  Splitting the conversion tasks like
 this can often make writing the rules much easier, though care should
 be taken to ensure you don't mix up what you think are letters
@@ -176,19 +176,19 @@ The LTS rule system is a little primitive and lacks some syntactic sugar
 (sets etc.) that would make writing rules easier.  In their present form
 you need to be very explicit.  Testing your rule set can be done in
 Festival in isolation (and should be done so, rather than by actual
-synthesis).  The funciton @code{lts.apply} allows you to apply a LTS
+synthesis).  The function @code{lts.apply} allows you to apply a LTS
 rule set to a word or list of symbols.  See the manual and the
 Spanish example for more details.
 
-@section Building letter to sound rules
+@section Building letter-to-sound rules
 
 For some languages the writing of a rule system is too difficult.
-Although there have been many valiant attempts to do so for language
-slike English life is basically too short to do this.  Therefore we also
+Although there have been many valiant attempts to do so for languages
+like English life is basically too short to do this.  Therefore we also
 include a method for automatically building LTS rules sets for a lexicon
 of pronunciations.  This technique has successfully been used from
 English (British and American), French and German.  The difficulty and
-appropriateness of using letter to sound rules is very language
+appropriateness of using letter-to-sound rules is very language
 dependent,
 
 The following outlines the processes involved in building a letter to
@@ -221,8 +221,8 @@ Building additional lexical stress assignment model (if necessary).
 All except the first two stages of this are fully automatic.
 
 Before building a model its wise to think a little about what you want
-it to do.  Ideally the model is an auxiluary to the lexicon so only
-words not found in the lexicon will require use of the letter to sound
+it to do.  Ideally the model is an auxiliary to the lexicon so only
+words not found in the lexicon will require use of the letter-to-sound
 rules.  Thus only unusual forms are likely to require the rules.  More
 precisely the most common words, often having the most non-standard
 pronunciations, should probably be explicitly listed always.  It is
@@ -248,9 +248,9 @@ in the previous section.
 First preprocess the lexicon into a file of lexical entries to be used
 for training, removing functions words and changing the head words to
 all lower case (may be language dependent).  The entries should be of
-the form used for input for Festival's lexicon compilation.  Specifical
+the form used for input for Festival's lexicon compilation.  Specifically
 the pronunciations should be simple lists of phones (no
-syllabification).  Depending on the language, you may wish to remve the
+syllabification).  Depending on the language, you may wish to remove the
 stressing---for examples here we have though later tests suggest that we
 should keep it in even for English.  Thus the training set should look
 something like
@@ -266,7 +266,7 @@ say the last ten in every hundred.
 
 The second stage is to define the set of allowable letter to phone
 mappings irrespective of context.  This can sometimes be initially done
-by hand then checked against the training set.  Initially constract a
+by hand then checked against the training set.  Initially construct a
 file of the form
 @lisp
 (require 'lts_build)
@@ -305,7 +305,7 @@ Add @code{ah} to the allowables for letter @code{a}, @code{b} to
 @code{b}, @code{ey} to @code{a} and @code{t} to letter @code{t}.  After
 doing that restart festival and call @code{cummulate-pairs} again.
 Incrementally add to the allowable pairs until the number of failures
-becomes accceptable.  Often there are entries for which there is no real
+becomes acceptable.  Often there are entries for which there is no real
 relationship between the letters and the pronunciation such as in
 abbreviations and foreign words (e.g. "aaa" as "t r ih p ax l ey").  For
 the lexicons I've used the technique on less than 10 per thousand fail
@@ -319,7 +319,7 @@ It is worth while being consistent on defining your set of allowables.
 one should be allowed, we preferred @code{c} to @code{ch}.  
 
 It may also be the case that some letters give rise to more than one
-phone.  For example the letter @code{x} in English is often pronunced as
+phone.  For example the letter @code{x} in English is often pronounced as
 the phone combination @code{k} and @code{s}.  To allow this, use the
 multiphone @code{k-s}.  Thus the multiphone @code{k-s} will be predicted
 for @code{x} in some context and the model will separate it into two
@@ -332,7 +332,7 @@ multiphone units are relatively rare but do occur.  In English, letter
 @code{-ism} etc.  Three phone multiphone are much rarer but may exist, they
 are not supported by this code as is, but such entries should probably
 be ignored.  Note the @code{-} sign in the multiphone examples is
-significant and is used to indentify multiphones.
+significant and is used to identify multiphones.
 
 The allowables for OALD end up being
 @lisp
@@ -372,7 +372,7 @@ about the contexts or frequency that these letter to phone pairs appear.
 That information will be generated automatically from the training
 set.
 
-Once the number of failed matches is signficantly low enough 
+Once the number of failed matches is significantly low enough 
 let @code{cummulate-pairs} run to completion.  This counts the number
 of times each letter/phone pair occurs in allowable alignments.
 
@@ -380,7 +380,7 @@ Next call
 @lisp
 festival> (save-table "oald-")
 @end lisp
-with the name of your lexicon.  This changes the cummulation
+with the name of your lexicon.  This changes the cumulation
 table into probabilities and saves it.
 
 Restart festival loading this new table
@@ -410,12 +410,12 @@ festival> (build-feat-file "oald.train.align" "oald.train.feats")
 Again the same for the test set.
 
 Now you
-need to constructrure a description file for @file{wagon} for
+need to construct a description file for @file{wagon} for
 the given data.  The can be done using the script @file{make_wgn_desc}
 provided with the speech tools
 
 Here is an example script for building the models, you will need
-to modify it for your particualr database but it shows the basic
+to modify it for your particular database but it shows the basic
 processes
 @example
 for i in a b c d e f g h i j k l m n o p q r s t u v w x y z 
@@ -443,7 +443,7 @@ The script @file{traintest} splits the given file @file{X} into @file{X.train}
 and @file{X.test} with every tenth line in @file{X.test} and the rest
 in @file{X.train}.  
 
-This script can take a significnat amount of time to run, about 6 hours
+This script can take a significant amount of time to run, about 6 hours
 on a Sun Ultra 140.
 
 Once the models are created the must be collected together into
@@ -474,7 +474,7 @@ festival> (lts_testset "oald.test.align" oald_lts_rules)
 The result (after showing all the failed ones), will be a table showing
 the results for each letter, for all letters and for complete words.
 The failed entries may give some notion of how good or bad the result
-is, sometimes it will be simple vowel diferences, long versus short,
+is, sometimes it will be simple vowel differences, long versus short,
 schwa versus full vowel, other times it may be who consonants missing.
 Remember the ultimate quality of the letter sound rules is how adequate
 they are at providing @emph{acceptable} pronunciations rather than 
@@ -483,7 +483,7 @@ how good the numeric score is.
 @cindex stress assignment
 @cindex predicting stress
 For some languages (e.g. English) it is necessary to also find a
-stree pattern for unknown words.  Ultimately for this to work well
+stress pattern for unknown words.  Ultimately for this to work well
 you need to know the morphological decomposition of the word.
 At present we provide a CART trained system to predict stress
 patterns for English.  If does get 94.6% correct for an unseen test
@@ -497,27 +497,27 @@ do slightly worse on a per phone basis @cite{black98b}.
 @cindex lexicon compression
 As the lexicon may be a large part of the system we have also
 experimented with removing entries from the lexicon if the letter to
-sound rules system (and stree assignment system) can correct predict
+sound rules system (and stress assignment system) can correct predict
 them.  For OALD this allows us to half the size of the lexicon, it could
 possibly allow more if a certain amount of fuzzy acceptance was allowed
 (e.g. with schwa).  For other languages the gain here can be very
-signifcant, for German and French we can reduce the lexicon by over 90%.
+significant, for German and French we can reduce the lexicon by over 90%.
 The function @code{reduce_lexicon} in @file{festival/lib/lts_build.scm}
-was used to do this.  A diccussion of using the above technique as a
+was used to do this.  A discussion of using the above technique as a
 dictionary compression method is discussed in @cite{pagel98}.  A
 morphological decomposition algorithm, like that described in
 @cite{black91}, may even help more.
 
 The technique described in this section and its relative merits with
-respect to a number of languages/lexicons and tasks is dicussed more
+respect to a number of languages/lexicons and tasks is discussed more
 fully in @cite{black98b}.
 
 @section Post-lexical rules
 
 @cindex post-lexical rules
 In fluent speech word boundaries are often degraded in a way that causes
-co-articulation accross boundaries.  A lexical entriy should normally
-provide pronuncations as if the word is being spoken in isolation.  It
+co-articulation across boundaries.  A lexical entry should normally
+provide pronunciations as if the word is being spoken in isolation.  It
 is only once the word has been inserted into the the context in which
 it is going to spoken can co-articulary effects be applied.  
 
@@ -546,15 +546,6 @@ to be deleted.  A Scheme function that implements this is as follows
         (item.delete s)))
    (utt.relation.items utt 'Segment)))
 @end lisp
-@cindex possesive
+@cindex possessive
 In English we also use post-lexical rules for phenomena
 such as vowel reduction and schwa deletion in the possessive @samp{'s}.
-
-         
-        
-
-
-
-
-
-

@@ -39,6 +39,7 @@
 
 ;;; You want to also include a definition of diphone-gen-list
 ;;; for the phone set you are building for
+;;; This should be in festvox/LANG_scheme.scm
 
 (defvar diph_do_db_boundaries t)
 
@@ -170,11 +171,15 @@ saving the waveforms for playing as prompts (as autolabelling)."
       (set! dlist (load dlistfile t)))
   (mapcar
    (lambda (d)
-     (let ((utt (synth-nonsense-word-1 (car (cdr (cdr d))))))
+     (let ((utt (synth-nonsense-word-1 
+		 (read-from-string
+		  (string-append "(" (car (cdr d)) ")")))))
        (format t "%l\n" d)
-       (if labdir
+       (if (and labdir (not diph_do_db_boundaries))
 	   (save_segs_plus_db utt (format nil "%s/%s.lab" labdir (car d))))
        (synth-nonsense-word-2 utt)
+       (if (and labdir diph_do_db_boundaries)
+	   (save_segs_plus_db utt (format nil "%s/%s.lab" labdir (car d))))
        (utt.save.wave utt (format nil "%s/%s.wav" wavedir (car d)))
        t))
    dlist)
@@ -215,10 +220,48 @@ each diphone are generated as name_XXXX."
     ;; save the info to file
     (mapcar
      (lambda (d)
-       (format ofd "( %s %l\t%l )\n"
-	       (car d) (car (cdr d)) (car (cdr (cdr d)))))
+       (format ofd "( %s %l %l )\n"
+	       (car d) 
+	       (diph-stringify (car (cdr (cdr d))))
+	       (car (cdr d))))
      dlist-all)
     (fclose ofd)
     t))
+
+(define (diphone-synth-waves dlistfile n)
+  "(diphone-synth-waves dlistfile)
+Synthesis each nonsense word with fixed duration and fixed pitch
+and play them to find errors."
+  (let ((c 1))
+    (if (consp dlistfile)
+	(set! dlist dlistfile)
+	(set! dlist (load dlistfile t)))
+    (mapcar
+     (lambda (d)
+       (let ((utt (synth-nonsense-word-1 
+		   (read-from-string
+		    (string-append "(" (car (cdr d)) ")")))))
+	 (if (>= c n)
+	     (begin
+	       (format t "%l\n" d)
+	       (synth-nonsense-word-2 utt)
+	       (utt.play utt)))
+	 (set! c (+ 1 c))
+	 t))
+     dlist)
+    t)
+)
+
+(define (diph-stringify plist)
+  "(diph-stringify plist)
+Change the list of phones into a string of space separated phones"
+  (let ((s ""))
+    (mapcar
+     (lambda (p)
+       (if (string-equal "" s)
+	   (set! s p)
+	   (set! s (string-append s " " p))))
+     plist)
+    s))
 
 (provide 'diphlist)

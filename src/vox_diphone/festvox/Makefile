@@ -45,6 +45,8 @@ SKELFILES = INST_LANG_phones.scm \
 	    INST_LANG_VOX_dur.scm \
 	    INST_LANG_VOX_int.scm \
 	    INST_us_VOX_diphone.scm INST_us_VOX_dur.scm INST_us_VOX_int.scm \
+	    INST_uss2_VOX_diphone.scm INST_uss2_VOX_dur.scm \
+            INST_uss2_VOX_int.scm cmusphinx2_phones.scm \
 	    INST_uk_VOX_diphone.scm INST_uk_VOX_dur.scm INST_uk_VOX_int.scm
 
 FILES = Makefile $(SKELFILES)

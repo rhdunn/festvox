@@ -132,8 +132,8 @@ Set speaker to VOX in LANG from INST."
   (set! int_general_params (list (list 'targ_func INST_LANG_VOX_targ_func1)))
 
   ;; Duration prediction
-  (set! duration_cart_tree INST_LANG_dur_tree)
-  (set! duration_ph_info INST_LANG_VOX_phone_data)
+  (set! duration_cart_tree INST_LANG_VOX::zdur_tree)
+  (set! duration_ph_info INST_LANG_VOX::phone_data)
   (Parameter.set 'Duration_Method 'Tree_ZScores)
 
   ;; Waveform synthesizer: diphones
@@ -161,6 +161,6 @@ Set speaker to VOX in LANG from INST."
    (description
     "COMMENT"
     )
-   (builtwith festvox-1.1)))
+   (builtwith festvox-1.2)))
 
 (provide 'INST_LANG_VOX_diphone)

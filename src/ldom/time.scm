@@ -52,6 +52,27 @@
     (SayText time-string)
 ))
 
+(define (savetime ofile)
+  (let ((actual-time (get-the-time))
+        round-time time-string)
+    (set! round-time (round-up-time actual-time))
+    ;;; Construct the time expression
+    (set! time-string
+          (string-append
+           "The time is now, "
+           (approx actual-time)
+           (minute-string round-time)
+           (hour-string round-time)
+           (ampm-string round-time)))
+    ;(format t "%s\n" time-string)
+    ;;; Synthesize it
+    (utt.save.wave
+     (utt.synth 
+      (eval (list 'Utterance 'Text time-string)))
+     ofile
+     'riff)
+))
+
 (define (get-the-time)
 "Returns a list of hour and minute and second, for later processing"
  (let (date)

@@ -40,6 +40,14 @@
 ###                                                                       ##
 ############################################################################
 
+if [ $# = 0 ]
+then
+   echo "Extract pm files from waveforms using ESPS epoch program"
+   echo "Usage:  bin/make_pm_epoch wav/*.wav"
+   echo "Create pm/*.pm"
+   exit 1
+fi
+
 if [ ! "$ESTDIR" ]
 then
    echo "environment variable ESTDIR is unset"

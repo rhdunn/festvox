@@ -81,19 +81,19 @@
 	(cond
 	 ((string-equal "-eval" (car o))
 	  (if (not (cdr o))
-	      (dumpfeats_error "no file specified to load"))
+	      (make_diph_index_error "no file specified to load"))
 	  (if (string-matches (car (cdr o)) "^(.*")
 	      (eval (read-from-string (car (cdr o))))
 	      (load (car (cdr o))))
 	  (set! o (cdr o)))
 	 ((string-equal "-lab_dir" (car o))
 	  (if (not (cdr o))
-	      (make_utts_error "no lab_dir file specified"))
+	      (make_diph_index_error "no lab_dir file specified"))
 	  (set! lab_dir (car (cdr o)))
 	  (set! o (cdr o)))
 	 ((string-equal "-lab_ext" (car o))
 	  (if (not (cdr o))
-	      (make_utts_error "no lab_ext file specified"))
+	      (make_diph_index_error "no lab_ext file specified"))
 	  (set! lab_ext (car (cdr o)))
 	  (set! o (cdr o)))
 	 (t
@@ -186,9 +186,9 @@ Find diph in labelfile fname and return index entry."
       (if (consp fname)
         (let ((t1 fname))
           (set! fname (car t1))
-          (set! diphs (cadr t1))
-          (set! phones (car (cdr (cdr t1)))))
-        (begin
+          (set! phones (cadr t1))
+          (set! diphs (cadr (cdr t1))))
+        (begin ;; hmm this is probably just very old compatability 
           (set! diphs (readfp dlist))
           (set! phones (readfp dlist))  ;; phones
          ))

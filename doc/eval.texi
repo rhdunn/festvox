@@ -44,7 +44,7 @@ speech tranlation system, the vocabulary is constained by the
 translation system itself so a large lexicon is probabaly not much of an
 issue, but the vocabulary will include many anglosized (calenodianized
 ?) versions of Chinese names, which are not common in standard English
-so letter to sound rules should be made more sensitive for that input.
+so letter-to-sound rules should be made more sensitive for that input.
 If the system is to be used to read address lists, it should be able to
 tokenize names and address appropriately, and if it is to be used in a
 dialogue system the intonation model should be able to deal with
@@ -117,11 +117,11 @@ A script is provided in @file{src/general/find_unknowns} which will
 analyze given text to find which words do not appear in the current
 lexicon.  You should use the @code{-eval} option to specify the
 selection of your voice.  Note this checks to see which words are not in
-the lexicon itself, it replaces what ever letter to sound/ unknown word
+the lexicon itself, it replaces what ever letter-to-sound/ unknown word
 function you specified and saves any words for which that function is
 called in the given output file.   For example
 @example
-find_unknowns -eval "(voice_ked_diphone)" -output cmudict.unknown \
+find_unknowns -eval '(voice_ked_diphone)' -output cmudict.unknown \
           wsj/wsj-raw/00/*
 @end example
 Normally you would run this over your database then cummulate the

@@ -1,191 +1,370 @@
 <HTML>
 <HEAD>
 <!-- This HTML file has been created by texi2html 1.52
-     from ../doc/festvox.texi on 24 Febuary 2000 -->
+     from ../doc/festvox.texi on 10 July 2000 -->
 
-<TITLE>Building Voices in the Festival Speech Synthesis System - 13  Evaluation</TITLE>
+<TITLE>Building Voices in the Festival Speech Synthesis System - 13  Text analysis</TITLE>
 </HEAD>
 <BODY bgcolor="#ffffff">
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_12.html">previous</A>, <A HREF="festvox_14.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_12.html">previous</A>, <A HREF="festvox_14.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 <P><HR><P>
 
 
-<H1><A NAME="SEC82" HREF="festvox_toc.html#TOC82">13  Evaluation</A></H1>
+<H1><A NAME="SEC102" HREF="festvox_toc.html#TOC102">13  Text analysis</A></H1>
 
 <P>
-Now that you have built your voice, how can you tell if it works, and
-how can you find out what you need to make it better.  This chapter
-deals with some issues of evaluating a voice in Festival.  Some
-of the points here also apply to testing and improving existing voices
-too.
-
-</P>
-<P>
-The evaluation of speech synthesis is notoriously hard.  Evaluation in
-speech recognition was the major factor in making general speech
-recognition work.  Rigourous tests of well defined data made the
-evaluation of different techniques possible.  Though in spite of its
-success the strict evaluation criteria as used in speech recognition can
-cloud the ultimate goal.  It is important always to remember that tests
-are they to evaluate a systems performance rather than become the task
-itself.  Just as techniques can overtrain on data it is possible to over
-train on the test data too thus loosing the generality and purpose
-of the evaluation.
+This chapter discusses some of the basic problems in analyzing text when
+trying to convert it to speech.  To be of practical use it is necessary
+to do at least some level text analysis in a new language.  Almost any
+piece of real text will contain tokens that do not have a simple one to
+one pronunciation.  In Festival our view is that the initial text is
+tokenized into white space separated items.  (See discussion below about
+how you might do languages that don't normally separate tokens by white
+space.)  These tokens can then be mapped to words through simple rules
+(or statistically trained models) allowing for one token to map to zero
+or more words, and also allow that mapping to be context sensitive.
 
 </P>
 <P>
-In speech recongition a simple (though naive) measure of phones or words
-correct gives a reasonable indicator of how well a speech recognition
-system works.  In synthesis this a lot harder.  A word can have multiple
-pronunciations, so it is much harder to autmatically test if a
-synthesizer's phoneme accuracy, besides much of the quality is not just
-in if it is corretc but if its sounds good.  This is effectly the cruz
-of the matter.  The only really synthesis evaluation technique is having
-a human listen to the result.  Humans individually are not very reliably
-testers of systems, but humans in general are.  However it is usually
-not feasible to have testers listen to large amounts of synthetic speech
-and return a general goodness score.  More specific tests are required.
-
-</P>
-<P>
-Although listening tests are the ultimate because they are expensive in
-resources (undergraduates are not willing to listing to bad synthesis
-all day for free), and the design of listening tests is a non-trivial
-task, there are a number of more general tests which can be run at less
-expenses and can help greatly.
-
-</P>
-<P>
-It is common that a new voice in Festival (or any other speech synthesis
-systems), has limitations and it is wise to test what the limitations
-are and decide if such limitations are acceptable or not.  This depends
-a lot on what you wish to use your voice for.  For example if the voice
-a Scottish English voice to be primarily used as the output of a Chinese
-speech tranlation system, the vocabulary is constained by the
-translation system itself so a large lexicon is probabaly not much of an
-issue, but the vocabulary will include many anglosized (calenodianized
-?) versions of Chinese names, which are not common in standard English
-so letter to sound rules should be made more sensitive for that input.
-If the system is to be used to read address lists, it should be able to
-tokenize names and address appropriately, and if it is to be used in a
-dialogue system the intonation model should be able to deal with
-questions and continuations properly.  Optimizing your voices for the
-most common task, and minimizing the errors is what evaluation is for.
+Numbers are probably the most common form of token that doesn't
+have a simple lookup pronunciation, there is no way you can
+list all strings of digits in a lexicon so some analysis into
+words is the most reasonable way of dealing with them.  This
+is dicussed below.  Also in many languages strings of digits
+may sometimes be pronounced as numbers (ordinals or cardinals) 
+or as strings of digits (e.g. telephone numbers) or in some
+case have their own special pronunciation in certain
+contexts (e.g. years in English).  We will discuss some
+examples below.
 
 </P>
 
 
-<H2><A NAME="SEC83" HREF="festvox_toc.html#TOC83">13.1  Does it work at all?</A></H2>
+<H2><A NAME="SEC103" HREF="festvox_toc.html#TOC103">13.1  Token to word rules</A></H2>
 
 <P>
-It is very easy to build a voice and get it to say a few phrases and
-think that the job is done.  As you build the voice it is worth testing
-each part as you built it to ensure it basically performs as expected.
-But once its all together more general tests are needed.
-
-</P>
-<P>
-Try to find around 100-500 sentences to play through it.  Its amazing
-home many general problems are thrown up when you extend your test set.
-The next stage is to play so <EM>real</EM> text.  That may be news text
-from the web, output from your speech translation system, or some email.
-Initially it is worth just synthesizing the whole set without even
-listening to it.  Problems in analysis and missing diphones etc may be
-shown up just in the processing of the text.  Then you want to listen to
-the output and identify problems.  This make take some amoutn of
-investogation.  What you want to do is identify <EM>where</EM> the problem
-is, is it bad tex analysis, bad lexical entry, a prosody problem, or a
-waveform synthesis problem.  You may need to synthesizes parts
-of the text in isolation (e.g. using the Festival function
-<CODE>SayText</CODE> and look at the structure of the utterance generated,
-e.g. using the function <CODE>utt.features</CODE>.  FOr example
-to see what words have been identified from the text analysis
+The basic model in Festival is that each <EM>token</EM> will be mapped a
+list of <EM>words</EM> by a call to a <CODE>token_to_word</CODE> function.  This
+function will be called on each token and it should return a list of
+words.  It may check the tokens to context (within the current
+utterance) too if necessary.  The default action should (for most
+languages) simply be returning the token itself as a list of own word
+(itself).  For example your basic function should look something like.
 
 <PRE>
-(utt.features utt1 'Word '(name))
+(define (MYLANG_token_to_words token name)
+  "(MYLANG_token_to_words TOKEN NAME)
+Returns a list of words for the NAME from TOKEN.  This primarily
+allows the treatment of numbers, money etc."
+  (cond
+   (t
+    (list name))))
 </PRE>
 
 <P>
-Or to see the phones generated
+This function should be set in your voice selection function 
+as the function for token analysis
 
 <PRE>
-(utt.features utt1 'Segment '(name))
+  (set! token_to_words MYLANG_token_to_words)
 </PRE>
 
 <P>
-Thus you can view selected parts of an utterance and find out
-if it is being created as you intended.  For some things
-a graphical display of the utterance may help.  The display
-system Fringe has support for this.
+This function should be added to to deal with
+all tokens that are not in your lexicon, cannot be
+treated by your letter-to-sound rules, or are ambiguous
+in some way and require context to resolve.
 
 </P>
 <P>
-Once you identify <EM>where</EM> the problem is you need to decide how to
-fix it (or if it is worth fixing).  Adding new entries to the lexicon
-can be a simple fix but there will always be things missing.  A
-systematic study of missing parts of the lexicon is more worthwhile than
-trying to individually fix every bad pronunciation.  For English we used
-Festival to analysis some very large text databases to find out which
-words are not in the lexicon.  Then we looked at the distribution of the
-unknown words and then check the most frequent against the letter to
-sound rules and those which were proounced wrongly were added to the
-lexicon explicitly.  This technique helps to fill genuine gaps in the
-lexicon but such tests will always be biased to the types of
-data used for the tests.
-
-</P>
-<P>
-<A NAME="IDX249"></A>
-In our English checks we used Wall Street Journal and Time magazine
-articles (around 10 millions words in total).  Many unusual
-words apear only in one article (e.g proper names) which are less
-important to add to the lexicon, but unusual words that appear 
-across articales are more likely to appear again so should
-be added. 
-
-</P>
-<P>
-Be aware that using data will cause your coverage to be biased towards
-that type of data.  Our databases are mostly collected in the early 90s
-and hence have good coverage for the Gulf War, and the changes in
-Eastern Europe but our ten million words have no occurences of the words
-<SAMP>`Sojourner'</SAMP> or <SAMP>`Lewinski'</SAMP> whcih only appear in stories later
-in the decade.
-
-</P>
-<P>
-A script is provided in <TT>`src/general/find_unknowns'</TT> which will
-analyze given text to find which words do not appear in the current
-lexicon.  You should use the <CODE>-eval</CODE> option to specify the
-selection of your voice.  Note this checks to see which words are not in
-the lexicon itself, it replaces what ever letter to sound/ unknown word
-function you specified and saves any words for which that function is
-called in the given output file.   For example
+For example suppose we wish to simply treat all tokens consisting of
+strings of digits to be pronounced as a string of digits (rather
+than numbers).  We would add something like the following
 
 <PRE>
-find_unknowns -eval "(voice_ked_diphone)" -output cmudict.unknown \
-          wsj/wsj-raw/00/*
+(set! MYLANG_digit_names
+   '((0 "zero")
+     (1 "one")
+     (2 "two")
+     (3 "three")
+     (4 "four")
+     (5 "five")
+     (6 "six")
+     (7 "seven")
+     (8 "eight")
+     (9 "nine")))
+
+(define (MYLANG_token_to_words token name)
+  "(MYLANG_token_to_words TOKEN NAME)
+Returns a list of words for the NAME from TOKEN.  This primarily
+allows the treatment of numbers, money etc."
+  (cond
+   ((string-matches name "[0-9]+") ;; any string of digits
+    (mapcar
+     (lambda (d)
+      (car (cdr (assoc_string d MTLANG_digit_names))))
+     (symbolexplode name)))
+   (t
+    (list name))))
 </PRE>
 
 <P>
-Normally you would run this over your database then cummulate the
-unknown words, then rerun the unknown words synthesizing each and
-listening to them to evaluate if your LTS system produces reasonable
-results.  Fur those words which do have acceptable pronunciations add
-them to your lexicon.
+But more elaborate rules are also necessary.  Some tokens require context
+to disambiguate and sometimes multiple tokens are really one object e.g
+<SAMP>`$12 billion'</SAMP> must be rendered as <SAMP>`twelve billion dollars'</SAMP>,
+where the money name crosses over the second word.  Such multi-token rules
+must be split into multiple conditions, one for each part of the
+combined token.  Thus we need to identify the <SAMP>`$&#60;digits&#62;'</SAMP> is in a
+context followed by <SAMP>`?illion'</SAMP>.  The code below renders the full
+phrase for the dollar amount.  The second condition ensures nothing
+is returned for the <SAMP>`?illion'</SAMP> word as it has already been dealt with
+by the previous token.
 
-</P>
-
-
-<H2><A NAME="SEC84" HREF="festvox_toc.html#TOC84">13.2  Sematically unpredictable sentences</A></H2>
+<PRE>
+   ((and (string-matches name "\\$[123456789]+")
+         (string-matches (item.feat token "n.name") ".*illion.?"))
+     (append
+      (digits_to_cardinal (string-after name "$")) ;; amount
+      (list (item.feat token "n.name"))            ;; magnitude
+      (list "dollars")))                           ;; currency name
+   ((and (string-matches name ".*illion.?")
+         (string-matches (item.feat token "p.name") "\\$[123456789]+"))
+     ;; dealt with in previous token
+     nil)
+</PRE>
 
 <P>
-<A NAME="IDX250"></A>
-<A NAME="IDX251"></A>
-One technique that has been used to evaluation speech synthesis
-quality is testing against semantically unpredictable sentences.
+Note this still is not enough as there may be other types of currency
+pounds, yen, francs etc, some of which may be mass nouns and require no
+plural (e.g. <SAMP>`yen'</SAMP>) and some of which make be count nouns require
+plurals.  Also this only deals with whole numbers of .*illions,
+<SAMP>`$1.25 million'</SAMP> is common too.  See the full example (for English)
+in <TT>`festival/lib/token.scm'</TT>.
 
 </P>
+<P>
+A large list of rules are typically required.  They should be looked
+upon as breaking down the problem into smaller parts, potentially
+recursive.  For example hyphenated tokens can be split into two words.
+It is probably wise to explicitly deal with all tokens than are not
+purely alphabetic.  Maybe having a catch-all that spells out all tokens
+that are not explicitly dealt with (e.g. the numbers).  For
+example you could add the following as the penumtilmate condition
+in your <CODE>token_to_words</CODE> function
+
+<PRE>
+   ((not (string-matches name "[A-Za-z]"))
+    (symbolexplode name))
+</PRE>
+
+<P>
+Note this isn't necessary correct when certain letters may be homograpths.
+For example the token <SAMP>`a'</SAMP> may be a determiner or a letter
+of the alhpabet.  When its a derterminer it may (often) be reduced)
+while as a letter it probably ins't (i.e pronunciation in <SAMP>`@'</SAMP> 
+or <SAMP>`ei'</SAMP>).  Other languages also example this problem (e.g. Spanish
+<SAMP>`y'</SAMP>.  Therefore when we call symbol explode we don't want just the 
+the letter but to also specify that it is the letter pronunciation we
+want and not the any other form.  To ensure the lexicon system
+gets the right pronunciation we there wish to specify the part
+fo speech with the letter.  Actually rather than just a string
+of atomic words being returned by the <CODE>token_to_words</CODE> function
+the words may be descriptions including features.  Thus for example
+we dont just want to return 
+
+<PRE>
+(a b c)
+</PRE>
+
+<P>
+We want to be more specific and return
+
+<PRE>
+(((name a) (pos nn))
+ ((name b) (pos nn))
+ ((name c) (pos nn)))
+</PRE>
+
+<P>
+This can be done by the code
+
+<PRE>
+   ((not (string-matches name "[A-Za-z]"))
+    (mapcar
+     (lambda (l)
+      ((list 'name l) (list 'pos 'nn)))
+     (symbolexplode name)))
+</PRE>
+
+<P>
+The above assumes that all single characters symbols (letters, digits,
+punctuation and other "funny" characters have an entry in your lexicon
+with a part of speech field <CODE>nn</CODE>, with a pronunctiation of the
+character in isolation.
+
+</P>
+<P>
+The list of tokens that you may wish to write/train rules for 
+is of couse language dependent and to a certain extent domain
+dependent.  For example there are many more numbers in email text
+that in narative novels.  The number of abbreviations is also much
+higher in email and news stories than in more normal text.  It may
+be worth having a look at some typical data to find out the distribution
+and find out what is worth working on.   For a rough guide the folowing
+is a list if the symbol types we currentl deal with in English, many
+of which will require some treatment in other languages.
+<DL COMPACT>
+
+<DT><EM>Money</EM>
+<DD>
+Money amounts often have different treatment than simple numbers
+and conventions about the sub-currency part (i.e. cents, pfennings etc).
+Remember that you its not just numbers in the local currency you
+have to deal with currency values from different countries are common
+in lots of different texts (e.g dollars, yen, DMs and euro).
+<DT><EM>Numbers</EM>
+<DD>
+strings of digits will of course need mapping even if there is only one
+mapping for a language (rare).  Consider at least telphone numbers
+verses amounts, most languages make a distinction here.   In English
+we need to distinguish further, see below for the more detailed
+discussion.
+<DT><EM>number/number</EM>
+<DD>
+This can be used as a date, fraction, alternate, context  will help,
+though techniques of dropping back to saying the the string of characters
+often preserve the ambiguity which can be better that forcing
+a decision.
+<DT><EM>acronyms</EM>
+<DD>
+List of upper case letters (with or without vowels).  The decision
+to pronounce as a word or as letters is difficult in general but
+good guesses go far.  If its short (&#60; 4 chatacters) not in your
+lexicon not surround by other words in upper case, its probably
+an acronym, further analyss of vowels, consonant clusters
+etc will help.
+<DT><EM>number-number</EM>
+<DD>
+Could be a range, of score (football), dates etc.
+<DT><EM>word-word</EM>
+<DD>
+Usually a simple split on each part is sufficient--but not as when used
+as a dash.
+<DT><EM>word/word</EM>
+<DD>
+As an alternative, or a Unix pathname
+<DT><EM>'s or TOKENs</EM>
+<DD>
+An appended <SAMP>`s'</SAMP> to a non alphabetic token is probabaly
+some form of pluralization, removing it and recursing on the analysis
+is a reasonable thing to try.
+<DT><EM>times and dates</EM>
+<DD>
+These exist is variaous stnadardized forms many of which are easy
+to recognize and break down.
+<DT><EM>telephone numbers</EM>
+<DD>
+This various from country to country (and by various conventions)
+but there may be standard forms that can be recognized.
+<DT><EM>romain numerals</EM>
+<DD>
+Sometimes these are pronounced as numbers <SAMP>`chapter II'</SAMP>, or
+as cardinals <SAMP>`James II'</SAMP>.
+<DT><EM>ascii art</EM>
+<DD>
+If you are dealing with on line text there are often extra characters
+in a document that should be ignored, or at least not pronounced
+literally, e.g. lines of hyphens used as separators.
+<DT><EM>email addresses, URLs, file names</EM>
+<DD>
+Depending on your context this may be worth spending time on.
+<DT><EM>tokens containing any other non-alphanumeric character</EM>
+<DD>
+Spliting the token around the non-alphanumeric and recursing 
+on each part before and after it may be reasonable.
+</DL>
+<P>
+Remember the first purpose of text analysis is ensure you
+can deal with <EM>anything</EM>, even if it is just saying
+the word <SAMP>`unknown'</SAMP> (in the appropriate language).  Also its
+probabaly not worth spending time on rare token forms, though remember
+it not easy to judge what are rare and what are not.
+
+</P>
+
+
+<H2><A NAME="SEC104" HREF="festvox_toc.html#TOC104">13.2  Number pronunciation</A></H2>
+
+<P>
+Almost every one will expect a synthesizer to be able to
+speech numbers.  As it is not feasible to list all possible
+digit strings in your lexicon.  You will need to provide a function
+that returns a string of words for a given string of digits.
+
+</P>
+<P>
+In its simplest form you should provide a function that 
+decodes the string of digits.  The example <CODE>spanish_number</CODE>
+(and <CODE>spanish_number_from_digits</CODE>) in the released Spanish
+voice (<TT>`festvox_ellpc11k.tar.gz'</TT> is a good general
+example.
+
+</P>
+
+
+<H3><A NAME="SEC105" HREF="festvox_toc.html#TOC105">13.2.1  Multi-token numbers</A></H3>
+
+<P>
+A number of languages uses spaces within numbers where English might use
+commas.  For example German, Polish and others text may contain
+
+<PRE>
+64 000 
+</PRE>
+
+<P>
+to denote sixty four thousand.  As this will be multiple tokens in
+Festival's basic analysis it is necessary to write multiple conditions
+in your <CODE>token_to_words</CODE> function.
+
+</P>
+
+
+<H3><A NAME="SEC106" HREF="festvox_toc.html#TOC106">13.2.2  Declensions</A></H3>
+
+<P>
+In many languages, the pronunciation of a number depends on the thing
+that is being counted.  For example the digit '1' in Spanish has
+multiple pronunciations depending on whether it is refering to a
+masculine or feminine object.  In some languages this becomes much more
+complex where there are a number of possible declensions.  In our Polish
+synthesizer we solved this by adding an extra argument to number
+generation function which then selected the actual number word
+(typically the final word in a number) based in the desired declension.
+
+</P>
+
+<PRE>
+%%%%%%%%%%%%%%%%%%%
+Example to be added 
+%%%%%%%%%%%%%%%%%%%
+</PRE>
+
+
+
+<H2><A NAME="SEC107" HREF="festvox_toc.html#TOC107">13.3  Homograph disambiguation</A></H2>
+
+
+<PRE>
+%%%%%%%%%%%%%%%%%%%%%%
+Discussion to be added 
+%%%%%%%%%%%%%%%%%%%%%%
+</PRE>
+
+
+
+<H2><A NAME="SEC108" HREF="festvox_toc.html#TOC108">13.4  TTS modes</A></H2>
+
 
 <PRE>
 %%%%%%%%%%%%%%%%%%%%%%
@@ -194,6 +373,6 @@ Discussion to be added
 </PRE>
 
 <P><HR><P>
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_12.html">previous</A>, <A HREF="festvox_14.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_12.html">previous</A>, <A HREF="festvox_14.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 </BODY>
 </HTML>

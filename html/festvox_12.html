@@ -1,472 +1,723 @@
 <HTML>
 <HEAD>
 <!-- This HTML file has been created by texi2html 1.52
-     from ../doc/festvox.texi on 24 Febuary 2000 -->
+     from ../doc/festvox.texi on 10 July 2000 -->
 
-<TITLE>Building Voices in the Festival Speech Synthesis System - 12  Full example</TITLE>
+<TITLE>Building Voices in the Festival Speech Synthesis System - 12  Lexicons</TITLE>
 </HEAD>
 <BODY bgcolor="#ffffff">
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_11.html">previous</A>, <A HREF="festvox_13.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_11.html">previous</A>, <A HREF="festvox_13.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 <P><HR><P>
 
 
-<H1><A NAME="SEC81" HREF="festvox_toc.html#TOC81">12  Full example</A></H1>
+<H1><A NAME="SEC95" HREF="festvox_toc.html#TOC95">12  Lexicons</A></H1>
 
 <P>
-In this chapter we work through a full example of creating a
-voice given that most of the basic construction work (model
-building) has been done.  Pariticularly this discusses the scheme
-files, and conventions for keeping a voices together and how
-you can go about packaging it for general use.
+This chapter covers method for finding the pronunciation of
+a word.  This is either by a lexicon (a large list of words
+and their pronunciations) or by some method of letter to
+sound rules.
+
+</P>
+
+
+<H2><A NAME="SEC96" HREF="festvox_toc.html#TOC96">12.1  Word pronunciations</A></H2>
+
+<P>
+A pronunciation in Festival requires not just a list of
+phones but also a syllabic structure.  In some languages the
+syllabic structure is very simple and well defined and
+can be unambiguously derived from a phone string.  In English
+however this may not always be the case (compound nouns
+being the difficult case).  
 
 </P>
 <P>
-Ultimately a voice in Festival will consist of a diphone database, a
-lexicon (and lts rules) and a number of scheme files that offer the
-complete voice.  When people other than the developer of a voice wish to
-use your newly developed voice it is only that small set of files that
-are required and need to be distributed (freely or otherwise).  By convention
-we have distributed diphone group files, a single file holding the index, 
-and diphone data itself, and a set scheme files that describe the voice
-(and its necessary models).
+The lexicon structure that is basically available in Festival takes both
+a word and a part of speech (and arbitrary token) to find the given
+pronunciation.  For English this is probably the optimal form, although
+there exist homographs in the language, the word itself and a fairly
+broad part of speech tag will mostly identify the proper pronunciation.
 
 </P>
 <P>
-Basic skeleton files are included in the festvox distribution.
-If you are unsure how to go about building the basic files it
-is recommended you follow this schema and modify these to your
-particular needs.
+An example entry is 
+
+<PRE>
+("photography"
+ n
+ (((f  ) 0) ((t o g) 1) ((r  f) 0) ((ii) 0)))
+</PRE>
+
+<P>
+Not that in addition to explicit marking of syllables a stress 
+value is also given (0 or 1).  In some languages lexical is
+fully predictable, in others highly irregular.  In some this
+field may be more appropriately used for an other purpose,
+e.g. tone type in Chinese. 
 
 </P>
 <P>
-By convention a voice name consist of an institution name (like
-<EM>cmu</EM>, <EM>cstr</EM>, etc), if you don't have an insitution
-just use <EM>net</EM>.  Second you need to identify the language,
-there is an ISO two letter standard for it fails to distinguish
-dialects (such as US and UK English) so it need not be strictly 
-followed.  However a short identifier for the language is probably
-prefered.  Third you identify the speaker, we have typically used 
-three letter initials which are the initials of the person speaker but
-any name is reasonable.  If you are going to build a US or UK English
-voice you should look section <A HREF="festvox_5.html#SEC33">5.10  US/UK English Walkthrough</A>.
+There may be other languages which require a more complex (less
+complex) format and the decision to use some other format rather
+than this one is up to you.
 
 </P>
 <P>
-The basic processes you will need to address
+<A NAME="IDX225"></A>
+Currently there is only residual support for morphological analysis in
+Festival.  A finite state transducer based analyzer for English based on
+the work in <CITE>ritchie92</CITE> is included in
+<TT>`festival/lib/engmorph.scm'</TT> and
+<TT>`festival/lib/engmorphsyn.scm'</TT>.  But this should be considered
+experimental at best.  Give the lack of such an analyzer our lexicons
+need to list not only based forms of words but also all their
+morphological variants.  This is (more or less) acceptable in languages
+such as English or French but which languages with richer morphology
+such as German it may seem an unnecessary requirement.  Agglutenative
+languages such as Finnish and Turkish this appears to be even more a
+restriction.  This is probably true but this current restriction
+not necessary hopeless.  We have successfully build very good
+letter-to-sound rules for German, a language with a rich morphology
+which allows the system to properly predict pronunciations of
+morphological variants of root words it has not seen before.
+We have not yet done any experiments with Finnish or Turkish
+but see this technique would work, (though of course developing
+a properly morphological analyzer would be better).
+
+</P>
+
+
+<H2><A NAME="SEC97" HREF="festvox_toc.html#TOC97">12.2  Lexicons and addenda</A></H2>
+
+<P>
+The basic assumption in Festival is that you will have a large lexicon,
+tens of thousands of entries, that is a used as a standard part of an
+implementation of a voice.  Letter-to-sound rules are used as back up
+when a word is not explicitly listed.  This view is based on how English
+is best dealt with.  However this is a very flexible view, An explicit
+lexicon isn't necessary in Festival and it may be possible to do much of
+the work in letter-to-sound rules.  This is how we have implemented
+Spanish.  However even when there is strong relationship between the
+letters in a word and their pronunciation we still find the a lexicon
+useful.  For Spanish we still use the lexicon for symbols such as
+<SAMP>`$'</SAMP>, <SAMP>`%'</SAMP>, individual letters, as well as irregular
+pronunciations.
+
+</P>
+<P>
+In addition to a large lexicon Festival also supports a smaller list
+called an <EM>addenda</EM> this is primarily provided to allow specific
+applications and users to add entries that aren't in the existing
+lexicon.
+
+</P>
+
+
+<H2><A NAME="SEC98" HREF="festvox_toc.html#TOC98">12.3  Out of vocabulary words</A></H2>
+
+<P>
+Because its impossible to list all words in a natural language for
+general text-to-speech you will need to provide something to pronounce
+out of vocabulary words.  In some languages this is easy but in other's
+it is very hard.  No matter what you do you <EM>must</EM> provide
+something even if it is simply replacing the unknown word with the word
+<SAMP>`unknown'</SAMP> (or its local language equivalent).  By default a lexicon
+in Festival will throw an error if a requested word isn't found.  To
+change this you can set the <CODE>lts_method</CODE>.  Most usefully you can
+reset this to the name of function, which takes a word and a part of
+speech specification and returns a word pronunciation as described above.
+
+</P>
+<P>
+For example is we are always going to return the 
+word <CODE>unknown</CODE> but print a warning the the word is being
+ignored a suitable function is
+
+<PRE>
+(define (mylex_lts_function word feats)
+"Deal with out of vocabulary word."
+  (format t "unknown word: %s\n" word)
+  '("unknown" n (((uh n) 1) ((n ou n) 1))))
+</PRE>
+
+<P>
+Note the pronunciation of <SAMP>`unknown'</SAMP> must be in the appropriate
+phone set.  Also the syllabic structure is required.  You need to
+specify this function for your lexicon as follows
+
+<PRE>
+(lex.set.lts.method 'mylex_lts_function)
+</PRE>
+
+<P>
+At one level above merely identifying out of vocabulary words, they can
+be spelled, this of course isn't ideal but it will allow the basic
+information to be passed over to the listener.  This can be done
+with the out of vocabulary function, as follows.
+
+<PRE>
+(define (mylex_lts_function word feats)
+"Deal with out of vocabulary words by spelling out the letters in the
+word."
+ (if (equal? 1 (length word))
+     (begin
+       (format t "the character %s is missing from the lexicon\" word)
+       '("unknown" n (((uh n) 1) ((n ou n) 1))))
+     (cons
+      word
+      'n
+      (apply
+       append
+       (mapcar
+        (lambda (letter)
+         (car (cdr (cdr (lex.lookup letter 'n)))))
+        (symbolexplode word))))))
+</PRE>
+
+<P>
+A few point are worth noting in this function.  This recursively calls
+the lexical lookup function on the characters in a word.  Each letter
+should appear in the lexicon with its pronunciation (in isolation).
+But a check is made to ensure we don't recurse for ever.  The
+<CODE>symbolexplode</CODE> function assumes that that letters are single
+bytes, which may not be true for some languages and that function would
+need to be replaced for that language.  Note that we append the
+syllables of each of the letters in the word.  For long words this might
+be too naive as there could be internal prosodic structure in such a
+spelling that this method would not allow for.  In that case you would
+want letters to be words thus the symbol explosion to happen at the
+token to word level.  Also the above function assumes that the part of
+speech for letters is <CODE>n</CODE>.  This is only really important where
+letters are homographs in languages so this can be used to distinguish
+which pronunciation you require (cf. <SAMP>`a'</SAMP> in English or <SAMP>`y'</SAMP> in
+French).
+
+</P>
+
+
+<H2><A NAME="SEC99" HREF="festvox_toc.html#TOC99">12.4  Letter-to-sound rules by hand</A></H2>
+
+<P>
+<A NAME="IDX226"></A>
+<A NAME="IDX227"></A>
+For many languages there is a systematic relationship between the
+written form of a word and its pronunciation.  For some language this
+can be fairly easy to write down, by hand. In Festival there is a letter
+to sound rule system that allows rules to be written.  This rule system,
+described in detail in the Festival manual itself is what you should use
+if you are going to write rules by hand.  There is also an automatic
+training method fully described in the next sections, which produces
+CART trees which although are easy to interpret are probably
+unsuitable as a notation for hand specification.
+
+</P>
+<P>
+When writing a rule system it is often useful to do it in multiple
+passes.  The Spanish diphone voice distributed as
+<TT>`festvox_ellpc11k.tar.gz'</TT> offers a good example of such 
+a use. A set of cascaded LTS rule sets is used to transfer
+the basic word to a full accented, syllabified string of symbols which
+is then converted into the bracketed from used by Festival.  The
+levels are normalizations (downcasing and accent normalization), 
+conversion to pronunciation, syllabification, stress and finally
+identifying weak vowels.  Splitting the conversion tasks like
+this can often make writing the rules much easier, though care should
+be taken to ensure you don't mix up what you think are letters
+and what you think are phones.
+
+</P>
+<P>
+The LTS rule system is a little primitive and lacks some syntactic sugar
+(sets etc.) that would make writing rules easier.  In their present form
+you need to be very explicit.  Testing your rule set can be done in
+Festival in isolation (and should be done so, rather than by actual
+synthesis).  The function <CODE>lts.apply</CODE> allows you to apply a LTS
+rule set to a word or list of symbols.  See the manual and the
+Spanish example for more details.
+
+</P>
+
+
+<H2><A NAME="SEC100" HREF="festvox_toc.html#TOC100">12.5  Building letter-to-sound rules</A></H2>
+
+<P>
+For some languages the writing of a rule system is too difficult.
+Although there have been many valiant attempts to do so for languages
+like English life is basically too short to do this.  Therefore we also
+include a method for automatically building LTS rules sets for a lexicon
+of pronunciations.  This technique has successfully been used from
+English (British and American), French and German.  The difficulty and
+appropriateness of using letter-to-sound rules is very language
+dependent,
+
+</P>
+<P>
+The following outlines the processes involved in building a letter to
+sound model for a language given a large lexicon of pronunciations.
+This technique is likely to work for most European languages (including
+Russian) but doesn't seem particularly suitable for very language
+alphabet languages like Japanese and Chinese.  The process described
+here is not (yet) fully automatic but the hand intervention required is
+small and may easily be done even by people with only a very little
+knowledge of the language being dealt with.
+
+</P>
+<P>
+The process involves the following steps
 
 <UL>
-<LI>construct basic template files
+<LI>
 
-<LI>generate phoneset definition
+Pre-processing lexicon into suitable training set
+<LI>
 
-<LI>generate diphone schema file
+Defining the set of allowable pairing of letters to phones.  (We intend
+to do this fully automatically in future versions).
+<LI>
 
-<LI>generate prompts
+Constructing the probabilities of each letter/phone pair.
+<LI>
 
-<LI>record speaker
+Aligning letters to an equal set of phones/_epsilons_.
+<LI>
 
-<LI>label nonsense words
+Extracting the data by letter suitable for training.
+<LI>
 
-<LI>extract picthmarks and LPC coeffcient
+Building CART models for predicting phone from letters (and context).
+<LI>
 
-<LI>test phone synthesis
-
-<LI>add lexicon/LTS support
-
-<LI>add tokenization
-
-<LI>add prosody (phrasing, durations and intonation)
-
-<LI>test and evaluate voice
-
-<LI>package for distribution
-
+Building additional lexical stress assignment model (if necessary).
 </UL>
 
 <P>
-As with all parts of <TT>`festvox'</TT>: you must set the following 
-enviroment variables to where you have installed versions of
-the Edinburgh Speech Tools and the festvox distribution
-
-<PRE>
-export ESTDIR=/home/awb/projects/1.4.1/speech_tools
-export FESTVOXDIR=/home/awb/projects/festvox
-</PRE>
-
-<P>
-In this example we will build a Japanese voice based on awb (a gaijin).
-First create a directory to hold the voice.
-
-<PRE>
-mkdir ~/data/cmu_ja_awb_diphone
-cd ~/data/cmu_ja_awb_diphone
-</PRE>
-
-<P>
-You will need in the regions of 500M of space to build a voice.
-Actually for Japanese its probably considerably less, but you must
-be aware that voice building does require disk space.
+All except the first two stages of this are fully automatic.
 
 </P>
 <P>
-Construct the basic directory structure and skeleton files
-with the command
-
-<PRE>
-$FESTVOXDIR/src/diphones/setup_diphone cmu ja awb
-</PRE>
-
-<P>
-The three arguments are, institution, language and speaker name.
-
-</P>
-<P>
-The next stage is define the phoneset in
-<TT>`festvox/cmu_ja_phones.scm'</TT>.  In many cases the phoneset for a
-language has been defined, and it is wise to follow convention when it
-exists.  Note that the default phonetic features in the skeleton file
-may need to be modified for other languages.  For Japanese, there are
-standards and here we use a set similar to the ATR phoneset used by many
-in Japan for speech processing. (This file is included, but <EM>not</EM>
-automatically installed, in <TT>`$FESTVOXDIR/src/vox_diphone/japanese'</TT>
+Before building a model its wise to think a little about what you want
+it to do.  Ideally the model is an auxiliary to the lexicon so only
+words not found in the lexicon will require use of the letter-to-sound
+rules.  Thus only unusual forms are likely to require the rules.  More
+precisely the most common words, often having the most non-standard
+pronunciations, should probably be explicitly listed always.  It is
+possible to reduce the size of the lexicon (sometimes drastically) by
+removing all entries that the training LTS model correctly predicts.
 
 </P>
 <P>
-Now you must write the code that generates the diphone schema file.
-You can look at the examples in <TT>`festvox/src/diphones/*_schema.scm'</TT>.
-This stage is actually the first <EM>difficult</EM> part, getting
-thsi right can be tricky.  Finding all possible phone-phone in a language
-isn't as easy as it seems (especially as many possible ones
-don't actually exist).   The file <TT>`bin/ja_schema.scm'</TT> is created
-providing the function <CODE>diphone-gen-list</CODE> which returns
-a list of nonsense words, each consisting of a list of, list of diphones
-and a list of phones in the nonsense word.  For example
-
-<PRE>
-festival&#62; (diphone-gen-list)
-((("k-a" "a-k") (pau t a k a k a pau))
- (("g-a" "a-g") (pau t a g a g a pau))
- (("h-a" "a-h") (pau t a h a h a pau))
- (("p-a" "a-p") (pau t a p a p a pau))
- (("b-a" "a-b") (pau t a b a b a pau))
- (("m-a" "a-m") (pau t a m a m a pau))
- (("n-a" "a-n") (pau t a n a n a pau))
- ...)
-</PRE>
-
-<P>
-In addition to generating the diphone schema the <TT>`ja_schema.scm'</TT>
-also should provied the functions <CODE>Diphone_Prompt_Setup</CODE>, which 
-is called before generating the prompts, and <CODE>Diphone_Prompt_Word</CODE>,
-which is called before waveform synthesis of each nonsense word. 
+Before starting it is wise to consider removing some entries from the
+lexicon before training, I typically will remove words under 4 letters
+and if part of speech information is available I remove all function
+words, ideally only training from nouns verbs and adjectives as these
+are the most likely forms to be unknown in text.  It is useful to have
+morphologically inflected and derived forms in the training set as it is
+often such variant forms that not found in the lexicon even though their
+root morpheme is.  Note that in many forms of text, proper names are the
+most common form of unknown word and even the technique presented here
+may not adequately cater for that form of unknown words (especially if
+they unknown words are non-native names).  This is all stating that this
+may or may not be appropriate for your task but the rules generated by
+this learning process have in the examples we've done been much better
+than what we could produce by hand writing rules of the form described
+in the previous section.
 
 </P>
 <P>
-<CODE>Diphone_Prompt_Setup</CODE>, should be used to select a speaker to
-generate the prompts.  Note even though you may not use the prompts when
-recording they are necessary for labelling the spoken speech, so you
-still need to generate them.  If you haeva synthesizer already int eh
-language use ti to generate the prompts (assuming you can get it to
-generate from phone lists also generate label files).  Often the MBROLA
-project already has a waveform synthesizer for the language so you can
-use that.  In this case we are going to use a US English voice
-(kal_diphone) to generate the prompts.  For Japanese that's probably ok
-as the Japanese phoneset is (mostly) a subset of the English phoneset,
-though using the generated prompts to prompt the user is probably not a
-good idea.
+First preprocess the lexicon into a file of lexical entries to be used
+for training, removing functions words and changing the head words to
+all lower case (may be language dependent).  The entries should be of
+the form used for input for Festival's lexicon compilation.  Specifically
+the pronunciations should be simple lists of phones (no
+syllabification).  Depending on the language, you may wish to remove the
+stressing--for examples here we have though later tests suggest that we
+should keep it in even for English.  Thus the training set should look
+something like
+
+<PRE>
+("table" nil (t ei b l))
+("suspicious" nil (s @ s p i sh @ s))
+</PRE>
+
+<P>
+It is best to split the data into a training set and a test set 
+if you wish to know how well your training has worked.  In our
+tests we remove every tenth entry and put it in a test set.  Note this
+will mean our test results are probably better than if we removed
+say the last ten in every hundred.
 
 </P>
 <P>
-The second function <CODE>Diphone_Prompt_Word</CODE>, is used to map the
-Japanese phone set to the US English phone set so that waveform
-synthesis will work.  In this case a simple map of Japanese phone
-to one or more English phones is given and the code simple
-changes the phone name in the segment relation (and adds a new
-new segment in the multi-phone case).
+The second stage is to define the set of allowable letter to phone
+mappings irrespective of context.  This can sometimes be initially done
+by hand then checked against the training set.  Initially construct a
+file of the form
+
+<PRE>
+(require 'lts_build)
+(set! allowables 
+      '((a _epsilon_)
+        (b _epsilon_)
+        (c _epsilon_)
+        ...
+        (y _epsilon_)
+        (z _epsilon_)
+        (# #)))
+</PRE>
+
+<P>
+All letters that appear in the alphabet should (at least) map to
+<CODE>_epsilon_</CODE>, including any accented characters that appear in that
+language.  Note the last two hashes.  These are used by to denote
+beginning and end of word and are automatically added during training,
+they must appear in the list and should only map to themselves.
 
 </P>
 <P>
-Now we can generate the diphone schema list.
+To incrementally add to this allowable list run festival as
 
 <PRE>
-festival -b bin/diphlist.scm bin/ja_schema.scm \
-     "(diphone-gen-schema \"awb\" \"etc/awbdiph.list\")"
+festival allowables.scm 
 </PRE>
 
 <P>
-Its is worth checking <TT>`etc/awbdiph.list'</TT> by hand to you are sure it
-contains all the diphone you wish to use.
+and at the prompt type
+
+<PRE>
+festival&#62; (cummulate-pairs "oald.train")
+</PRE>
+
+<P>
+with your train file.  This will print out each lexical entry
+that couldn't be aligned with the current set of allowables.  At the
+start this will be every entry.  Looking at these entries add 
+to the allowables to make alignment work.  For example if the
+following word fails
+
+<PRE>
+("abate" nil (ah b ey t)) 
+</PRE>
+
+<P>
+Add <CODE>ah</CODE> to the allowables for letter <CODE>a</CODE>, <CODE>b</CODE> to
+<CODE>b</CODE>, <CODE>ey</CODE> to <CODE>a</CODE> and <CODE>t</CODE> to letter <CODE>t</CODE>.  After
+doing that restart festival and call <CODE>cummulate-pairs</CODE> again.
+Incrementally add to the allowable pairs until the number of failures
+becomes acceptable.  Often there are entries for which there is no real
+relationship between the letters and the pronunciation such as in
+abbreviations and foreign words (e.g. "aaa" as "t r ih p ax l ey").  For
+the lexicons I've used the technique on less than 10 per thousand fail
+in this way.
 
 </P>
 <P>
-The diphone schema file, in this case <TT>`etc/awbdiph.list'</TT>, is a
-feindamentally key file for almost all the following scripts.  Even if
-you generate the diphone list by some method other than described above,
-you should generate a schema list in exactly this format so that
-everything esle will work, modifying the other scripts for some other
-format is almost certainly a waste of your time.
+It is worth while being consistent on defining your set of allowables.
+(At least) two mappings are possible for the letter sequence
+<CODE>ch</CODE>---having letter <CODE>c</CODE> go to phone <CODE>ch</CODE> and letter
+<CODE>h</CODE> go to <CODE>_epsilon_</CODE> and also letter <CODE>c</CODE> go to phone
+<CODE>_epsilon_</CODE> and letter <CODE>h</CODE> goes to <CODE>ch</CODE>.  However only
+one should be allowed, we preferred <CODE>c</CODE> to <CODE>ch</CODE>.  
 
 </P>
 <P>
-The schema file has the following format
-
-<PRE>
-( awb_0001 ("k-a" "a-k")        (pau t a k a k a pau) )
-( awb_0002 ("g-a" "a-g")        (pau t a g a g a pau) )
-( awb_0003 ("h-a" "a-h")        (pau t a h a h a pau) )
-( awb_0004 ("p-a" "a-p")        (pau t a p a p a pau) )
-( awb_0005 ("b-a" "a-b")        (pau t a b a b a pau) )
-( awb_0006 ("m-a" "a-m")        (pau t a m a m a pau) )
-( awb_0007 ("n-a" "a-n")        (pau t a n a n a pau) )
-( awb_0008 ("r-a" "a-r")        (pau t a r a r a pau) )
-( awb_0009 ("t-a" "a-t")        (pau t a t a t a pau) )
-...
-</PRE>
-
-<P>
-In this case it has 297 nonsense words.
+It may also be the case that some letters give rise to more than one
+phone.  For example the letter <CODE>x</CODE> in English is often pronounced as
+the phone combination <CODE>k</CODE> and <CODE>s</CODE>.  To allow this, use the
+multiphone <CODE>k-s</CODE>.  Thus the multiphone <CODE>k-s</CODE> will be predicted
+for <CODE>x</CODE> in some context and the model will separate it into two
+phones while it also ignoring any predicted <CODE>_epsilons_</CODE>.  Note that
+multiphone units are relatively rare but do occur.  In English, letter
+<CODE>x</CODE> give rise to a few, <CODE>k-s</CODE> in <CODE>taxi</CODE>, <CODE>g-s</CODE> in
+<CODE>example</CODE>, and sometimes <CODE>g-zh</CODE> and <CODE>k-sh</CODE> in
+<CODE>luxury</CODE>.  Others are <CODE>w-ah</CODE> in <CODE>one</CODE>, <CODE>t-s</CODE> in
+<CODE>pizza</CODE>, <CODE>y-uw</CODE> in <CODE>new</CODE> (British), <CODE>ah-m</CODE> in
+<CODE>-ism</CODE> etc.  Three phone multiphone are much rarer but may exist, they
+are not supported by this code as is, but such entries should probably
+be ignored.  Note the <CODE>-</CODE> sign in the multiphone examples is
+significant and is used to identify multiphones.
 
 </P>
 <P>
-<A NAME="IDX242"></A>
-Next we can generate the prompts and their label files with the
-following command
-The to synthesize the prompts
+The allowables for OALD end up being
 
 <PRE>
-festival -b bin/diphlist.scm bin/ja_schema.scm \
-      "(diphone-gen-waves \"prompt-wav\" \"prompt-lab\" \"etc/awbdiph.list\")"
+(set! allowables 
+       '
+      ((a _epsilon_ ei aa a e@ @ oo au o i ou ai uh e)
+       (b _epsilon_ b )
+       (c _epsilon_ k s ch sh @-k s t-s)
+       (d _epsilon_ d dh t jh)
+       (e _epsilon_ @ ii e e@ i @@ i@ uu y-uu ou ei aa oi y y-u@ o)
+       (f _epsilon_ f v )
+       (g _epsilon_ g jh zh th f ng k t)
+       (h _epsilon_ h @ )
+       (i _epsilon_ i@ i @ ii ai @@ y ai-@ aa a)
+       (j _epsilon_ h zh jh i y )
+       (k _epsilon_ k ch )
+       (l _epsilon_ l @-l l-l)
+       (m _epsilon_ m @-m n)
+       (n _epsilon_ n ng n-y )
+       (o _epsilon_ @ ou o oo uu u au oi i @@ e uh w u@ w-uh y-@)
+       (p _epsilon_ f p v )
+       (q _epsilon_ k )
+       (r _epsilon_ r @@ @-r)
+       (s _epsilon_ z s sh zh )
+       (t _epsilon_ t th sh dh ch d )
+       (u _epsilon_ uu @ w @@ u uh y-uu u@ y-u@ y-u i y-uh y-@ e)
+       (v _epsilon_ v f )
+       (w _epsilon_ w uu v f u)
+       (x _epsilon_ k-s g-z sh z k-sh z g-zh )
+       (y _epsilon_ i ii i@ ai uh y @ ai-@)
+       (z _epsilon_ z t-s s zh )
+       (# #)
+       ))
 </PRE>
 
 <P>
-Occasionally when you are building the prompts some diphones requested 
-in the prompt voice don't actually exists (especially when you are
-doing cross-language prompting).  Thus the generated prompt has some
-default diphone (typically silence-silence added).  This is mostly
-ok, as long as its not happening multiple times in the same nonsence
-word.  The speaker just should be aware that some prompts aren't actually
-correct (which of course is going to be true for all prompts in the
-cross-language prompting case).
+Note this is an exhaustive list and (deliberately) says nothing
+about the contexts or frequency that these letter to phone pairs appear.
+That information will be generated automatically from the training
+set.
 
 </P>
 <P>
-The stage is to record the prompts.  See section <A HREF="festvox_11.html#SEC79">11.3  Recording under Unix</A> for
-details on how to do this under Unix (and in fact other techniques too).
-This can done with the command
-
-<PRE>
-bin/prompt_them etc/awbdiph.list
-</PRE>
-
-<P>
-Depending on whether you want the prompts actually to be played or
-not, you can edit <TT>`bin/prompt_them'</TT> to comment out the playing
-of the prompts.
+Once the number of failed matches is significantly low enough 
+let <CODE>cummulate-pairs</CODE> run to completion.  This counts the number
+of times each letter/phone pair occurs in allowable alignments.
 
 </P>
 <P>
-Note a third argument can be given to state which nonse word to begin
-prompting from.  This if you have already recorded the first 100 you
-can continue with
+Next call
 
 <PRE>
-bin/prompt_them etc/awbdiph.list 101
+festival&#62; (save-table "oald-")
 </PRE>
 
 <P>
-<A NAME="IDX243"></A>
-The recorded prompts can the be labelled by
-
-<PRE>
-bin/make_labs prompt-wav/*.wav
-</PRE>
-
-<P>
-And the diphone index may be built by
-
-<PRE>
-bin/make_diph_index etc/awbdiph.list dic/awbdiph.est
-</PRE>
-
-<P>
-<A NAME="IDX244"></A>
-If no EGG signal has been collected you can extract the 
-pitchmarks by
-
-<PRE>
-bin/make_pm_wave wav/*.wav
-</PRE>
-
-<P>
-Then build the pitch synchronous LPC coefficients
-
-<PRE>
-bin/make_lpc wav/*.wav
-</PRE>
-
-<P>
-<A NAME="IDX245"></A>
-This should get you to the stage where you can test the basic waveform
-synthesizer.  There is still much to do but initial tests (and correction
-of labelling errors etc) can start now.  Start festival as
-
-<PRE>
-festival festvox/cmu_ja_awb_diphone.scm "(voice_cmu_ja_awb_diphone)"
-</PRE>
-
-<P>
-and then enter string of phones 
-
-<PRE>
-festival&#62; (SayPhones '(pau k o N n i ch i w a pau))
-</PRE>
-
-<P>
-In addition to the waveform generate part you must also provide text
-analysis for your language.  Here, for the sake of simplicity we assume
-that the Japanese is provided in romanized form with spaces between each
-word.  This is of course not the case for normal Japanese (and we are
-working on a proper Japanese front end).  But at present this shows the
-general idea.  Thus we edit <TT>`festvox/cmu_ja_token.scm'</TT> and add
-(simple) support for numbers.
+with the name of your lexicon.  This changes the cumulation
+table into probabilities and saves it.
 
 </P>
 <P>
-As the relationship between romaji (romanized Japanese) and phones
-is almost trivial we write a set of letter to sound rules, by hand
-that expand words into their phones.  This is added to 
-<TT>`festvox/cmu_ja_lex.scm'</TT>.
+Restart festival loading this new table
+
+<PRE>
+festival allowables.scm oald-pl-table.scm
+</PRE>
+
+<P>
+Now each word can be aligned to an equally-lengthed string of phones,
+epsilon and multiphones.  
+
+<PRE>
+festival&#62; (aligndata "oald.train" "oald.train.align")
+</PRE>
+
+<P>
+Do this also for you test set.
 
 </P>
 <P>
-For the time being we just use the default intonation model, though
-simple rule drive improvements are possible.  See
-<TT>`festvox/cmu_ja_awb_int.scm'</TT>.  For duration, we add a mean value
-for each phone in the phoneset to <TT>`fextvox/cmu_ja_awb_dur.scm'</TT>.
+This will produce entries like
+
+<PRE>
+aaronson _epsilon_ aa r ah n s ah n
+abandon ah b ae n d ah n
+abate ah b ey t _epsilon_
+abbe ae b _epsilon_ iy
+</PRE>
+
+<P>
+The next stage is to build features suitable for <TT>`wagon'</TT> to
+build models.  This is done by
+
+<PRE>
+festival&#62; (build-feat-file "oald.train.align" "oald.train.feats")
+</PRE>
+
+<P>
+Again the same for the test set.
 
 </P>
 <P>
-These three japanese specific files are included in the distribution
-in <TT>`festvox/src/vox_diphone/japanese/'</TT>.
+Now you
+need to construct a description file for <TT>`wagon'</TT> for
+the given data.  The can be done using the script <TT>`make_wgn_desc'</TT>
+provided with the speech tools
 
 </P>
 <P>
-Now we have a basic synthesizer, although there is much to
-do, we can now type (romanized) text to it.
+Here is an example script for building the models, you will need
+to modify it for your particular database but it shows the basic
+processes
 
 <PRE>
-festival festvox/cmu_ja_awb_diphone.scm "(voice_cmu_ja_awb_diphone)"
-...
-festival&#62; (SayText "boku wa gaijin da yo.")
+for i in a b c d e f g h i j k l m n o p q r s t u v w x y z 
+do
+   # Stop value for wagon
+   STOP=2
+   echo letter $i STOP $STOP
+   # Find training set for letter $i
+   cat oald.train.feats |
+    awk '{if ($6 == "'$i'") print $0}' &#62;ltsdataTRAIN.$i.feats
+   # split training set to get heldout data for stepwise testing
+   traintest ltsdataTRAIN.$i.feats
+   # Extract test data for letter $i
+   cat oald.test.feats |
+    awk '{if ($6 == "'$i'") print $0}' &#62;ltsdataTEST.$i.feats
+   # run wagon to predict model
+   wagon -data ltsdataTRAIN.$i.feats.train -test ltsdataTRAIN.$i.feats.test \
+          -stepwise -desc ltsOALD.desc -stop $STOP -output lts.$i.tree
+   # Test the resulting tree against
+   wagon_test -heap 2000000 -data ltsdataTEST.$i.feats -desc ltsOALD.desc \
+              -tree lts.$i.tree
+done
 </PRE>
 
 <P>
-The next part is to test and improve these various initial subsystems,
-lexicons, text analysis prosody, and correct waveform synthesis problem.
-This is ane endless task but you should spend significantly more time on
-it that we have done for this example.
+The script <TT>`traintest'</TT> splits the given file <TT>`X'</TT> into <TT>`X.train'</TT>
+and <TT>`X.test'</TT> with every tenth line in <TT>`X.test'</TT> and the rest
+in <TT>`X.train'</TT>.  
 
 </P>
 <P>
-Once you are happy with the completed voice you can package it for
-distribution.  The first stage is to generate a group file
-for the diphone database.  This extracts the subparts of the nonsense words
-and puts them into a single file offering something smaller and quicker to 
-access.  The groupfile can be built as follows.
-
-<PRE>
-festival festvox/cmu_ja_awb_diphone.scm "(voice_cmu_ja_awb_diphone)"
-...
-festival (us_make_group_file "group/awblpc.group" nil)
-...
-</PRE>
-
-<P>
-The <CODE>us_</CODE> in the function names stands for <CODE>UniSyn</CODE>
-(the unit concatenation subsystem in Festival) and nothing to
-do with US English.
+This script can take a significant amount of time to run, about 6 hours
+on a Sun Ultra 140.
 
 </P>
 <P>
-To test this edit <TT>`festvox/cmu_ja_awb_diphone.scm'</TT> and 
-change the choice of databases used from separate to grouped.  This
-is done by commenting out the line (around line 81)
+Once the models are created the must be collected together into
+a single list structure.  The trees generated by <TT>`wagon'</TT>
+contain fully probability distributions at each leaf, at this time
+this information can be removed as only the most probable will
+actually be predicted.  This substantially reduces the size of the
+tress.
 
 <PRE>
-(set! cmu_ja_awb_db_name (us_diphone_init cmu_ja_awb_lpc_sep))
+(merge_models 'oald_lts_rules "oald_lts_rules.scm")
 </PRE>
 
 <P>
-and uncommented the line (around line 84)
-
-<PRE>
-(set! cmu_ja_awb_db_name (us_diphone_init cmu_ja_awb_lpc_group))
-</PRE>
-
-<P>
-<A NAME="IDX246"></A>
-The next stage is to integrate this new voice so that festival may find it
-automatically.  To do this you should add a symbolic link
-from the voice directory of Festival's English voices to the
-directory containing the new voice.  Frist cd to
-festival's voice directory (this will vary depending on where your
-version of festival is installed)
-
-<PRE>
-cd /home/awb/projects/1.4.1/festival/lib/voices/japanese/
-</PRE>
-
-<P>
-creating the language directory if it does not already exists.
-Add a symbolic link back to where your voice was built
-
-<PRE>
-ln -s /home/awb/data/cmu_ja_awb_diphone
-</PRE>
-
-<P>
-Now this new voice will be available for anyone runing that version festival
-started from any directory, without the need for any explicit arguments
-
-<PRE>
-festival
-...
-festival&#62; (voice_cmu_ja_awb_diphone)
-...
-festival&#62; (SayText "ohayo gozaimasu.")
-...
-</PRE>
-
-<P>
-<A NAME="IDX247"></A>
-The final stage is to generate a distribution file so the voice may
-be installed on other's festival installations.  Before you do
-this you must add a file <TT>`COPYING'</TT> to the directory you
-built the diphone database in.  This should state the terms and conditions
-in which people may use, distribute and modify the voice.
+(<CODE>merge_models</CODE> is defined within <TT>`lts_build.scm'</TT>)
+The given file will contain a <CODE>set!</CODE> for the given variable
+name to an assoc list of letter to trained tree.  Note the above
+function naively assumes that the letters in the alphabet are
+the 26 lower case letters of the English alphabet, you will need
+to edit this adding accented letters if required.  Note that
+adding "'" (single quote) as a letter is a little tricky in scheme
+but can be done--the command <CODE>(intern "'")</CODE> will give you 
+the symbol for single quote.
 
 </P>
 <P>
-Generate the distribution tarfile in the directory above the festival
-installation (the one where <TT>`festival/'</TT> and <TT>`speech_tools/'</TT>
-directory is).
+To test a set of lts models load the saved model and call 
+the following function with the test align file
 
 <PRE>
-cd /home/awb/projects/1.4.1/
-tar zcvf festvox_cmu_ja_awb_lpc.tar.gz \
-  festival/lib/voices/japanese/cmu_ja_awb_diphone/festvox/*.scm \
-  festival/lib/voices/japanese/cmu_ja_awb_diphone/COPYING \
-  festival/lib/voices/japanese/cmu_ja_awb_diphone/group/awblpc.group
+festival oald-table.scm oald_lts_rules.scm
+festival&#62; (lts_testset "oald.test.align" oald_lts_rules)
 </PRE>
 
 <P>
-<A NAME="IDX248"></A>
-The completed files from building this crude Japanese example
-are available at <A HREF="http://www.festvox.org/examples/cmu_ja_awb_diphone/">http://www.festvox.org/examples/cmu_ja_awb_diphone/</A>.
+The result (after showing all the failed ones), will be a table showing
+the results for each letter, for all letters and for complete words.
+The failed entries may give some notion of how good or bad the result
+is, sometimes it will be simple vowel differences, long versus short,
+schwa versus full vowel, other times it may be who consonants missing.
+Remember the ultimate quality of the letter sound rules is how adequate
+they are at providing <EM>acceptable</EM> pronunciations rather than 
+how good the numeric score is.
+
+</P>
+<P>
+<A NAME="IDX228"></A>
+<A NAME="IDX229"></A>
+For some languages (e.g. English) it is necessary to also find a
+stress pattern for unknown words.  Ultimately for this to work well
+you need to know the morphological decomposition of the word.
+At present we provide a CART trained system to predict stress
+patterns for English.  If does get 94.6% correct for an unseen test
+set but that isn't really very good.  Later tests suggest that
+predicting stressed and unstressed phones directly is actually
+better for getting whole words correct even though the models 
+do slightly worse on a per phone basis <CITE>black98b</CITE>.
+
+</P>
+<P>
+<A NAME="IDX230"></A>
+<A NAME="IDX231"></A>
+<A NAME="IDX232"></A>
+As the lexicon may be a large part of the system we have also
+experimented with removing entries from the lexicon if the letter to
+sound rules system (and stress assignment system) can correct predict
+them.  For OALD this allows us to half the size of the lexicon, it could
+possibly allow more if a certain amount of fuzzy acceptance was allowed
+(e.g. with schwa).  For other languages the gain here can be very
+significant, for German and French we can reduce the lexicon by over 90%.
+The function <CODE>reduce_lexicon</CODE> in <TT>`festival/lib/lts_build.scm'</TT>
+was used to do this.  A discussion of using the above technique as a
+dictionary compression method is discussed in <CITE>pagel98</CITE>.  A
+morphological decomposition algorithm, like that described in
+<CITE>black91</CITE>, may even help more.
+
+</P>
+<P>
+The technique described in this section and its relative merits with
+respect to a number of languages/lexicons and tasks is discussed more
+fully in <CITE>black98b</CITE>.
 
 </P>
 
+
+<H2><A NAME="SEC101" HREF="festvox_toc.html#TOC101">12.6  Post-lexical rules</A></H2>
+
+<P>
+<A NAME="IDX233"></A>
+In fluent speech word boundaries are often degraded in a way that causes
+co-articulation across boundaries.  A lexical entry should normally
+provide pronunciations as if the word is being spoken in isolation.  It
+is only once the word has been inserted into the the context in which
+it is going to spoken can co-articulary effects be applied.  
+
+</P>
+<P>
+Post lexical rules are a general set of rules which can modify the
+segment relation (or any other part of the utterance for that matter),
+after the basic pronunciations have been found.  In Festival
+post-lexical rules are defined as functions which will be applied
+to the utterance after intonational accents have been assigned.
+
+</P>
+<P>
+<A NAME="IDX234"></A>
+For example in British English word final /r/ is only produced when the
+following word starts with a vowel.  Thus all other word final /r/s need
+to be deleted.  A Scheme function that implements this is as follows
+
+<PRE>
+(define (plr_rp_final_r utt)
+  (mapcar
+   (lambda (s)
+    (if (and (string-equal "r" (item.name s))  ;; this is an r
+             ;; it is syllable final
+             (string-equal "1" (item.feat s "syl_final"))
+             ;; the syllable is word final
+             (not (string-equal "0" 
+                   (item.feat s "R:SylStructure.parent.syl_break")))
+             ;; The next segment is not a vowel
+             (string-equal "-" (item.feat s "n.ph_vc")))
+        (item.delete s)))
+   (utt.relation.items utt 'Segment)))
+</PRE>
+
+<P>
+<A NAME="IDX235"></A>
+In English we also use post-lexical rules for phenomena
+such as vowel reduction and schwa deletion in the possessive <SAMP>`'s'</SAMP>.
+
+</P>
 <P><HR><P>
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_11.html">previous</A>, <A HREF="festvox_13.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_11.html">previous</A>, <A HREF="festvox_13.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 </BODY>
 </HTML>

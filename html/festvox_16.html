@@ -1,309 +1,199 @@
 <HTML>
 <HEAD>
 <!-- This HTML file has been created by texi2html 1.52
-     from ../doc/festvox.texi on 24 Febuary 2000 -->
+     from ../doc/festvox.texi on 10 July 2000 -->
 
-<TITLE>Building Voices in the Festival Speech Synthesis System - 16  References</TITLE>
+<TITLE>Building Voices in the Festival Speech Synthesis System - 16  Evaluation</TITLE>
 </HEAD>
 <BODY bgcolor="#ffffff">
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_15.html">previous</A>, <A HREF="festvox_17.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_15.html">previous</A>, <A HREF="festvox_17.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 <P><HR><P>
 
 
-<H1><A NAME="SEC91" HREF="festvox_toc.html#TOC91">16  References</A></H1>
+<H1><A NAME="SEC115" HREF="festvox_toc.html#TOC115">16  Evaluation</A></H1>
 
-<DL COMPACT>
+<P>
+Now that you have built your voice, how can you tell if it works, and
+how can you find out what you need to make it better.  This chapter
+deals with some issues of evaluating a voice in Festival.  Some
+of the points here also apply to testing and improving existing voices
+too.
 
-<DT><EM>allen87</EM>
-<DD>
-J. Allen, S. Hunnicut, and D. Klatt.
-<EM>Text-to-speech: The MITalk system</EM>.
-Cambridge University Press, Cambridge, UK., 1987.
+</P>
+<P>
+The evaluation of speech synthesis is notoriously hard.  Evaluation in
+speech recognition was the major factor in making general speech
+recognition work.  Rigourous tests of well defined data made the
+evaluation of different techniques possible.  Though in spite of its
+success the strict evaluation criteria as used in speech recognition can
+cloud the ultimate goal.  It is important always to remember that tests
+are they to evaluate a systems performance rather than become the task
+itself.  Just as techniques can overtrain on data it is possible to over
+train on the test data too thus loosing the generality and purpose
+of the evaluation.
 
-<DT><EM>anderson84</EM>
-<DD>
-M. Anderson, J. Pierrehumbert, and M. Liberman.
-Synthesis by rule of English intonation patterns.
-In <EM>Proceedings of ICASSP 84</EM>, pages 2.8.1--2.8.4, 1984.
+</P>
+<P>
+In speech recongition a simple (though naive) measure of phones or words
+correct gives a reasonable indicator of how well a speech recognition
+system works.  In synthesis this a lot harder.  A word can have multiple
+pronunciations, so it is much harder to autmatically test if a
+synthesizer's phoneme accuracy, besides much of the quality is not just
+in if it is corretc but if its sounds good.  This is effectly the cruz
+of the matter.  The only really synthesis evaluation technique is having
+a human listen to the result.  Humans individually are not very reliably
+testers of systems, but humans in general are.  However it is usually
+not feasible to have testers listen to large amounts of synthetic speech
+and return a general goodness score.  More specific tests are required.
 
-<DT><EM>bachenko90</EM>
-<DD>
-J. Bachenko and E. Fitzpatrick.
-A computational grammar of discourse-neutral prosodic phrasing in
-  English.
-<EM>Computational Linguistics</EM>, 16(3):155--170, 1990.
+</P>
+<P>
+Although listening tests are the ultimate because they are expensive in
+resources (undergraduates are not willing to listing to bad synthesis
+all day for free), and the design of listening tests is a non-trivial
+task, there are a number of more general tests which can be run at less
+expenses and can help greatly.
 
-<DT><EM>bellegarda98</EM>
-<DD>
-J. Bellegarda and K. Silverman.
-Improved duration modeling of english phonemes using a root
-  sinusoidal transformation.
-In <EM>ICSLP98</EM>, volume ?, pages ????--????, Sydney, Australia.,
-  1998.
+</P>
+<P>
+It is common that a new voice in Festival (or any other speech synthesis
+systems), has limitations and it is wise to test what the limitations
+are and decide if such limitations are acceptable or not.  This depends
+a lot on what you wish to use your voice for.  For example if the voice
+a Scottish English voice to be primarily used as the output of a Chinese
+speech tranlation system, the vocabulary is constained by the
+translation system itself so a large lexicon is probabaly not much of an
+issue, but the vocabulary will include many anglosized (calenodianized
+?) versions of Chinese names, which are not common in standard English
+so letter-to-sound rules should be made more sensitive for that input.
+If the system is to be used to read address lists, it should be able to
+tokenize names and address appropriately, and if it is to be used in a
+dialogue system the intonation model should be able to deal with
+questions and continuations properly.  Optimizing your voices for the
+most common task, and minimizing the errors is what evaluation is for.
 
-<DT><EM>black96</EM>
-<DD>
-A. Black and A. Hunt.
-Generating F$_0$ contours from ToBI labels using linear
-  regression.
-In <EM>ICSLP96</EM>, volume 3, pages 1385--1388, Philadelphia, PA.,
-  1996.
+</P>
 
-<DT><EM>black98b</EM>
-<DD>
-A. Black, K. Lenzo, and V. Pagel.
-Issues in building general letter to sound rules.
-In <EM>Proc. ESCA Workshop on Speech Synthesis</EM>, pages 77--80,
-  Australia., 1998.
 
-<DT><EM>black97c</EM>
-<DD>
-A. Black and P. Taylor.
-Automatically clustering similar units for unit selection in speech
-  synthesis.
-In <EM>Eurospeech97</EM>, volume 2, pages 601--604, Rhodes, Greece,
-  1997.
+<H2><A NAME="SEC116" HREF="festvox_toc.html#TOC116">16.1  Does it work at all?</A></H2>
 
-<DT><EM>black91</EM>
-<DD>
-A. Black, J. van de Plassche, and B. Williams.
-Analysis of unknown words through morphological decomposition.
-In <EM>Proceedings of 5th Conference of the European Chapter of the
-  Association for Computational Linguistics</EM>, pages 101--106, 1991.
+<P>
+It is very easy to build a voice and get it to say a few phrases and
+think that the job is done.  As you build the voice it is worth testing
+each part as you built it to ensure it basically performs as expected.
+But once its all together more general tests are needed.
 
-<DT><EM>black97a</EM>
-<DD>
-A. W. Black.
-Predicting the intonation of discourse segments from examples in
-  dialogue speech.
-In Y. Sagisaka, N. Campbell, and N. Higuchi, editors, <EM>Computing
-  Prosody</EM>, pages 117--128. Springer-Verlag, 1997.
+</P>
+<P>
+Try to find around 100-500 sentences to play through it.  Its amazing
+home many general problems are thrown up when you extend your test set.
+The next stage is to play so <EM>real</EM> text.  That may be news text
+from the web, output from your speech translation system, or some email.
+Initially it is worth just synthesizing the whole set without even
+listening to it.  Problems in analysis and missing diphones etc may be
+shown up just in the processing of the text.  Then you want to listen to
+the output and identify problems.  This make take some amoutn of
+investogation.  What you want to do is identify <EM>where</EM> the problem
+is, is it bad tex analysis, bad lexical entry, a prosody problem, or a
+waveform synthesis problem.  You may need to synthesizes parts
+of the text in isolation (e.g. using the Festival function
+<CODE>SayText</CODE> and look at the structure of the utterance generated,
+e.g. using the function <CODE>utt.features</CODE>.  FOr example
+to see what words have been identified from the text analysis
 
-<DT><EM>campbell96</EM>
-<DD>
-N. Campbell and A. Black.
-Prosody and the selection of source units for concatenative
-  synthesis.
-In J. van Santen, R. Sproat, J. Olive, and J. Hirschberg, editors,
-  <EM>Progress in speech synthesis</EM>, pages 279--282. Springer Verlag, 1996.
+<PRE>
+(utt.features utt1 'Word '(name))
+</PRE>
 
-<DT><EM>campbell91</EM>
-<DD>
-N. Campbell and S. Isard.
-Segment durations in a syllable frame.
-<EM>Journal of Phonetics</EM>, 19(1):37--47, 1991.
+<P>
+Or to see the phones generated
 
-<DT><EM>conkie96</EM>
-<DD>
-A. Conkie and S. Isard.
-Optimal coupling of diphones.
-In J. van Santen, R. Sproat, J. Olive, and J. Hirschberg, editors,
-  <EM>Progress in speech synthesis</EM>, pages 293--305. Springer Verlag, 1996.
+<PRE>
+(utt.features utt1 'Segment '(name))
+</PRE>
 
-<DT><EM>donovan95</EM>
-<DD>
-R. Donovan and P. Woodland.
-Improvements in an HMM-based speech synthesiser.
-In <EM>Eurospeech95</EM>, volume 1, pages 573--576, Madrid, Spain, 1995.
+<P>
+Thus you can view selected parts of an utterance and find out
+if it is being created as you intended.  For some things
+a graphical display of the utterance may help.  The display
+system Fringe has support for this.
 
-<DT><EM>dusterhoff97a</EM>
-<DD>
-K. Dusterhoff and Black A.
-Generating F$_0$ contours for speech synthesis using the tilt
-  intonation theory.
-In <EM>Proc. ESCA Workshop on Intonation</EM>, Athens, Greece., 1997.
+</P>
+<P>
+Once you identify <EM>where</EM> the problem is you need to decide how to
+fix it (or if it is worth fixing).  Adding new entries to the lexicon
+can be a simple fix but there will always be things missing.  A
+systematic study of missing parts of the lexicon is more worthwhile than
+trying to individually fix every bad pronunciation.  For English we used
+Festival to analysis some very large text databases to find out which
+words are not in the lexicon.  Then we looked at the distribution of the
+unknown words and then check the most frequent against the letter to
+sound rules and those which were proounced wrongly were added to the
+lexicon explicitly.  This technique helps to fill genuine gaps in the
+lexicon but such tests will always be biased to the types of
+data used for the tests.
 
-<DT><EM>dutoit97</EM>
-<DD>
-T. Dutoit.
-<EM>An Introduction to Text-to-Speech Synthesis</EM>.
-Kluwer Academic Publishers, 1997.
+</P>
+<P>
+<A NAME="IDX247"></A>
+In our English checks we used Wall Street Journal and Time magazine
+articles (around 10 millions words in total).  Many unusual
+words apear only in one article (e.g proper names) which are less
+important to add to the lexicon, but unusual words that appear 
+across articales are more likely to appear again so should
+be added. 
 
-<DT><EM>dutoit93</EM>
-<DD>
-T. Dutoit and H. Leich.
-MBR-PSOLA : Text-to-speech synthesis based on an MBE re-synthesis
-  of the segments database.
-<EM>Speech Communication</EM>, 13:435--440, 1993.
+</P>
+<P>
+Be aware that using data will cause your coverage to be biased towards
+that type of data.  Our databases are mostly collected in the early 90s
+and hence have good coverage for the Gulf War, and the changes in
+Eastern Europe but our ten million words have no occurences of the words
+<SAMP>`Sojourner'</SAMP> or <SAMP>`Lewinski'</SAMP> whcih only appear in stories later
+in the decade.
 
-<DT><EM>dutoit96</EM>
-<DD>
-T. Dutoit, V. Pagel, N. Pierret, O. van der Vreken, and F. Bataille.
-The mbrola project: Towards a set of high-quality speech synthesizers
-  free of use for non-commercial purposes.
-In <EM>ICSLP96</EM>, volume 3, pages 1393--1397, Philadelphia, PA.,
-  1996.
-http://tcts.fpms.ac.be/synthesis/mbrola.html.
+</P>
+<P>
+A script is provided in <TT>`src/general/find_unknowns'</TT> which will
+analyze given text to find which words do not appear in the current
+lexicon.  You should use the <CODE>-eval</CODE> option to specify the
+selection of your voice.  Note this checks to see which words are not in
+the lexicon itself, it replaces what ever letter-to-sound/ unknown word
+function you specified and saves any words for which that function is
+called in the given output file.   For example
 
-<DT><EM>hertz90</EM>
-<DD>
-S. Hertz.
-The delta programming language: an integrated approach to non-linear
-  phonology, phonetics and speech synthesis.
-In John Kingston and Mary E. Beckman, editors, <EM>Papers in
-  Laboratory Phonology 1</EM>. Cambridge University Press, 1990.
+<PRE>
+find_unknowns -eval '(voice_ked_diphone)' -output cmudict.unknown \
+          wsj/wsj-raw/00/*
+</PRE>
 
-<DT><EM>hirschberg90</EM>
-<DD>
-J. Hirschberg.
-Accent and discourse context: assigning pitch accent in synthetic
-  speech.
-In <EM>Proceedings of AAAI-90</EM>, pages 952--957, 1990.
+<P>
+Normally you would run this over your database then cummulate the
+unknown words, then rerun the unknown words synthesizing each and
+listening to them to evaluate if your LTS system produces reasonable
+results.  Fur those words which do have acceptable pronunciations add
+them to your lexicon.
 
-<DT><EM>hirschberg94</EM>
-<DD>
-J. Hirschberg and P. Prieto.
-Training intonation phrase rules automatically for English and
-  Spanish text-to-speech.
-In <EM>Proc. ESCA Workshop on Speech Synthesis</EM>, pages 159--162,
-  Mohonk, NY., 1994.
+</P>
 
-<DT><EM>huang97</EM>
-<DD>
-X. Huang, A. Acero, H. Hon, Y. Ju, J Liu, S. Meredith, and M. Plumpe.
-Recent improvements on microsoft's trainable text-to-speech
-  synthesizer: Whistler.
-In <EM>ICASSP-97</EM>, volume II, pages 959--962, Munich, Germany, 1997.
 
-<DT><EM>hunt96</EM>
-<DD>
-A. Hunt and A. Black.
-Unit selection in a concatenative speech synthesis system using a
-  large speech database.
-In <EM>ICASSP-96</EM>, volume 1, pages 373--376, Atlanta, Georgia, 1996.
+<H2><A NAME="SEC117" HREF="festvox_toc.html#TOC117">16.2  Sematically unpredictable sentences</A></H2>
 
-<DT><EM>hunt89</EM>
-<DD>
-M. Hunt, Zwierynski D., and Carr R.
-Issues in high quality LPC analysis and synthesis.
-In <EM>Eurospeech89</EM>, volume 2, pages 348--351, Paris, France, 1989.
+<P>
+<A NAME="IDX248"></A>
+<A NAME="IDX249"></A>
+One technique that has been used to evaluation speech synthesis
+quality is testing against semantically unpredictable sentences.
 
-<DT><EM>isard86</EM>
-<DD>
-S. Isard and D. Miller.
-Diphone synthesis techniques.
-In <EM>Proceedings of IEE International Conference on Speech
-  Input/Output</EM>, pages 77--82, 1986.
+</P>
 
-<DT><EM>iwahashi93</EM>
-<DD>
-N. Iwahashi, N. Kaiki, and Y. Sagisaka.
-speech segment selection for concatenative synthesis based on
-  spectral distortion minimization.
-<EM>IEICE Transaction Fundamentals</EM>, E76-A:1942--1948, 1993.
-
-<DT><EM>jilka96</EM>
-<DD>
-M. Jilka.
-Regelbasierte generierung nat\"urlich klingender intonationsmuster
-  des amerikanischen englisch (rule-based generation of naturally sounding
-  intonation patterns of american english).
-Master's thesis, University of Stuttgart, Institute of Natural
-  Language Processing, 1996.
-
-<DT><EM>kain98</EM>
-<DD>
-A. Kain and M. Macon.
-Spectral voice conversion for text-to-speech synthesis.
-In <EM>ICASSP-98</EM>, volume 1, pages 285--288, Seattle, Washington,
-  1998.
-
-<DT><EM>malfrere97</EM>
-<DD>
-F. Malfrere and T. Dutoit.
-High quality speech synthesis for phonetic speech segmentation.
-In <EM>Eurospeech97</EM>, pages 2631--2634, Rhodes, Greece, 1997.
-
-<DT><EM>moulines90</EM>
-<DD>
-Eric. Moulines and F. Charpentier.
-Pitch-synchronous waveform processing techniques for text-to-speech
-  synthesis using diphones.
-<EM>Speech Communication</EM>, 9(5/6):453--467, 1990.
-
-<DT><EM>ostendorf95</EM>
-<DD>
-M. Ostendorf, P. Price, and S. Shattuck-Hufnagel.
-The Boston University Radio News Corpus.
-Technical Report ECS-95-001, Electrical, Computer and Systems
-  Engineering Department, Boston University, Boston, MA, 1995.
-
-<DT><EM>pagel98</EM>
-<DD>
-V. Pagel, K. Lenzo, and A. Black.
-Letter to sound rules for accented lexicon compression.
-In <EM>ICSLP98</EM>, volume 5, Sydney, Australia., 1998.
-
-<DT><EM>portele96</EM>
-<DD>
-Thomas Portele, Florian H\"ofer, and Wolfgang Hess.
-A mixed inventory structure for German concatenative synthesis.
-In J.P. van Santen, R. Sproat, J. Olive, and J. Hirschberg, editors,
-  <EM>Progress in Speech Synthesis</EM>, pages 263--277. Springer, 1996.
-Also as Verbmobil report 149.
-
-<DT><EM>ritchie92</EM>
-<DD>
-G. Ritchie, G. Russell, A. Black, and S. Pulman.
-<EM>Computational Morphology</EM>.
-MIT Press, Cambrdige, Mass., 1992.
-
-<DT><EM>roach93</EM>
-<DD>
-P. Roach, G. Knowles, T. Varadi, and S. Arnfield.
-Marsec: A machine-readable spoken english corpus.
-<EM>Journal of the International Phonetic Association</EM>,
-  23(1):47--53, 1993.
-
-<DT><EM>nuutalk92</EM>
-<DD>
-Y. Sagisaka, N. Kaiki, N. Iwahashi, and K. Mimura.
-ATR -- $\nu$-TALK speech synthesis system.
-In <EM>Proceedings of ICSLP 92</EM>, volume 1, pages 483--486, 1992.
-
-<DT><EM>silverman92</EM>
-<DD>
-K. Silverman, M. Beckman, J. Pitrelli, M. Ostendorf, C. Wightman, P. Price,
-  J. Pierrehumbert, and J. Hirschberg.
-ToBI: a standard for labelling English prosody.
-In <EM>Proceedings of ICSLP92</EM>, volume 2, pages 867--870, 1992.
-
-<DT><EM>sproat90</EM>
-<DD>
-R. Sproat.
-Stress assignment in complex nominals for English text-to-speech.
-In <EM>Proceedings of ESCA Workshop on Speech Synthesis</EM>, pages
-  129--133, Autrans, France, 1990.
-
-<DT><EM>sproat98</EM>
-<DD>
-R. Sproat.
-<EM>Multilingual Text-to-Speech Synthesis: The Bell Labs
-  approach</EM>.
-Kluwer, 1998.
-
-<DT><EM>stella83</EM>
-<DD>
-M. Stella.
-Speech synthesis.
-In F. Fallside and Woods W., editors, <EM>Computer Speech
-  Processing</EM>, pages 421--460. Prentice-Hall, 1983.
-
-<DT><EM>taylor99</EM>
-<DD>
-P. Taylor.
-The Tilt intonation model.
-forthcoming, 1999.
-
-<DT><EM>taylor98a</EM>
-<DD>
-P. Taylor and A. Black.
-Assigning phrase breaks from part-of-speech sequences.
-<EM>Computer Speech and Language</EM>, 12:99--117, 1998.
-
-</DL>
+<PRE>
+%%%%%%%%%%%%%%%%%%%%%%
+Discussion to be added 
+%%%%%%%%%%%%%%%%%%%%%%
+</PRE>
 
 <P><HR><P>
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_15.html">previous</A>, <A HREF="festvox_17.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_15.html">previous</A>, <A HREF="festvox_17.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 </BODY>
 </HTML>

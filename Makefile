@@ -33,7 +33,7 @@
 ##                                                                       ##
 ##  Authors: Alan W Black (awb@cs.cmu.edu)                               ##
 ##           Kevin A. Lenzo (lenzo@cs.cmu.edu)                           ##
-##  Version: festvox-1.1-current February 2000                           ##
+##  Version: festvox-1.2-beta July 2000                                  ##
 ##                                                                       ##
 ###########################################################################
 ##                                                                       ##
@@ -50,7 +50,7 @@ TOP=.
 DIRNAME=.
 BUILD_DIRS = src doc
 ALL_DIRS=config festvox.org $(BUILD_DIRS)
-OTHERS = README ACKNOWLEDGEMENTS ANNOUNCE-1.1
+OTHERS = README ACKNOWLEDGEMENTS ANNOUNCE-1.1 ANNOUNCE-1.2
 FILES = Makefile $(OTHERS)
 
 ALL = $(BUILD_DIRS)
@@ -96,9 +96,9 @@ dist: time-stamp
 
 time-stamp :
 	@ echo $(PROJECT_NAME) >.time-stamp
-	@ echo $(PROJECT_PREFIX) >.time-stamp
-	@ echo $(PROJECT_VERSION) >.time-stamp
-	@ echo $(PROJECT_DATA) >.time-stamp
-	@ echo $(PROJECT_STATE) >.time-stamp
+	@ echo $(PROJECT_PREFIX) >>.time-stamp
+	@ echo $(PROJECT_VERSION) >>.time-stamp
+	@ echo $(PROJECT_DATA) >>.time-stamp
+	@ echo $(PROJECT_STATE) >>.time-stamp
 	@ date >>.time-stamp
 

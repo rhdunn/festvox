@@ -1,5 +1,5 @@
 #!/bin/sh
-####################################################-*-mode:shell-script-*-
+#####################################################-*-mode:shell-script-*-
 ##                                                                       ##
 ##                   Carnegie Mellon University and                      ##
 ##                   Alan W Black and Kevin A. Lenzo                     ##
@@ -31,22 +31,17 @@
 ##  THIS SOFTWARE.                                                       ##
 ##                                                                       ##
 ###########################################################################
-##                                                                       ##
-##  Generate cepstrum and autolabel waveforms from prompts               ##
-##                                                                       ##
+###                                                                      ##
+###  Prompt and record diphone set                                       ##
+###                                                                      ##
 ###########################################################################
 
 if [ $# = 0 ]
 then
-   echo align nonsense word phone labels from prompts
-   echo "Usage: make_labs prompt-wav/*.wav"
-   echo expects the following to exist:
-   echo "prompt-wav/*.wav   The waveform prompts"
-   echo "prompt-lab/*.lab   The labels for the prompts"
-   echo "wav/*.wav          The spoken waveforms"
-   echo "cep/               Will fill this directory with cepstrum files"
-   echo "prompt-cep/        Will fill this directory with cepstrum files"
-   echo "lab/               Will fill this directory with label files"
+   echo "prompt and record diphone nonsense words"
+   echo "Usage: prompt_them DATALIST [POSITION] "
+   echo "   DATALIST list of utterance prompts e.g. etc/MUMBLE.data"
+   echo "   POSITION which utterance to start/restart at, default is 1"
    exit 1
 fi
 
@@ -59,61 +54,39 @@ then
    echo '   csh% setenv ESTDIR /home/awb/projects/speech_tools/'
    exit 1
 fi
-SIG2FV=$ESTDIR/bin/sig2fv
-# These parameters are chosen by becuase they seems vaguely right
-# and do produce reasonable results, but if you think you know better
-# you probably do, feel free to experiment
-SIG2FVPARAMS='-coefs melcep -delta melcep -melcep_order 12 -fbank_order 24 -shift 0.005 -factor 5.0 -preemph 0.97'
 
-if [ ! "$FESTVOXDIR" ]
+if [ ! -d prompt-wav ]
 then
-   echo "environment variable FESTVOXDIR is unset"
-   echo "set it to your local festvox directory e.g."
-   echo '   bash$ export FESTVOXDIR=/home/awb/projects/festvox/'
-   echo or
-   echo '   csh% setenv FESTVOXDIR /home/awb/projects/festvox/'
+   echo "can't find prompt-wav/ directory."
+   echo "are you in the right directory?"
    exit 1
 fi
 
-PHONEALIGN=$FESTVOXDIR/src/diphones/phonealign
-
-# Because I've made this mistake *every* time I've run this 
-if [ `dirname $1` = "wav" ]
+POSITION=0
+if [ $# = 2 ]
 then
-   echo 
-   echo "ERROR"
-   echo "aligning wav/ files to wav/ files which is not what you want"
-   echo "to do you probably wanted to type "
-   echo "      bin/make_labs prompt-wav/*.wav"
-   echo "not"
-   echo "      bin/make_labs wav/*.wav"
-   echo
-   exit
+   POSITION=$2
 fi
 
-#
-#  You may want to comment out some of the following parts if
-#  you have already run them before
-#
-for i in $*
+cat $1 |
+awk '{if (NR >= '$POSITION') print $0}' |
+while read lll
 do
-   fname=`basename $i .wav`
-   echo $fname
-   # Construct cepstrum files
-   $SIG2FV $SIG2FVPARAMS -otype est $i -o prompt-cep/$fname.cep
-   $SIG2FV $SIG2FVPARAMS -otype est_binary wav/$fname.wav -o cep/$fname.cep
-
-   # Because of a bug in the synthesis process the prompt cepstrum files
-   # may be slightly longer than necessary and have 0s in the signal
-   # This can causes NaN in the cepstrum files.  The following
-   # clips the prompt-cepstrum files with respect to the time of the
-   # last label in the prompt label file.
-   $ESTDIR/bin/ch_track -end `tail -1 prompt-lab/$fname.lab | awk '{print $1}'` prompt-cep/$fname.cep -otype est_binary -o prompt-cep/$fname.cep
+   echo $lll
+   f=`echo $lll | awk '{print $2}'`
+   duration=`$ESTDIR/bin/ch_wave -info prompt-wav/$f.wav | awk '{if ($1 == "Duration:") printf("%d\n",$2+1.5)}'`
    
-   # Now the actual alignment   
-   $PHONEALIGN -itrack prompt-cep/$fname.cep -ilabel prompt-lab/$fname.lab -otrack cep/$fname.cep -olabel lab/$fname.lab
+   # If you don't want to hear the prompt comment out the following line
+   $ESTDIR/bin/na_play prompt-wav/$f.wav
+
+   echo start recording for $duration seconds ...
+   $ESTDIR/bin/na_record -f 16000 -time $duration -o wav/$f.wav
+   echo ... end recording
+
+   # If you don't want to hear the review comment out the following lines
+   echo Review $f
+   $ESTDIR/bin/na_play prompt-wav/$f.wav
+   $ESTDIR/bin/na_play wav/$f.wav
 
 done
 
-
- 

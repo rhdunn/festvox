@@ -34,7 +34,7 @@ In @emph{ICSLP96}, volume 3, pages 1385--1388, Philadelphia, PA.,
 
 @item black98b
 A. Black, K. Lenzo, and V. Pagel.
-Issues in building general letter to sound rules.
+Issues in building general letter-to-sound rules.
 In @emph{Proc. ESCA Workshop on Speech Synthesis}, pages 77--80,
   Australia., 1998.
 
@@ -188,7 +188,7 @@ Technical Report ECS-95-001, Electrical, Computer and Systems
 
 @item pagel98
 V. Pagel, K. Lenzo, and A. Black.
-Letter to sound rules for accented lexicon compression.
+Letter-to-sound rules for accented lexicon compression.
 In @emph{ICSLP98}, volume 5, Sydney, Australia., 1998.
 
 @item portele96

@@ -48,7 +48,7 @@ as the function for token analysis
 
 This function should be added to to deal with
 all tokens that are not in your lexicon, cannot be
-treated by your letter to sound rules, or are ambiguous
+treated by your letter-to-sound rules, or are ambiguous
 in some way and require context to resolve.
 
 For example suppose we wish to simply treat all tokens consisting of

@@ -1,0 +1,8 @@
+@chapter Speech and Speech Synthesis
+
+speech, articulators, formats, phones, syllables, utterances, intonation
+etc.
+
+generating speech, formant, concatenative, 
+
+Using speech synthesis in applications

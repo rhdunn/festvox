@@ -87,7 +87,7 @@ You can look at the examples in @file{festvox/src/diphones/*_schema.scm}.
 This stage is actually the first @emph{difficult} part, getting
 thsi right can be tricky.  Finding all possible phone-phone in a language
 isn't as easy as it seems (especially as many possible ones
-don't actually exist).   The file @file{bin/ja_schema.scm} is created
+don't actually exist).   The file @file{festvox/ja_schema.scm} is created
 providing the function @code{diphone-gen-list} which returns
 a list of nonsense words, each consisting of a list of, list of diphones
 and a list of phones in the nonsense word.  For example
@@ -129,14 +129,14 @@ new segment in the multi-phone case).
 
 Now we can generate the diphone schema list.
 @example
-festival -b bin/diphlist.scm bin/ja_schema.scm \
-     "(diphone-gen-schema \"awb\" \"etc/awbdiph.list\")"
+festival -b festvox/diphlist.scm festvox/ja_schema.scm \
+     '(diphone-gen-schema "ja" "etc/jadiph.list")'
 @end example
-Its is worth checking @file{etc/awbdiph.list} by hand to you are sure it
+Its is worth checking @file{etc/jadiph.list} by hand to you are sure it
 contains all the diphone you wish to use.
 
-The diphone schema file, in this case @file{etc/awbdiph.list}, is a
-feindamentally key file for almost all the following scripts.  Even if
+The diphone schema file, in this case @file{etc/jadiph.list}, is a
+fundamentally key file for almost all the following scripts.  Even if
 you generate the diphone list by some method other than described above,
 you should generate a schema list in exactly this format so that
 everything esle will work, modifying the other scripts for some other
@@ -144,15 +144,15 @@ format is almost certainly a waste of your time.
 
 The schema file has the following format
 @example
-( awb_0001 ("k-a" "a-k")        (pau t a k a k a pau) )
-( awb_0002 ("g-a" "a-g")        (pau t a g a g a pau) )
-( awb_0003 ("h-a" "a-h")        (pau t a h a h a pau) )
-( awb_0004 ("p-a" "a-p")        (pau t a p a p a pau) )
-( awb_0005 ("b-a" "a-b")        (pau t a b a b a pau) )
-( awb_0006 ("m-a" "a-m")        (pau t a m a m a pau) )
-( awb_0007 ("n-a" "a-n")        (pau t a n a n a pau) )
-( awb_0008 ("r-a" "a-r")        (pau t a r a r a pau) )
-( awb_0009 ("t-a" "a-t")        (pau t a t a t a pau) )
+( ja_0001 "pau t a k a k a pau"  ("k-a" "a-k"))
+( ja_0002 "pau t a g a g a pau"  ("g-a" "a-g") )
+( ja_0003 "pau t a h a h a pau"  ("h-a" "a-h") )
+( ja_0004 "pau t a p a p a pau"  ("p-a" "a-p") )
+( ja_0005 "pau t a b a b a pau"  ("b-a" "a-b") )
+( ja_0006 "pau t a m a m a pau"  ("m-a" "a-m") )
+( ja_0007 "pau t a n a n a pau"  ("n-a" "a-n") )
+( ja_0008 "pau t a r a r a pau"  ("r-a" "a-r") )
+( ja_0009 "pau t a t a t a pau"  ("t-a" "a-t") )
 ...
 @end example
 In this case it has 297 nonsense words.
@@ -162,8 +162,8 @@ Next we can generate the prompts and their label files with the
 following command
 The to synthesize the prompts
 @example
-festival -b bin/diphlist.scm bin/ja_schema.scm \
-      "(diphone-gen-waves \"prompt-wav\" \"prompt-lab\" \"etc/awbdiph.list\")"
+festival -b festvox/diphlist.scm festvox/ja_schema.scm \
+      '(diphone-gen-waves "prompt-wav" "prompt-lab" "etc/jadiph.list")'
 @end example
 Occasionally when you are building the prompts some diphones requested 
 in the prompt voice don't actually exists (especially when you are
@@ -178,7 +178,7 @@ The stage is to record the prompts.  See @ref{Recording under Unix} for
 details on how to do this under Unix (and in fact other techniques too).
 This can done with the command
 @example
-bin/prompt_them etc/awbdiph.list
+bin/prompt_them etc/jadiph.list
 @end example
 Depending on whether you want the prompts actually to be played or
 not, you can edit @file{bin/prompt_them} to comment out the playing
@@ -188,7 +188,7 @@ Note a third argument can be given to state which nonse word to begin
 prompting from.  This if you have already recorded the first 100 you
 can continue with
 @example
-bin/prompt_them etc/awbdiph.list 101
+bin/prompt_them etc/jadiph.list 101
 @end example
 
 @cindex autolabelling nonsense words
@@ -207,7 +207,32 @@ pitchmarks by
 @example
 bin/make_pm_wave wav/*.wav
 @end example
-Then build the pitch synchronous LPC coefficients
+If you do have an EGG signal then use the following instead
+@example
+bin/make_pm lar/*.lar
+@end example
+A program to move the predicted pitchmarks to the nearest 
+peak in the waveform is also provided.  This is almost always
+a good idea, even for EGG extracted pitch marks
+@example
+bin/make_pm_fix pm/*.pm
+@end example
+Getting good pitchmarks is important to the quality of the synthesis,
+see @ref{Extracting pitchmarks from waveforms} for more discussion.
+
+Because there is often a power mismatch through a set of diphone
+we provided a simple method for finding what general power difference
+exist between files.  This finds the mean power for each vowel in 
+each file and calculates a factor with respect to the overal mean
+vowel power.  A table of power modifiers for each file can
+be calculated by
+@example
+bin/find_powerfactors lab/*.lab
+@end example
+The factors cacluated by this are saved in @file{etc/powfacts}.
+
+Then build the pitch-synchronous LPC coefficients, which used
+the power factors if they've been calculated.
 @example
 bin/make_lpc wav/*.wav
 @end example
@@ -233,7 +258,7 @@ general idea.  Thus we edit @file{festvox/cmu_ja_token.scm} and add
 (simple) support for numbers.
 
 As the relationship between romaji (romanized Japanese) and phones
-is almost trivial we write a set of letter to sound rules, by hand
+is almost trivial we write a set of letter-to-sound rules, by hand
 that expand words into their phones.  This is added to 
 @file{festvox/cmu_ja_lex.scm}.
 
@@ -329,8 +354,3 @@ tar zcvf festvox_cmu_ja_awb_lpc.tar.gz \
 @cindex diphone example
 The completed files from building this crude Japanese example
 are available at @url{http://www.festvox.org/examples/cmu_ja_awb_diphone/}.
-
-
-
-
-

@@ -32,6 +32,13 @@
 ##                                                                       ##
 ###########################################################################
 
+if [ $# = 0 ]
+then
+   echo "Extract and display a spectragram from the given waveform"
+   echo "Usage:  display_sg XXX.wav"
+   exit 1
+fi
+
 if [ ! "$ESTDIR" ]
 then
    echo "environment variable ESTDIR is unset"

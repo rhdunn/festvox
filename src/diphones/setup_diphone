@@ -65,17 +65,26 @@ SKELFESTVOXDIR=$FESTVOXDIR/src/vox_diphone/festvox
 # Build the directory structure
 $FESTVOXDIR/src/general/make_dirs
 
+# Diphone specific files
+cp -p $FESTVOXDIR/src/diphones/make_diph_index bin
+cp -p $FESTVOXDIR/src/diphones/diphlist.scm festvox
+
 # General utilities
+cp -p $FESTVOXDIR/src/general/make_labs bin
+cp -p $FESTVOXDIR/src/general/prompt_them bin
 cp -p $FESTVOXDIR/src/general/make_lpc bin
 cp -p $FESTVOXDIR/src/general/make_pm bin
 cp -p $FESTVOXDIR/src/general/make_pm_wave bin
-cp -p $FESTVOXDIR/src/general/make_pm_lab bin
-cp -p $FESTVOXDIR/src/diphones/make_labs bin
-cp -p $FESTVOXDIR/src/diphones/make_diph_index bin
-cp -p $FESTVOXDIR/src/diphones/prompt_them bin
-cp -p $FESTVOXDIR/src/diphones/diphlist.scm bin
+cp -p $FESTVOXDIR/src/general/make_pmlab_pm bin
+cp -p $FESTVOXDIR/src/general/make_pm_pmlab bin
+cp -p $FESTVOXDIR/src/general/make_pm_fix bin
+cp -p $FESTVOXDIR/src/general/make_f0 bin
+cp -p $FESTVOXDIR/src/general/find_powerfactors bin
+cp -p $FESTVOXDIR/src/general/simple_powernormalize bin
+cp -p $FESTVOXDIR/src/general/traintest bin
 cp -p $FESTVOXDIR/src/general/emu_lab.tpl etc/emu_lab.tpl
 cp -p $FESTVOXDIR/src/general/emu_pm.tpl etc/emu_pm.tpl
+cp -p $FESTVOXDIR/src/general/emu_f0.tpl etc/emu_f0.tpl
 
 # Language/Vox scheme files
 case $FV_LANG in
@@ -87,7 +96,18 @@ case $FV_LANG in
          newname=`echo $fname | sed 's/INST/'$FV_INST'/g' | sed 's/VOX/'$FV_VOX'/g'`
          cat $i | sed 's/INST/'$FV_INST'/g' | sed 's/VOX/'$FV_VOX'/g' >festvox/$newname
       done
-      cp -p $FESTVOXDIR/src/diphones/us_schema.scm bin/us_schema.scm
+      cp -p $FESTVOXDIR/src/diphones/us_schema.scm festvox/us_schema.scm
+      ;;
+   uss2)
+      echo "copying skeleton files for US English (Sphinx2 phoneset)"
+      for i in $SKELFESTVOXDIR/INST_uss2_VOX_*.scm
+      do
+         fname=`basename $i`
+         newname=`echo $fname | sed 's/INST/'$FV_INST'/g' | sed 's/uss2/us/g' | sed 's/VOX/'$FV_VOX'/g'`
+         cat $i | sed 's/INST/'$FV_INST'/g' | sed 's/VOX/'$FV_VOX'/g' >festvox/$newname
+      done
+      cp -p $FESTVOXDIR/src/diphones/cmusphinx2_schema.scm festvox/cmusphinx2_schema.scm
+      cp -p $FESTVOXDIR/src/vox_diphone/festvox/cmusphinx2_phones.scm festvox/
       ;;
    uk)
       echo "copying skeleton files for UK English"
@@ -97,7 +117,7 @@ case $FV_LANG in
          newname=`echo $fname | sed 's/INST/'$FV_INST'/g' | sed 's/VOX/'$FV_VOX'/g'`
          cat $i | sed 's/INST/'$FV_INST'/g' | sed 's/VOX/'$FV_VOX'/g' >festvox/$newname
       done
-      cp -p $FESTVOXDIR/src/diphones/uk_schema.scm bin/uk_schema.scm
+      cp -p $FESTVOXDIR/src/diphones/uk_schema.scm festvox/uk_schema.scm
       ;;
    *)
       echo "copying skeleton files for new language: "$FV_LANG
@@ -109,7 +129,7 @@ case $FV_LANG in
       done
       if [ -f $FESTVOXDIR/src/diphones/$FV_LANG"_schema.scm" ]
       then
-         cp -p $FESTVOXDIR/src/diphones/$FV_LANG"_schema.scm" bin
+         cp -p $FESTVOXDIR/src/diphones/$FV_LANG"_schema.scm" festvox
       fi
       ;;
 esac
