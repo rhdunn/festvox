@@ -42,13 +42,13 @@
 int main(int argc,char **argv)
 {
     EST_Wave w;
-    EST_Track pm_in, pm_out;
+    EST_Track pm_in, pm_out, pm_out2;
     EST_Option al;
     EST_StrList files;
-    int i,j,window,max;
-    float maxperiod, minperiod;
+    int i,j,window,prewindow,max;
+    float maxperiod, minperiod,t;
     int k;
-    float lpos;
+    int verbose=FALSE;
 
     parse_command_line
 	(argc,argv,
@@ -58,14 +58,19 @@ int main(int argc,char **argv)
 	 "-wave <ifile>\n"+
 	 "-pm <ifile>\n"+
 	 "-window <int> {16}\n"+
+	 "-prewindow <int> {16}\n"+
+	 "-verbose\n"+
 	 "-max <float> {0.020}\n"+
-	 "-min <int> {0.0025}\n"+
+	 "-min <float> {0.0025}\n"+
 	 "-o <ofile> Output pm file\n",
 	 files,al);
 
+    if (al.present("-verbose"))
+	verbose = TRUE;
     window = al.ival("-window");
     maxperiod = al.fval("-max");
     minperiod = al.fval("-min");
+    prewindow = al.ival("-prewindow");
     window = al.ival("-window");
     w.load(al.val("-wave"));
     pm_in.load(al.val("-pm"));
@@ -75,52 +80,60 @@ int main(int argc,char **argv)
     for (i=0; i<pm_in.num_frames(); i++)
     {
 	int pos = (int)(pm_in.t(i)*w.sample_rate());
-	for (max=pos,j=pos-window; 
+	for (max=pos,j=pos-prewindow; 
 	     (j > 0) && (j < w.num_samples()) && (j < pos+window);
 	     j++)
 	    if (w(j) > w(max))
 		max = j;
 	pm_out.t(i) = ((float)max)/w.sample_rate();
+/*	printf("%f %d %f %d\n",
+	       pm_in.t(i),pos,
+	       pm_out.t(i),max); */
     }
 
-    lpos = 0.0;
-    for (k=i=0; i<pm_in.num_frames(); i++)
+    pm_out2.resize(pm_in.num_frames()*4,pm_out.num_channels());
+    pm_out2.copy_setup(pm_out);
+
+    for (k=i=0,t=0.0; t<(float)w.num_samples()/(float)w.sample_rate();
+	 i++)
     {
-	int pos = (int)(pm_in.t(i)*w.sample_rate());
-	if ((pm_in.t(i) - lpos) < minperiod)
+/*	printf("working on t %f i %d out.t(i) %f k %d out2.t(k) %f\n",
+	t,i,pm_out.t(i),k,pm_out2.t(k)); */
+	if ((i > pm_out.num_frames()) ||
+	    ((pm_out.t(i)-t) > maxperiod))
 	{
-	    printf("skipping short period (%f) at time %f\n",
-		   (pm_in.t(i)-lpos), pm_in.t(i));
-	    continue;  // its too wee
+	    if (verbose)
+	    {
+		if (i > pm_out.num_frames())
+		    printf("adding at end (%f)\n", t);
+		else
+		    printf("splitting long period (%f) at time %f\n",
+			   (pm_out.t(i)-t), pm_out.t(i));
+	    }
+	    if (k>=pm_out2.num_frames())
+	    {
+		if (verbose)
+		    printf("getting more pm space %d\n",k);
+		pm_out2.resize((int)((float)k*1.2),pm_out2.num_channels());
+	    }
+	    pm_out2.t(k) = t + ((minperiod+maxperiod)/2.0);
+	    i--;
 	}
-	else if ((pm_in.t(i)-lpos) > maxperiod)
+	else if ((pm_out.t(i) - t) < minperiod)
 	{
-	    printf("splitting long period (%f) at time %f\n",
-		   (pm_in.t(i)-lpos), pm_in.t(i));
-	    pos = (int)((lpos+maxperiod)*w.sample_rate())-2*window;
+	    if (verbose)
+		printf("skipping short period (%f) at time %f\n",
+		       (pm_out.t(i)-t), pm_out.t(i));
 	    continue;
 	}
-	lpos = pm_in.t(i);
-#if 0
-	for (max=pos,j=pos-window; 
-	     (j > 0) && (j < w.num_samples()) && (j < pos+window);
-	     j++)
-	    if (w(j) > w(max))
-		max = j;
-	pm_out.t(k) = ((float)max)/w.sample_rate();
-	lpos = pm_out.t(k);
+	else
+	    pm_out2.t(k) = pm_out.t(i);
+	t = pm_out2.t(k);
 	k++;
-
-	if (k>=pm_out.num_frames())
-	{
-	    printf("getting more pm space %d\n",k);
-	    pm_out.resize((int)((float)k*1.2),pm_out.num_channels());
-	}
-#endif
     }
 
-    pm_out.resize(k,pm_in.num_channels());
-//    pm_out.save(al.val("-o"));
+    pm_out2.resize(k-1,pm_in.num_channels());
+    pm_out2.save(al.val("-o"));
 
     return 0;
 }

@@ -90,7 +90,8 @@ update:
 ###   Making dependencies
 #######################################################################
 
-## This is a piece of rjc magic taken from "Milton"
+## This is a piece of rjc magic taken from "Milton" which means it
+## must have been in xmg.
 
 DEPEND=make.depend
 MAKE_DEPEND=$(CC) -MM $(CFLAGS)

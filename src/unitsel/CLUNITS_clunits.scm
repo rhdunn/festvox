@@ -36,15 +36,18 @@
 ;;;                                                                      ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;; Ensure this version of festival has been compiled with clunits module
 (require_module 'clunits)
-(if (null (member 'clunits provided))
-    (load (path-append libdir "../src/modules/clunits/acost.scm")))
+(require 'clunits) ;; runtime scheme support
 
+;;; Try to find the directory where the voice is, this may be from
+;;; .../festival/lib/voices/ or from the current directory
 (if (assoc 'INST_LANG_VOX_clunits voice-locations)
     (defvar INST_LANG_VOX::clunits_dir 
       (cdr (assoc 'INST_LANG_VOX_clunits voice-locations)))
     (defvar INST_LANG_VOX::clunits_dir (string-append (pwd) "/")))
 
+;;; Did we succeed in finding it
 (if (not (probe_file (path-append INST_LANG_VOX::clunits_dir "festvox/")))
     (begin
      (format stderr "INST_LANG_VOX::clunits: Can't find voice scm files they are not in\n")
@@ -92,32 +95,31 @@
        (list 'db_dir INST_LANG_VOX::clunits_dir)
        '(name INST_LANG_VOX)
        '(index_name INST_LANG_VOX)
+       '(f0_join_weight 0.0)
        '(join_weights
-         (10.0
-	   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5
-	   ))
+         (0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 ))
        '(trees_dir "festival/trees/")
        '(catalogue_dir "festival/clunits/")
        '(coeffs_dir "mcep/")
        '(coeffs_ext ".mcep")
        '(clunit_name_feat lisp_INST_LANG_VOX::clunit_name)
        ;;  Run time parameters 
-;       '(join_method windowed)
+       '(join_method windowed)
        ;; if pitch mark extraction is bad this is better than the above
 ;       '(join_method smoothedjoin)
-       '(join_method modified_lpc)
+;       '(join_method modified_lpc)
        '(continuity_weight 5)
-       '(log_scores 1)  ;; good for high variance joins (not so good for ldom)
+;       '(log_scores 1)  ;; good for high variance joins (not so good for ldom)
        '(optimal_coupling 1)
        '(extend_selections 2)
-;       '(pm_coeffs_dir "mcep/")
-;       '(pm_coeffs_ext ".mcep")
-;       '(sig_dir "wav/")
-;       '(sig_ext ".wav")
-       '(pm_coeffs_dir "lpc/")
-       '(pm_coeffs_ext ".lpc")
-       '(sig_dir "lpc/")
-       '(sig_ext ".res")
+       '(pm_coeffs_dir "mcep/")
+       '(pm_coeffs_ext ".mcep")
+       '(sig_dir "wav/")
+       '(sig_ext ".wav")
+;       '(pm_coeffs_dir "lpc/")
+;       '(pm_coeffs_ext ".lpc")
+;       '(sig_dir "lpc/")
+;       '(sig_ext ".res")
 ;       '(clunits_debug 1)
 ))
 
@@ -222,33 +224,10 @@ Define voice for limited domain: LANG."
   (set! current-voice 'INST_LANG_VOX_clunits)
 )
 
-(define (INST_LDOM_VOX::clunits_units_selected utt filename)
-  "(INST_LDOM_VOX::clunits_units_selected utt filename)
-Output selected unitsfile indexes for each unit in the given utterance.
-Results saved in given file name, or stdout if filename is \"-\"."
-  (let ((fd (if (string-equal filename "-")
-		t
-		(fopen filename "w")))
-	(sample_rate
-	 (cadr (assoc 'sample_rate (wave.info (utt.wave utt))))))
-    (mapcar
-     (lambda (s)
-       (format fd "%s\t%s\t%10s\t%f\t%f\n"
-	       (string-before (item.name s) "_")
-	       (item.name s)
-	       (item.feat s "fileid")
-	       (item.feat s "middle")
-	       (+ 
-		(item.feat s "middle")
-		(/ (- (item.feat s "samp_end")
-		      (item.feat s "samp_start"))
-		   sample_rate)))
-       )
-     (utt.relation.items utt 'Unit))
-    (if (not (string-equal filename "-"))
-	(fclose fd))
-    t))
-
+(define (is_pau i)
+  (if (phone_is_silence (item.name i))
+      "1"
+      "0"))
 
 (provide 'INST_LANG_VOX_clunits)
 

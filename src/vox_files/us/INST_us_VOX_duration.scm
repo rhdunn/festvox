@@ -43,7 +43,7 @@ Set up duration for English."
   (set! duration_cart_tree INST_us_VOX::zdur_tree)
   (set! duration_ph_info INST_us_VOX::phone_durs)
   (Parameter.set 'Duration_Method 'Tree_ZScores)
-  (Parameter.set 'Duration_Stretch 1.1)
+  (Parameter.set 'Duration_Stretch 1.0)
 )
 
 (define (INST_us_VOX::reset_duration)

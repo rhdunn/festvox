@@ -61,7 +61,10 @@ do
    echo $i
    # Due to a bug this only works for 16Khz
    $ESTDIR/bin/ch_wave $i -F 16000 -o tmp$$.lar
-   # You'll need -inv if you are at CSTR (or maybe elsewhere)
-   $ESTDIR/bin/pitchmark tmp$$.lar -o pm/$fname.pm -otype est -min 0.005 -max 0.012 -fill -def 0.01 -wave_end
+   # You'll need -inv if you are at CMU (or CSTR and maybe elsewhere)
+   # Male
+   $ESTDIR/bin/pitchmark tmp$$.lar -inv -o pm/$fname.pm -otype est -min 0.005 -max 0.012 -fill -def 0.01 -wave_end
+   # Female
+#   $ESTDIR/bin/pitchmark tmp$$.lar -inv -o pm/$fname.pm -otype est -min 0.00333 -max 0.0075 -fill -def 0.006 -wave_end
    rm -f tmp$$.lar
 done

@@ -123,7 +123,7 @@ be useds as a duration model."
     (format ofd ")\n")
     (format ofd "\n\n")
     ;; The tree wasn't trained with silence so we need to add that
-    (format ofd "(set! %s::zdurtree '\n" modelname)
+    (format ofd "(set! %s::zdur_tree '\n" modelname)
     (format ofd "((name is %s)\n" silence)
     (format ofd " ((p.R:SylStructure.parent.parent.pbreak is BB)\n")
     (format ofd "  ((0.0 2.0))\n")

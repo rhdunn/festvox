@@ -50,16 +50,23 @@ fi
 if [ $# = 0 ]
 then
    echo "Normalize power in waveforms"
-   echo "Usage:  bin/simple_powernormalize wav/*.wav"
-   echo "Will overwrite existing waveforms in wav/"
+   echo "Usage:  bin/simple_powernormalize wav.orig/*.wav"
+   echo "Will overwrite existing waveforms in wavn/"
+   echo "You need to copy/mv or whatever the files into wav/"
+   echo "Make sure YOU don't overwrite the originals wav/"
    exit 1
+fi
+
+if [ ! -d wavn ]
+then
+   mkdir wavn
 fi
 
 for i in $*
 do
   fname=`basename $i .wav`
   echo $fname
-  $ESTDIR/bin/ch_wave -scaleN 0.65 -o $i wavn/$fname.wav
+  $ESTDIR/bin/ch_wave -scaleN 0.65 -o wavn/$fname.wav $i
 done
 
 

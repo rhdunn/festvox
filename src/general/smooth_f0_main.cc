@@ -170,7 +170,9 @@ int main(int argc,char **argv)
 		item = item->next();
 	    }
 	    if ((item == 0) ||
-		(item->name() == silences))
+		(item->name() == silences) ||
+		(item->name() == "h#")  ||
+		(item->name() == "H#"))
 		spsil.a(i) = 0;
 	    else
 		spsil.a(i) = 1;

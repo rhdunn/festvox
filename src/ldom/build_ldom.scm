@@ -39,6 +39,8 @@
 ;;;                                                                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(require 'clunits_build)
+
 (defvar INST_LDOM_VOX::ldom_dir "CURRENTDIR")
 
 ;;; Basic voice definition file with voice defines and clunit
@@ -60,12 +62,11 @@
 	 '(utts_dir "festival/utts/")
 	 '(utts_ext ".utt")
 	 '(dur_pen_weight 0.0)
+	 '(f0_pen_weight 0.1)
 	 '(get_stds_per_unit t)
 	 '(ac_left_context 0.8)
 	 '(ac_weights
-	   (5.0
-	    0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 
-	    ))
+	   (0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 ))
 	 ;; Join weights in INST_LDOM_VOX_ldom.scm
 	 ;; Features for extraction
 	 '(feats_dir "festival/feats/")
