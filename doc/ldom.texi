@@ -1,0 +1,414 @@
+@chapter Limited domain synthesis
+
+@cindex limited domain synthesis
+@cindex restricted domain synthesis
+This chapter disucsses and gives examples of building synthesis systems
+for limited domains.  By limited domain, we mean domains where the
+required synthetic prompting may be infinite but the words and phrases
+in it can be enuerated.  Some typical examples are telling the time,
+reading telephone numbers.  It possible for this technique to extend to
+larger domains such as reading the weather, or even the Darpa
+Communcator domain (flight booking dialog system).  
+
+Limited domains are dicussed here as it is felt that it should be easier
+to build unit selection type synthesizers for domains where there are a
+much smaller and controlled number of units.  The second reason is that
+general TTS systems (e.g. diphone systems) still sound like a
+synthesizer.  General unit selection when its good, offers near human
+quality, but when its bad it is usually much worse than a diphone
+synthesizer.  Hybrid systems look interesting but as we cannot yet
+automatically detect when general unit selection systems go bad, its not
+clear when a diphone system should be swapped in.  But as unit selection
+offers so much promise, it is hoped that in a limit domain we can get
+the unit selection good quality, and avoid the bad quality.  Finally,
+although full TTS systems may be our ultimate goal actually for many
+existing systems a limit domain synthesizer is adequate.
+
+There is a stage beyond limited domain, but falling short of general
+opne synthesis, where the most common phrases are the best synthesized
+and the quality gracefully degrades as the phrases become less common.
+Some hybrid recorded prompts/unit selection/diphone systems have been
+proposed and should be able to deliver and answer but we will note deal
+directly with those here.
+
+However one point you quickly find is that although most speech dialog
+systems are very constrained in their vocabulary many require the
+hardest class of words: proper names.
+
+In continuing in mode of tutorial this chapter first gives a complete
+walkthrough of a talking clock.  This is a small example which will
+probably work.  Following through this example will give you a good idea
+of what is involved in building a limited domain synthesizer.  Also
+in the following section problems and modifications can be better 
+discussed with respect to this complete example.
+
+@section Telling the time
+
+@cindex talking clock
+Festival includes a very simple little script that speaks the current
+time (@file{festival/examples/saytime}).  This section explains how to
+replace the synthesizer used from this script with one that talks with
+your own voice.  The result may not be perfect but it covers a
+significant part of how to build basic synthetic voices and can be
+probably done on existing cheap pc recording equipment.
+
+Following through this example will give a reasonable understanding
+of the relative importance of many important steps in the voice
+building process.
+
+The following tasks are required:
+@itemize @bullet
+@item Designing the prompts
+@item Recording the prompts
+@item Autolabelling the prompts
+@item Building utterance structures for recorded utterances
+@item Extracting pitchmark and building LPC coefficients
+@item Building a clunit based synthesizer from the utterances
+@item Testing and tuning
+@end itemize
+
+Before starting set the environment variables FESTVOXDIR and ESTDIR
+to the directories which contain the festvox distribution and
+the Edinburgh Speech Tools respectively.  Under bash and other
+good shells this may be don by commands like
+@example
+export FESTVOXDIR=/home/awb/projects/festvox
+export ESTDIR=/home/awb/projects/1.4.1/speech_tools
+@end example
+A simple script is provided setting up the basic directory structure
+and copying in some default parameter files.  This may or may
+not be appropriate for your particular application but it may help.
+Make a new directory wher eyou wish your database to be and
+change directory to it.  The instructions here are for the saytime
+example database.  
+@example
+mkdir ~/data/time
+cd ~/data/time
+$FESTVOXDIR/src/ldom/setup_ldom time
+@end example
+This script makes the directories and copies basic scheme 
+files into the @file{festvox/} directory.  You may need to
+edit these files later.
+
+@subsection Designing the prompts
+
+In this saytime example the basic format of the utterance is
+@example
+The time is now, <exactness> <minute info> <hour info>, in the <day info>.
+@end example
+For example
+@example
+The time is now, a little after five to ten, in the morning.
+@end example
+In all there are 1152 (4x12x12x2) utterances (although there are
+three possible day info parts (morning, afternoon and evening) they
+only get 12 hours, 6 hours and 6 hours repsectively).  Although it
+would technically be possible to record all of these we wish to reduce
+the amount of recording to a minimum.  Thus what we actually do is 
+ensure there is at least one example of each value in each slot.
+
+Here is a list of 24 utterances that should cover the main
+variations.
+@example
+The time is now, exactly five past one, in the morning
+The time is now, just after ten past two, in the morning
+The time is now, a little after quarter past three, in the morning
+The time is now, almost twenty past four, in the morning
+The time is now, exactly twenty-five past five, in the morning
+The time is now, just after half past six, in the morning
+The time is now, a little after twenty-five to seven, in the morning
+The time is now, almost twenty to eight, in the morning
+The time is now, exactly quarter to nine, in the morning
+The time is now, just after ten to ten, in the morning
+The time is now, a little after five to eleven, in the morning
+The time is now, almost twelve.
+The time is now, just after five to one, in the afternoon
+The time is now, a little after ten to two, in the afternoon
+The time is now, exactly quarter to three, in the afternoon
+The time is now, almost twenty to four, in the afternoon
+The time is now, just after twenty-five to five, in the afternoon
+The time is now, a little after half past six, in the evening
+The time is now, exactly twenty-five past seven, in the evening
+The time is now, almost twenty past eight, in the evening
+The time is now, just after quarter past nine, in the evening
+The time is now, almost ten past ten, in the evening
+The time is now, exactly five past eleven, in the evening
+The time is now, a little after quarter to midnight.
+@end example
+These examples are first put in the prompt file with an utterance
+number and the prompt in double quotes like this.
+@example
+(time0001 "The time is now ...")
+(time0002 "The time is now ...")
+(time0003 "The time is now ...")
+...
+@end example
+
+@subsection Recording the prompts
+
+@cindex recording prompts
+The best way to record the prompts is to use a professional speaker in a
+professional recording studio (anechoic chamber) using dual channel (one
+for audio and the other for the electroglottograph signal) direct to a
+digital record using a high quality head mounted microphone.
+
+However most of us don't have such equipment (or voice talent) so
+readily available so what ever you do will probably have to be a
+compromise.  The head mounted mic requirement is the cheapest to meet
+and it is pretty important so you should at least meet that requirement.
+Anechoic chambers are expensive, and even professional recording studios
+are easy to access (though most Universities will have some such
+facilities).  It is possible to do away with the EGG reading if
+a little care is taken to ensure pitchmarks are properly extracted 
+from the waveform signal alone.
+
+We have been successful in recording with a standard PC using a standard
+soundblaster type 16bit audio card though results do vary from machine
+to machine.  Before attempting this you shoudl record a few examples on
+the PC to see how much noise is being picked up by the mic.  For example
+try the following
+@example
+$ESTDIR/bin/na_record -f 16000 -time 5 -o test.wav -otype riff
+@end example
+@cindex displaying spectragrams
+@cindex spectragrams
+@cindex emulabel
+This will record 5 seconds from the microphone in the machien you run
+the command on.  You should also do this to test that the microphone
+is plugged in (and switched on).  Play back the recorded wave with
+@file{na_play} and perhaps play with the mixer levels until you get
+the least background noise with the strongest spoken signal.  Now
+you should display the waveform to see (as well as hear) how much
+noise is there.
+@example
+$FESTVOXDIR/src/general/display_sg test.wav
+@end example
+This will display the waveform and its spectrogram.  Noise will show up
+in the silence (and other) parts.
+
+@cindex noise in recording
+There a few ways to reduce noise.  Ensure the microphone cable isn't
+wrapped around other cables (especially power cables).  Turning the
+computer 90 degrees may help and repositioning things can help too.
+Moving the sound board to some other slot in the machine can also help
+as well as getting a different microphone (even the same make).
+
+There is a large advantage in recording straight to disk as it allows
+the recording to go directly into right files.  Doing off-line recording
+(onto DAT) is better in reducing noise but transfering it to disk and
+segmenting it is a long a tedious process.
+
+First generate the prompts with the command
+@example
+festival -b etc/ldom.scm "(build_prompts \"etc/time.data\")"
+@end example
+and prompt and record them with the command
+@example
+bin/prompt_them etc/time.data
+@end example
+You may or may not find listening to the prompts before speaking
+useful.  Simply displaying them may be adequate for you (if so 
+comment out the @file{na_play} line in @file{bin/prompt_ldom}.
+
+@subsection Autolabelling the prompts
+
+The recorded prompt can be labelled by aligning them against
+the synthesize prompts.  This is done by the command
+@example
+bin/make_labs prompt-wav/*.wav
+@end example
+If the utterances are long (> 10 seconds of speech) you may require lots
+of swap space to do this stage (this could be fixed).
+
+@cindex emulabel
+@cindex fixing labels
+Once labelled you should check that they are labelled
+reasonable.  The labeller typically gets it pretty much correct,
+or very wrong, so a quick check can often save time later.  You 
+can check the database using the command
+@example
+emulabel etc/emu_lab
+@end example
+Once you are happy with the labelling you can construct the
+whole utterance structure for the spoken utterances.  This is done
+by combining the basic structure from the synthesized prompts and
+the actualy times from the automatifcally labelled ones.  This
+can be done with the command
+@example
+festival -b etc/ldom.scm "(build_utts \"etc/time.data\")"
+@end example
+
+@subsection Extracting pitchmark and building LPC coefficients
+
+@cindex extracing pitchmarks
+If you have recorded EGG signals the you can use @file{bin/make_pm}
+from the @file{.lar} files.  Note that you may need to add (or remove)
+the optin @file{-inv} depending on the updownness of your EGG signal.
+However so far only the CSTR larygnograph seems to produce inverted
+signals so the default should be adequate.  Also not the
+parameters that specify the pitch period range, @file{-min} and @file{max}
+the defaul setting are suitable for a male speaker, for a feamle you
+should modify these to something like
+@example
+-min 0.0033 -max 0.0875 -def 0.005
+@end example
+The changing from a range of (male) 200Hz-80Hz with a default of
+100Hz, to a female range of 300Hz-120Hz and default of 200Hz.
+
+@cindex epoch
+If you don't have an EGG signal you must extract the pitch from the
+waveform itself.  This works though may require a little modification of
+parameters, and it is computationally more expensive (and wont be as
+exact as from an EGG signal).  There are two methods, one
+using Entropic's @file{epoch} program which work pretty well
+without tuning parameters.  The second is to use the free Speech
+Tools program @file{pitchmark}.  The first is very computationally
+expensive, and as Entropic is no longer in existence, the program
+is no longer available (though rumours circulate that it may
+appear again for free).  To use @file{epoch} use the program
+@example
+bin/make_pm_epoch wav/*.wav
+@end example
+To use @file{pitchmark} use the command
+@example
+bin/make_pm_wave wav/*.wav
+@end example
+As with the EGG extraction @file{pitchmark} uses parameters to specify
+the range of the pitch periods, you should modify the parameters to best
+match your speakers range.  The other filter parameters also 
+can make a different to the success.   Rather than try to explain
+what changing the figures mean (I admit I don't fully know), the
+best solution is to explain what you need to obtain as a result.
+
+@cindex fixing pitchmarks
+@cindex checking pitchmarks
+You can view the derived pitchmarks once they are converted to more
+standard label files using the command
+@example
+bin/make_pm_lab pm/*.pm
+@end example
+Then view them with
+@example
+emulabel etc/emu_pm
+@end example
+Zoom into a voiced part of the speech, the pm labels should be alligned
+to the largest peaks in the signal.  (** this needs much more
+explanation, and a pointer to some correct/incorrect pictures **)
+
+@cindex upside down waveforms
+@cindex waveform inversion
+@cindex inverted waveforms
+At this point you may find that your waveform file is upside down.
+Normally this wouldn't matter but due to the basic signal processing
+techniques qe used to find the pitch periods upside down signals confuse
+things.  People tell me that it shouldn't happen but some recording
+devices return an inverted signal.  From the cases we've seen the same
+device always returns the same form so if one of your recordings is
+upside down all of them probably are (though there are some published
+speech databases e.g. BU Radio data, where a random half are upside
+down).  
+
+In general the higher peaks should be positive rather than negative.
+If not you can invert the signals with the command
+@example
+for i in wav/*.wav
+do
+   ch_wave -scale -1.0 $i -o $i
+done
+@end example
+If they are upside, invert them and re-run the pitch marking.  (If
+you do invert them it is not necessary to re-run the segment labelling.)
+
+@cindex MELCEP parameterizations
+@cindex MFCC
+Once you have pitchmarks, next you need to generate the pitch
+synchronous MELCEP parameterization of the speech used in building the
+cluster synthesizer.
+@example
+bin/make_mcep wav/*.wav
+@end example
+
+@subsection Building a clunit based synthesizer from the utterances
+
+Building a full clunit synthesizer is probably a little bit of over kill
+but the technique basically works.  See @ref{Unit selection databases}
+for a more detailed discussion of this technique.  The basic
+parameter file @file{festvox/time_params.scm}, is reasonable as
+a start.
+@example
+festival -b festvox/time_build.scm "(do_all)"
+@end example
+If all goes well this should create a file
+@file{festival/clunits/time.catalogue} and set of index trees in
+@file{festival/trees/time.tree}.
+
+@subsection Testing and tuning 
+
+To test the new voice start Festival as
+@example
+festival festvox/time_ldom.scm "(voice_time_ldom)"
+@end example
+The function @file{(saytime)} can now be called and it should
+say the current time.
+
+Note this synthesizer can @emph{only} say the phrases that it has phones
+for which basically means it can only say the time in the format given
+at the start of this chapter.  Thus although you can
+use @file{SayText} you can only five it text in the write form
+if you expect it to works.  That's what limited domain synthesis
+is.
+
+A full directory structure of this example with the recordings and
+parameters files is available at @url{http://www.festvox.org/examples/cmu_time_awb_ldom/}.  And an on-line demo of this voice in that directory is
+available at @url{http://www.festvox.org/ldomdemos.html}.
+
+@section Making it better
+
+The above walkthough is to give you a basic idea of stages involved in
+building a limited domain synthesizer.  The quality of a limited domain
+synthesizer will most likely be execellent in parts and very bad in
+others which is typical of techniques like this.  Each stage is, of
+course, more complex than this and there are a number of things that can
+be done to improve it.
+
+For limited domain synthesize it should be possible to correct 
+the errors such that it is execellent always.  To do so though requires
+being able to diagnose where the problems are.  The most
+likely problems are listed here
+@itemize @bullet
+@item Mis-labelling
+Due to lipsmacks, and other reasons the labelling may not be correct.
+The result maye the wrong, extra or missing segments in the synthesized
+utterance.  Using @file{emulabel} you can check and hand correct the
+labels.
+@item Mis-spoken data
+The speaker may have made a mistake in the content.  This can often
+happen even when the speaker is careful.  Mistakes can be actual
+content (it is easy to read a list of number wrongly), but also
+hesitations and false starts can make the recording bad.  Also note
+that inconsistent prosodic variation can also affect the synthesis
+quality.   Re-recording can be considered for bad examples,
+or you can delete them from the @file{etc/LDOM.data} list, assuming
+there is enough variation in the rest of the examples to ensure
+proper coverage of the domain.
+@item Bad pitchmarking
+Automatic pitchmarking is not really automatic.  It is very worthwhile
+checking to see if it is correct and re-runing the pitchmarking with
+better paremeters until it is better.  (We need better documentation
+here on how to know what "correct" is.)
+@item Looking at the data
+There is never a substitute for actually looking at the data.  Use
+@file{emulabel} to actually look at the recorded utterances and see what
+the labelling is.  Ensure these match and files haven't got out of
+order.  Look at a random selection not just the first example.
+@item Improving the unit clustering
+The clustering techniques and the features used here are pretty generic
+and by no means optimal.  Even for the simple example given here it is
+not very good.  See the chapter on @ref{Unit selection databases} for
+more discussion on this.  Adding new features for use in cluster may
+help a lot.
+@end itemize
+The line between limit domain synthesis and unit selection is fuzzy.
+The more complex and varied the phrases you synthesize are, the more
+difficult it is to produce reliable synthesis.
+

@@ -1,0 +1,560 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.52
+     from ../doc/festvox.texi on 24 Febuary 2000 -->
+
+<TITLE>Building Voices in the Festival Speech Synthesis System - 3  Introduction</TITLE>
+</HEAD>
+<BODY bgcolor="#ffffff">
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_2.html">previous</A>, <A HREF="festvox_4.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+<P><HR><P>
+
+
+<H1><A NAME="SEC4" HREF="festvox_toc.html#TOC4">3  Introduction</A></H1>
+
+<P>
+In this chapter we will discuss some of the general aspects of building
+a new voice in Festival and the requirements in order to do it.  We will
+outline each part of a voice that you must provide in order to have a
+complete voice.  There are a number of choices for each part with each
+choice requiring a varying amount of work.  The ultimate decision of
+what you choose is your own based on the resources you wish to commit
+and the quality of the voice you wish to build.
+
+</P>
+<P>
+<A NAME="IDX3"></A>
+<A NAME="IDX4"></A>
+<A NAME="IDX5"></A>
+<A NAME="IDX6"></A>
+<A NAME="IDX7"></A>
+<A NAME="IDX8"></A>
+<A NAME="IDX9"></A>
+<A NAME="IDX10"></A>
+The development of Festival started in April 1996 and quickly became a
+tool in which new voices could be built.  That summer a Masters student
+(Maria Walters) at Edinburgh tried to build a Scots Gaelic synthesizer
+and although the project was never finished it did show the way in
+building new voices in Festival.  Later that summer we quickly put
+together a Spanish synthesizer using an existing diphone set and
+migrated an existing Welsh Gaelic synthesizer into Festival without
+changing any of the basic architecture of Festival, or of the existing
+Gaelic synthesizer except that all parts became external data rather
+than embedded C code.  The following year another Masters student
+(Argyris Biris) built a Greek synthesizer and a visiting scholar (Borja
+Etxebarria) improved the Spanish and built a Basque synthesizer.  Oregon
+Graduate Institute (under the supervision of Mike Macon) further
+developed new voices including new American English voices and Mexican
+Spanish, they, unlike the other voices, also included a new waveform
+synthesizer (in C++) which they also distribute as a plug-in for
+Festival.  In the summer of '98, Dominika Oliver built a Polish
+synthesizer and OGI hosted a six week workshop with
+Karin Mueller, Bettina Saeuberlich and Horst Meyer building two German
+synthesis voices within the system.
+
+</P>
+<P>
+In all cases these new voices consist of a set of diphones and some
+scheme code to provide a front end, including text analysis,
+pronunciation, and prosody.  The voices are quite separate from Festival
+itself and can be distributed as a package that can be installed against
+any installation of Festival.  In all cases the voices do not interfere
+with existing installed voices.
+
+</P>
+<P>
+The problem is that once people see that new voices can be easily added
+in Festival they want to do that too.  Over the initial two and half years
+the processes involved have become easier and more automatic such that
+it is felt that a document specifically describing the processes from a
+practical point of view can be written.
+
+</P>
+<P>
+Note that we do not consider the processes of building a new voice
+(either in an existing supported language or in a new language) as
+trivial.  It does require choices which we cannot answer for you.  We
+think that given a dedicated person already with experience in speech
+processing, computational linguistics and/or programming can probably
+build a new voice in a week though its probably going to take longer
+than that.  We are still very far from a state where we can capture a
+voice fully automatically from a poor quality mike on a standard PC
+(with the TV in the background) and come up with a voice that sounds
+anything near acceptable, though I suppose that is our ultimate goal.
+
+</P>
+<P>
+<A NAME="IDX11"></A>
+Also we should state this document is not about speech synthesis
+in general it is specifically about building voices in Festival.  This
+touches on many research issues in the field and appropriate references
+are given throughout.  For a good background in speech synthesis and
+text to speech systems in general see <CITE>dutoit97</CITE>.  For a more
+detailed description of a particular text to speech system (The
+Bell Labs Text-to-speech system) see <CITE>sproat98</CITE>, which takes
+a much more research point of view.
+
+</P>
+<P>
+This document in itself is not really suitable as a course text but
+should be suitable as a companion text to a speech synthesis or more
+general speech processing course.  However actually building a voice is
+a practical and useful thing to do to understand the relative
+complexities of the various modules in the text to speech process.  We
+do consider this documented suitable for students to use in synthesis
+projects.  
+
+</P>
+<P>
+Although the voices that are built following the instructions in this
+document, we hope, will useful in themselves, we do expect that those who
+build them will learn much more about the text to speech process.
+
+</P>
+
+
+<H2><A NAME="SEC5" HREF="festvox_toc.html#TOC5">3.1  Text-to-speech process</A></H2>
+
+<P>
+<A NAME="IDX12"></A>
+<A NAME="IDX13"></A>
+Within Festival we can identify three basic parts of the
+TTS process
+<DL COMPACT>
+
+<DT><EM>Text analysis:</EM>
+<DD>
+From raw text to identified words and basic utterances.
+<DT><EM>Linguistic analysis:</EM>
+<DD>
+Finding pronunciations of the words and assigning prosodic
+structure to them: phrasing, intonation and durations.
+<DT><EM>Waveform generation:</EM>
+<DD>
+From a fully specified form (pronunciation and prosody) generate
+a waveform.
+</DL>
+<P>
+These partitions are not necessarily hard but they are a good way of
+chunking the problem.  Of course different waveform generation
+techniques may need different types of information.
+<EM>Pronunciation</EM> is not always standard phones, and
+<EM>intonation</EM> need not necessarily mean an F0 contour.  However for
+the main part, at least the path which is more likely to generate a
+working voice, rather than the more research oriented techniques
+described, the above three sections will be fairly cleanly adhered to.
+
+</P>
+<P>
+There is another section to TTS which is normally not mentioned, we will
+mention it here as it is the most important aspect of Festival that
+makes building of new voices possible.  We will call that part the
+<EM>architecture</EM>.  Festival provides a basic utterance structure, a
+language to manipulate it, and methods for construction and deletion.
+Festival also interacts with your audio system in an efficient way,
+spooling audio files while the rest of the synthesis process can
+continue.  With the Edinburgh Speech Tools it offers basic analysis
+tools (F0 trackers, CART builders, waveform I/O etc) and a simple but
+powerful scripting language.  All of these functions make it so that you
+may get on with the task of building a voice, rather than worrying about
+the underlying software.
+
+</P>
+
+
+<H3><A NAME="SEC6" HREF="festvox_toc.html#TOC6">3.1.1  Text analysis</A></H3>
+
+<P>
+<A NAME="IDX14"></A>
+<A NAME="IDX15"></A>
+We see text analysis as the task of identifying the <EM>words</EM> in the
+text.  By <EM>words</EM> we mean tokens for which there is a well defined
+method of finding their pronunciation, i.e. through a lexicon or through
+letter to sound rules.  The first task in text analysis is the
+tokenization of the basic input text.  In Festival, at this stage, we also
+chunk the text into more reasonably sized utterances.  An utterance in
+Festival is used to hold the information for what might most simply be
+described as a <EM>sentence</EM>.  We use the term loosely as it need not
+be anything syntactic in the traditional linguistic sense, though is
+most likely bounded by prosodic boundaries.  Separating a text into
+utterances is important as it allows synthesis to work bit by bit,
+allowing the waveform of the first utterance to be available more
+quickly than if the whole files was processed as one.
+
+</P>
+<P>
+<A NAME="IDX16"></A>
+<A NAME="IDX17"></A>
+Utterance chunking is an externally specifiable part of Festival as it
+may vary from language to language.  For many languages, tokens are
+white space separated and utterances can (at first approximation) be
+separated after full stops.  Further complications such as abbreviations,
+other end punctuation, blank lines etc. make the definition harder.  For
+languages such as Japanese and Chinese where white space is not normally
+used to separate what we would term words, a different strategy must be
+used, though both these languages still use punctuation that can be used
+to identify utterance boundaries, and word segmentation can be a second
+process.
+
+</P>
+<P>
+Apart from chunking, text analysis also does text normalization.
+There are many tokens which appear in text that do not have 
+a direct relationship to their pronunciation.  Numbers are perhaps
+the most obvious example.  Consider the following
+sentence
+
+<PRE>
+On May 5 1996, the university bought 1996 computers.
+</PRE>
+
+<P>
+In English, tokens consisting of solely digits have a number of different
+forms of pronunciation.  The <SAMP>`5'</SAMP> above is pronounced <SAMP>`fifth'</SAMP>, an
+ordinal, because it is the day in a month, The first <SAMP>`1996'</SAMP> is
+pronounced as <SAMP>`nineteen ninety six'</SAMP> because it is a year, and the
+second <SAMP>`1996'</SAMP> is pronounced as <SAMP>`one thousand nine hundred
+and ninety size'</SAMP> (British English) as it is a quantity.  
+
+</P>
+<P>
+<A NAME="IDX18"></A>
+<A NAME="IDX19"></A>
+Two problems are identified here, non-trivial relationship of tokens to
+words, and <EM>homographs</EM>, where the same token may have alternate
+pronunciations in different contexts.  In Festival we consider homograph
+disambiguation as part of text analysis.  In addition to numbers there
+are many other symbols which have internal structure that require
+special processing, such as money, times, addresses etc.  All of these
+can be dealt with in Festival by what is termed <EM>token to word
+rules</EM>.  These are language specific (and sometimes text mode specific).
+Detailed examples will be given in the text analysis chapter below.
+
+</P>
+
+
+<H3><A NAME="SEC7" HREF="festvox_toc.html#TOC7">3.1.2  Linguistic analysis</A></H3>
+
+<P>
+In this section we consider both word pronunciation and 
+prosody.  
+
+</P>
+<P>
+<A NAME="IDX20"></A>
+<A NAME="IDX21"></A>
+<A NAME="IDX22"></A>
+We assume that (largely) words have been properly identified at this
+stage and their pronunciation can be found by looking them up in a
+lexicon or by applying some form of letter to sound rules to the letters
+in the word.  We will present methods for automatically building letter
+to sound rules later in this document.  For many languages a machine
+readable lexicon with pronunciation (and possibly lexical stress) will
+be necessary.  A second stage in pronunciation is modifications to
+standard pronunciations when they appear in continuous speech.  Some
+pronunciations change depending on the context they are in.  For example
+in British English word final /r/ is only pronounced if the following
+word is vowel initial.  These phenomena are dealt with by what we term
+<EM>post-lexical rules</EM> where modification of the standard lexical
+form is performed based the wider context that the word appears in.
+
+</P>
+<P>
+By prosody we will basically mean phrasing, duration and intonation.
+For many languages intonation can be split into two stages, accent
+placement and F0 contour generation.  Prosodic models are both language
+and speaker dependent and we present methods to help build models.  Some
+of the models we present are very simple and don't necessarily sound
+good but they may be adequate for your task.  Considering even for
+well researched languages like English, good prosodic modelling is still
+an unreached goal, simpler more limited models are often reasonable
+unless you wish to undertake a significant amount of new research.
+
+</P>
+
+
+<H3><A NAME="SEC8" HREF="festvox_toc.html#TOC8">3.1.3  Waveform generation</A></H3>
+
+<P>
+<A NAME="IDX23"></A>
+<A NAME="IDX24"></A>
+<A NAME="IDX25"></A>
+We will primarily be presenting concatenative methods for waveform
+generation where we collect databases of real speech and select
+appropriate units and concatenate them.  These selected units are then
+typically modified by some form of signal processing function to modify
+pitch and duration.  Concatenative synthesis is not the only method of
+waveform synthesis, another two models are <EM>formant</EM> synthesis as
+typified by MITalk <CITE>allen87</CITE> and <CITE>hertz90</CITE>, and
+<EM>articulatory synthesis</EM>.  These three methods come from quite
+different directions though ultimately, I believe, will join together
+in a model of parameterizations of speech, trained from real data
+conjoined in non-trivial ways.
+
+</P>
+<P>
+<A NAME="IDX26"></A>
+<A NAME="IDX27"></A>
+The methods presented in this document are less ambitious in their
+research goals.  We cover the tasks involved in building diphone
+databases and more general databases.  Though it is possible to also
+consider using external processes to Festival to perform waveform
+synthesis.  The MBROLA system <CITE>dutoit96</CITE> offers diphone databases
+for many language languages.  Festival can be used to provided text and
+linguistic analysis while MBROLA can be used to generate the waveform,
+if it already supports the language you wish to synthesize.
+Alternatively <EM>phonebox</EM> as described below offers another
+alternative.
+
+</P>
+<P>
+Given that database collection does require significant resources, using
+an existing voice to speak another language is also a possibility.  It
+will retain many properties of the original language but it may offer a
+quick and easy method to get synthesis in that new language.
+
+</P>
+
+
+<H2><A NAME="SEC9" HREF="festvox_toc.html#TOC9">3.2  Requirements</A></H2>
+
+<P>
+<A NAME="IDX28"></A>
+This section identifies the basic requirements for building a voice
+in a new language, and adding a new voice in a language already
+supported by Festival.
+
+</P>
+
+
+<H3><A NAME="SEC10" HREF="festvox_toc.html#TOC10">3.2.1  Hardware/software requirements</A></H3>
+
+<P>
+<A NAME="IDX29"></A>
+<A NAME="IDX30"></A>
+Because we are most familiar with a Unix environment the scripts, tools
+etc. assume such a basic environment.  This is not to say you couldn't
+run these scripts on other platforms as many of these tools are
+supported on platforms like WIN32, its just that in our normal work
+environment, Unix is ubiquitous and we like working in it.
+
+</P>
+<P>
+Much of the testing was done under Linux such that where possible
+we are using freely available tools.
+
+</P>
+<P>
+We assume Festival 1.4.1 and the Edinburgh Speech Tools 1.2.1.
+
+</P>
+<P>
+Note that we make an extensive use of the Speech Tools programs such
+that you need the full distribution rather than run time only versions
+of Festival which are available for some Linux platforms.  If you find
+the task of compiling Festival and the speech tools daunting you will
+probably find the rest of the tasks specified in this document more so.
+However it is not necessary for you to have any knowledge of C++ to do
+the tasks below, though familiarity with text processing techniques
+(e.g. awk, sed, perl) will make understanding the examples given much
+easier.
+
+</P>
+<P>
+We also assume a basic knowledge of Festival, and of speech processing
+in general.  We expect the reader to be familiar with basic terms such as
+<EM>F0</EM> <EM>phoneme</EM>, and <EM>cepstrum</EM> but not in any real
+detail.  References to general texts are given (when we know them to
+exist).  A basic knowledge of programming in Scheme (and/or Lisp) will
+also make things easier.  A basic capability in programming in general
+will make defining rules etc. much easier.
+
+</P>
+<P>
+<A NAME="IDX31"></A>
+If you are going to record your own database you will need recording
+equipment: the higher quality, the better.  A proper recording studio is
+ideal, though may not be available for everyone.  A cheap microphone
+stuck on the back of standard PC is not ideal, though we know most of
+you will end up doing that.  A high quality sound board, close-talking
+high quality microphone and near sound proof recording environment will
+often be the compromise between these two extremes.
+
+</P>
+<P>
+<A NAME="IDX32"></A>
+Many of the techniques described in here require a fair amount of
+processing time to achieve.  If you use the provided aligner for
+labelling diphones you will need a processor of reasonable speed,
+likewise for the various training techniques for intonation, duration
+modelling and letter to sound rules.  Nothing presented here takes weeks
+though a number of processes may be over-night jobs, depending on
+the speed of your machine.
+
+</P>
+<P>
+Also we think that you will need a little patience.  The process of
+building a voice is not necessarily going to work first time.  It may
+even fail completely, so do not expect anything special, then you wont
+be disappointed.
+
+</P>
+
+
+<H3><A NAME="SEC11" HREF="festvox_toc.html#TOC11">3.2.2  Voice in a new language</A></H3>
+
+<P>
+The following list is a basic check list of the core
+areas you will need to provide answers for.  You may in some cases
+get away with very simple solutions (e.g. fixed phone durations),
+or be able to borrow from other voices/languages but whatever
+you do you will need to provide something.
+
+</P>
+<P>
+You will need to define 
+
+<UL>
+<LI>Phone set
+
+<LI>Token processing rules (numbers etc)
+
+<LI>Prosodic phrasing method
+
+<LI>Word pronunciation (lexicon and/or letter to sound rules)
+
+<LI>Intonation (accents and F0 contour)
+
+<LI>Durations
+
+<LI>Waveform synthesizer
+
+</UL>
+
+
+
+<H3><A NAME="SEC12" HREF="festvox_toc.html#TOC12">3.2.3  Voice in an existing language</A></H3>
+
+<P>
+The most common case for this is wanting your voice in the system.  Note
+that the issues in voice modelling of a particular speaker are still open
+research problems.  The quality of a particular voice comes
+mostly from the waveform generation method, but other aspects of a
+speaker such as intonation and duration, and pronunciation are all part
+of what makes that person's voice sound like them.  All of the voices I
+have heard in Festival sound like the speaker they were record from (at
+least as far as I know all the speakers) but they also don't have all
+the qualities of that person's voice.
+
+</P>
+<P>
+As a practical recommendation to make a new speaker in an existing
+supported language you will need to consider
+
+<UL>
+<LI>Waveform synthesis
+
+<LI>Speaker specific intonation
+
+<LI>Speaker specific duration
+
+</UL>
+
+<P>
+section <A HREF="festvox_5.html#SEC33">5.10  US/UK English Walkthrough</A> deals with specifically building
+a new US or UK English voice.  This is a relatively easy
+place to start.
+
+</P>
+<P>
+Another possible solution to getting a particular voice is the voice
+conversion work being done at OGI, <CITE>kain98</CITE>.  OGI have already
+released new voices based on this conversion and may release the
+conversion code itself.
+
+</P>
+<P>
+<A NAME="IDX33"></A>
+<A NAME="IDX34"></A>
+Another aspect of a new voice in an existing language is a voice in a
+new dialect.  This is actually closer to the requirements for a voice in
+a new language.  Lexicon and intonation probably need to change as well
+as the waveform generation method (a new diphone database).  Although
+much of the text analysis came probably be borrow be aware that simple
+things like number pronunciation can often change between dialects
+(cf. US and UK English).
+
+</P>
+
+
+<H2><A NAME="SEC13" HREF="festvox_toc.html#TOC13">3.3  Future</A></H2>
+
+<P>
+<A NAME="IDX35"></A>
+<A NAME="IDX36"></A>
+<A NAME="IDX37"></A>
+There is still much to be added to this document, both from the
+practical aspect of documenting currently known techniques for modelling
+voices and also new research to make such modelling both better and more
+reliable.  
+
+</P>
+<P>
+Both these aspects are being considered and we intend to regularly
+update this document as new techniques become more stable and we get
+around to documenting and testing things which should be in this
+document already.
+
+</P>
+
+<UL>
+<LI>Support basic prosodic characteristics of a new (English) speaker.
+
+Most of the scripts (brazenly) have the pitch range hardwired.  It
+would be fairly easy to record a short section of speech from a speaker
+and set these automatically.  Secondly extracting some basic
+information about speech rate, and pitch mean and range of a speaker
+is well within the current programs.
+<LI>Integrate the NSW (Non-standard word) text analysis system.
+
+The Johns Hopkins University summer workshop 99, had a project on
+analysis of non-standard words (NSW)
+(<A HREF="http://www.clsp.jhu.edu/ws99/projects/normal/">http://www.clsp.jhu.edu/ws99/projects/normal/</A>).  The results of
+this project were later released fully within a Festival framework.
+Proper integration of that analysis system, with the addition of the
+approproate taring tools andoducmentation fits well withint he Festvox
+project and should happen soon.
+<LI>The introduction of <CODE>festlang</CODE> module that allows language
+
+support to be distribution/used as a distinct module from a voice or
+lexicon and so can be shared between languages.  This has almost
+happened but not quite formalised yet.
+<LI>Better support for autolabeled segments and prosody.  There
+
+is now a free speech recognitions system (CMU Sphinx 
+<A HREF="http://www.speech.cs.cmu.edu/sphinx/">http://www.speech.cs.cmu.edu/sphinx/</A>) which should offer
+better segmental labelling for contiuous speech (i.e. limited
+domain and unit selection databases).  Some documentation and testing
+of this should be included.  Likewise better prosody labelling (which
+is perhaps more reserach oriented) is required, though duration (as
+opposed to F0) should be possible now.
+<LI>A number of new experiments have been made in improving the
+
+cluster unit selection system that haven't been properly folded into
+this release.  They don't yet solve all problems but do reduce the
+problems.
+<LI>Better documentation on audio devices would be useful.  We
+
+know many problems will be caused by inadequate diagnosis of audio
+recoridng quality.
+<LI>Better pitchmark extraction from waveforms.  This isn't too
+
+dificult as a signal processing task and we should spend some resources
+of it as it is likely to be one of the key problems in generated
+synthesis quality.
+</UL>
+
+<P><HR><P>
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_2.html">previous</A>, <A HREF="festvox_4.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+</BODY>
+</HTML>

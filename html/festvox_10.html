@@ -1,0 +1,378 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.52
+     from ../doc/festvox.texi on 24 Febuary 2000 -->
+
+<TITLE>Building Voices in the Festival Speech Synthesis System - 10  Text analysis</TITLE>
+</HEAD>
+<BODY bgcolor="#ffffff">
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_9.html">previous</A>, <A HREF="festvox_11.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+<P><HR><P>
+
+
+<H1><A NAME="SEC69" HREF="festvox_toc.html#TOC69">10  Text analysis</A></H1>
+
+<P>
+This chapter discusses some of the basic problems in analyzing text when
+trying to convert it to speech.  To be of practical use it is necessary
+to do at least some level text analysis in a new language.  Almost any
+piece of real text will contain tokens that do not have a simple one to
+one pronunciation.  In Festival our view is that the initial text is
+tokenized into white space separated items.  (See discussion below about
+how you might do languages that don't normally separate tokens by white
+space.)  These tokens can then be mapped to words through simple rules
+(or statistically trained models) allowing for one token to map to zero
+or more words, and also allow that mapping to be context sensitive.
+
+</P>
+<P>
+Numbers are probably the most common form of token that doesn't
+have a simple lookup pronunciation, there is no way you can
+list all strings of digits in a lexicon so some analysis into
+words is the most reasonable way of dealing with them.  This
+is dicussed below.  Also in many languages strings of digits
+may sometimes be pronounced as numbers (ordinals or cardinals) 
+or as strings of digits (e.g. telephone numbers) or in some
+case have their own special pronunciation in certain
+contexts (e.g. years in English).  We will discuss some
+examples below.
+
+</P>
+
+
+<H2><A NAME="SEC70" HREF="festvox_toc.html#TOC70">10.1  Token to word rules</A></H2>
+
+<P>
+The basic model in Festival is that each <EM>token</EM> will be mapped a
+list of <EM>words</EM> by a call to a <CODE>token_to_word</CODE> function.  This
+function will be called on each token and it should return a list of
+words.  It may check the tokens to context (within the current
+utterance) too if necessary.  The default action should (for most
+languages) simply be returning the token itself as a list of own word
+(itself).  For example your basic function should look something like.
+
+<PRE>
+(define (MYLANG_token_to_words token name)
+  "(MYLANG_token_to_words TOKEN NAME)
+Returns a list of words for the NAME from TOKEN.  This primarily
+allows the treatment of numbers, money etc."
+  (cond
+   (t
+    (list name))))
+</PRE>
+
+<P>
+This function should be set in your voice selection function 
+as the function for token analysis
+
+<PRE>
+  (set! token_to_words MYLANG_token_to_words)
+</PRE>
+
+<P>
+This function should be added to to deal with
+all tokens that are not in your lexicon, cannot be
+treated by your letter to sound rules, or are ambiguous
+in some way and require context to resolve.
+
+</P>
+<P>
+For example suppose we wish to simply treat all tokens consisting of
+strings of digits to be pronounced as a string of digits (rather
+than numbers).  We would add something like the following
+
+<PRE>
+(set! MYLANG_digit_names
+   '((0 "zero")
+     (1 "one")
+     (2 "two")
+     (3 "three")
+     (4 "four")
+     (5 "five")
+     (6 "six")
+     (7 "seven")
+     (8 "eight")
+     (9 "nine")))
+
+(define (MYLANG_token_to_words token name)
+  "(MYLANG_token_to_words TOKEN NAME)
+Returns a list of words for the NAME from TOKEN.  This primarily
+allows the treatment of numbers, money etc."
+  (cond
+   ((string-matches name "[0-9]+") ;; any string of digits
+    (mapcar
+     (lambda (d)
+      (car (cdr (assoc_string d MTLANG_digit_names))))
+     (symbolexplode name)))
+   (t
+    (list name))))
+</PRE>
+
+<P>
+But more elaborate rules are also necessary.  Some tokens require context
+to disambiguate and sometimes multiple tokens are really one object e.g
+<SAMP>`$12 billion'</SAMP> must be rendered as <SAMP>`twelve billion dollars'</SAMP>,
+where the money name crosses over the second word.  Such multi-token rules
+must be split into multiple conditions, one for each part of the
+combined token.  Thus we need to identify the <SAMP>`$&#60;digits&#62;'</SAMP> is in a
+context followed by <SAMP>`?illion'</SAMP>.  The code below renders the full
+phrase for the dollar amount.  The second condition ensures nothing
+is returned for the <SAMP>`?illion'</SAMP> word as it has already been dealt with
+by the previous token.
+
+<PRE>
+   ((and (string-matches name "\\$[123456789]+")
+         (string-matches (item.feat token "n.name") ".*illion.?"))
+     (append
+      (digits_to_cardinal (string-after name "$")) ;; amount
+      (list (item.feat token "n.name"))            ;; magnitude
+      (list "dollars")))                           ;; currency name
+   ((and (string-matches name ".*illion.?")
+         (string-matches (item.feat token "p.name") "\\$[123456789]+"))
+     ;; dealt with in previous token
+     nil)
+</PRE>
+
+<P>
+Note this still is not enough as there may be other types of currency
+pounds, yen, francs etc, some of which may be mass nouns and require no
+plural (e.g. <SAMP>`yen'</SAMP>) and some of which make be count nouns require
+plurals.  Also this only deals with whole numbers of .*illions,
+<SAMP>`$1.25 million'</SAMP> is common too.  See the full example (for English)
+in <TT>`festival/lib/token.scm'</TT>.
+
+</P>
+<P>
+A large list of rules are typically required.  They should be looked
+upon as breaking down the problem into smaller parts, potentially
+recursive.  For example hyphenated tokens can be split into two words.
+It is probably wise to explicitly deal with all tokens than are not
+purely alphabetic.  Maybe having a catch-all that spells out all tokens
+that are not explicitly dealt with (e.g. the numbers).  For
+example you could add the following as the penumtilmate condition
+in your <CODE>token_to_words</CODE> function
+
+<PRE>
+   ((not (string-matches name "[A-Za-z]"))
+    (symbolexplode name))
+</PRE>
+
+<P>
+Note this isn't necessary correct when certain letters may be homograpths.
+For example the token <SAMP>`a'</SAMP> may be a determiner or a letter
+of the alhpabet.  When its a derterminer it may (often) be reduced)
+while as a letter it probably ins't (i.e pronunciation in <SAMP>`@'</SAMP> 
+or <SAMP>`ei'</SAMP>).  Other languages also example this problem (e.g. Spanish
+<SAMP>`y'</SAMP>.  Therefore when we call symbol explode we don't want just the 
+the letter but to also specify that it is the letter pronunciation we
+want and not the any other form.  To ensure the lexicon system
+gets the right pronunciation we there wish to specify the part
+fo speech with the letter.  Actually rather than just a string
+of atomic words being returned by the <CODE>token_to_words</CODE> function
+the words may be descriptions including features.  Thus for example
+we dont just want to return 
+
+<PRE>
+(a b c)
+</PRE>
+
+<P>
+We want to be more specific and return
+
+<PRE>
+(((name a) (pos nn))
+ ((name b) (pos nn))
+ ((name c) (pos nn)))
+</PRE>
+
+<P>
+This can be done by the code
+
+<PRE>
+   ((not (string-matches name "[A-Za-z]"))
+    (mapcar
+     (lambda (l)
+      ((list 'name l) (list 'pos 'nn)))
+     (symbolexplode name)))
+</PRE>
+
+<P>
+The above assumes that all single characters symbols (letters, digits,
+punctuation and other "funny" characters have an entry in your lexicon
+with a part of speech field <CODE>nn</CODE>, with a pronunctiation of the
+character in isolation.
+
+</P>
+<P>
+The list of tokens that you may wish to write/train rules for 
+is of couse language dependent and to a certain extent domain
+dependent.  For example there are many more numbers in email text
+that in narative novels.  The number of abbreviations is also much
+higher in email and news stories than in more normal text.  It may
+be worth having a look at some typical data to find out the distribution
+and find out what is worth working on.   For a rough guide the folowing
+is a list if the symbol types we currentl deal with in English, many
+of which will require some treatment in other languages.
+<DL COMPACT>
+
+<DT><EM>Money</EM>
+<DD>
+Money amounts often have different treatment than simple numbers
+and conventions about the sub-currency part (i.e. cents, pfennings etc).
+Remember that you its not just numbers in the local currency you
+have to deal with currency values from different countries are common
+in lots of different texts (e.g dollars, yen, DMs and euro).
+<DT><EM>Numbers</EM>
+<DD>
+strings of digits will of course need mapping even if there is only one
+mapping for a language (rare).  Consider at least telphone numbers
+verses amounts, most languages make a distinction here.   In English
+we need to distinguish further, see below for the more detailed
+discussion.
+<DT><EM>number/number</EM>
+<DD>
+This can be used as a date, fraction, alternate, context  will help,
+though techniques of dropping back to saying the the string of characters
+often preserve the ambiguity which can be better that forcing
+a decision.
+<DT><EM>acronyms</EM>
+<DD>
+List of upper case letters (with or without vowels).  The decision
+to pronounce as a word or as letters is difficult in general but
+good guesses go far.  If its short (&#60; 4 chatacters) not in your
+lexicon not surround by other words in upper case, its probably
+an acronym, further analyss of vowels, consonant clusters
+etc will help.
+<DT><EM>number-number</EM>
+<DD>
+Could be a range, of score (football), dates etc.
+<DT><EM>word-word</EM>
+<DD>
+Usually a simple split on each part is sufficient--but not as when used
+as a dash.
+<DT><EM>word/word</EM>
+<DD>
+As an alternative, or a Unix pathname
+<DT><EM>'s or TOKENs</EM>
+<DD>
+An appended <SAMP>`s'</SAMP> to a non alphabetic token is probabaly
+some form of pluralization, removing it and recursing on the analysis
+is a reasonable thing to try.
+<DT><EM>times and dates</EM>
+<DD>
+These exist is variaous stnadardized forms many of which are easy
+to recognize and break down.
+<DT><EM>telephone numbers</EM>
+<DD>
+This various from country to country (and by various conventions)
+but there may be standard forms that can be recognized.
+<DT><EM>romain numerals</EM>
+<DD>
+Sometimes these are pronounced as numbers <SAMP>`chapter II'</SAMP>, or
+as cardinals <SAMP>`James II'</SAMP>.
+<DT><EM>ascii art</EM>
+<DD>
+If you are dealing with on line text there are often extra characters
+in a document that should be ignored, or at least not pronounced
+literally, e.g. lines of hyphens used as separators.
+<DT><EM>email addresses, URLs, file names</EM>
+<DD>
+Depending on your context this may be worth spending time on.
+<DT><EM>tokens containing any other non-alphanumeric character</EM>
+<DD>
+Spliting the token around the non-alphanumeric and recursing 
+on each part before and after it may be reasonable.
+</DL>
+<P>
+Remember the first purpose of text analysis is ensure you
+can deal with <EM>anything</EM>, even if it is just saying
+the word <SAMP>`unknown'</SAMP> (in the appropriate language).  Also its
+probabaly not worth spending time on rare token forms, though remember
+it not easy to judge what are rare and what are not.
+
+</P>
+
+
+<H2><A NAME="SEC71" HREF="festvox_toc.html#TOC71">10.2  Number pronunciation</A></H2>
+
+<P>
+Almost every one will expect a synthesizer to be able to
+speech numbers.  As it is not feasible to list all possible
+digit strings in your lexicon.  You will need to provide a function
+that returns a string of words for a given string of digits.
+
+</P>
+<P>
+In its simplest form you should provide a function that 
+decodes the string of digits.  The example <CODE>spanish_number</CODE>
+(and <CODE>spanish_number_from_digits</CODE>) in the released Spanish
+voice (<TT>`festvox_ellpc11k.tar.gz'</TT> is a good general
+example.
+
+</P>
+
+
+<H3><A NAME="SEC72" HREF="festvox_toc.html#TOC72">10.2.1  Multi-token numbers</A></H3>
+
+<P>
+A number of languages uses spaces within numbers where English might use
+commas.  For example German, Polish and others text may contain
+
+<PRE>
+64 000 
+</PRE>
+
+<P>
+to denote sixty four thousand.  As this will be multiple tokens in
+Festival's basic analysis it is necessary to write multiple conditions
+in your <CODE>token_to_words</CODE> function.
+
+</P>
+
+
+<H3><A NAME="SEC73" HREF="festvox_toc.html#TOC73">10.2.2  Declensions</A></H3>
+
+<P>
+In many languages, the pronunciation of a number depends on the thing
+that is being counted.  For example the digit '1' in Spanish has
+multiple pronunciations depending on whether it is refering to a
+masculine or feminine object.  In some languages this becomes much more
+complex where there are a number of possible declensions.  In our Polish
+synthesizer we solved this by adding an extra argument to number
+generation function which then selected the actual number word
+(typically the final word in a number) based in the desired declension.
+
+</P>
+
+<PRE>
+%%%%%%%%%%%%%%%%%%%
+Example to be added 
+%%%%%%%%%%%%%%%%%%%
+</PRE>
+
+
+
+<H2><A NAME="SEC74" HREF="festvox_toc.html#TOC74">10.3  Homograph disambiguation</A></H2>
+
+
+<PRE>
+%%%%%%%%%%%%%%%%%%%%%%
+Discussion to be added 
+%%%%%%%%%%%%%%%%%%%%%%
+</PRE>
+
+
+
+<H2><A NAME="SEC75" HREF="festvox_toc.html#TOC75">10.4  TTS modes</A></H2>
+
+
+<PRE>
+%%%%%%%%%%%%%%%%%%%%%%
+Discussion to be added 
+%%%%%%%%%%%%%%%%%%%%%%
+</PRE>
+
+<P><HR><P>
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_9.html">previous</A>, <A HREF="festvox_11.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+</BODY>
+</HTML>

@@ -1,33 +1,38 @@
 #!/bin/sh
 #####################################################-*-mode:shell-script-*-
+##                                                                       ##
+##                   Carnegie Mellon University and                      ##
+##                   Alan W Black and Kevin A. Lenzo                     ##
+##                      Copyright (c) 1998-2000                          ##
+##                        All Rights Reserved.                           ##
+##                                                                       ##
+##  Permission is hereby granted, free of charge, to use and distribute  ##
+##  this software and its documentation without restriction, including   ##
+##  without limitation the rights to use, copy, modify, merge, publish,  ##
+##  distribute, sublicense, and/or sell copies of this work, and to      ##
+##  permit persons to whom this work is furnished to do so, subject to   ##
+##  the following conditions:                                            ##
+##   1. The code must retain the above copyright notice, this list of    ##
+##      conditions and the following disclaimer.                         ##
+##   2. Any modifications must be clearly marked as such.                ##
+##   3. Original authors' names are not deleted.                         ##
+##   4. The authors' names are not used to endorse or promote products   ##
+##      derived from this software without specific prior written        ##
+##      permission.                                                      ##
+##                                                                       ##
+##  CARNEGIE MELLON UNIVERSITY AND THE CONTRIBUTORS TO THIS WORK         ##
+##  DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING      ##
+##  ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT   ##
+##  SHALL CARNEGIE MELLON UNIVERSITY NOR THE CONTRIBUTORS BE LIABLE      ##
+##  FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    ##
+##  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN   ##
+##  AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,          ##
+##  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       ##
+##  THIS SOFTWARE.                                                       ##
+##                                                                       ##
+###########################################################################
 ###                                                                       ##
-###                    Alan W Black and Kevin Lenzo                       ##
-###                         Copyright (c) 1998                            ##
-###                        All Rights Reserved.                           ##
-###                                                                       ##
-###  Permission to use, copy, modify,  and licence this software and its  ##
-###  documentation for any purpose, is hereby granted without fee,        ##
-###  subject to the following conditions:                                 ##
-###   1. The code must retain the above copyright notice, this list of    ##
-###      conditions and the following disclaimer.                         ##
-###   2. Any modifications must be clearly marked as such.                ##
-###   3. Original authors' names are not deleted.                         ##
-###                                                                       ##
-###  THE AUTHORS OF THIS WORK DISCLAIM ALL WARRANTIES WITH REGARD TO      ##
-###  THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY   ##
-###  AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY         ##
-###  SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES            ##
-###  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN   ##
-###  AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,          ##
-###  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       ##
-###  THIS SOFTWARE.                                                       ##
-###                                                                       ##
-###  This file is part "Building Voices in the Festival Speech            ##
-###  Synthesis System" by Alan W Black and Kevin Lenzo written at         ##
-###  Robotics Institute, Carnegie Mellon University, fall 98              ##
-############################################################################
-###                                                                       ##
-###  Generate cepstrum and F0 acoustic parameter files for unit selection ##
+###  Generate MEL-cepstrum acoustic parameter files for unit selection    ##
 ###                                                                       ##
 ############################################################################
 
@@ -42,39 +47,28 @@ then
 fi
 PDA_PARAMS="-fmax 180 -fmin 80"
 SIG2FV=$ESTDIR/bin/sig2fv
-SIG2FVPARAMS='-coefs melcep -delta melcep -melcep_order 12 -fbank_order 24 -shift 0.01 -factor 2.5 -preemph 0.97'
+#SIG2FVPARAMS='-coefs melcep -delta melcep -melcep_order 12 -fbank_order 24 -shift 0.01 -factor 2.5 -preemph 0.97'
+SIG2FVPARAMS='-coefs melcep -melcep_order 12 -fbank_order 24 -shift 0.01 -factor 2.5 -preemph 0.97'
+
 
 if [ $# = 0 ]
 then
-   echo "Build cepstrum files for acoustic measures"
+   echo "Build MFCC files for acoustic measures"
    echo "Usage:  bin/make_mcep wav/*.wav"
-   echo "Will create cepstrum parameters files with F0 in 0 coefficient"
-   echo "in festival/coeffs/*.dcoeffs, also F0 files will be generated"
-   echo "in festival/f0/*.f0"
+   echo "Will create cepstrum parameters files in mcep/"
    exit 1
 fi
 
-if [ ! -f festival/coeffs ]
+if [ ! -d mcep ]
 then
-   mkdir festival/coeffs
-fi
-
-if [ ! -f festival/f0 ]
-then
-   mkdir festival/f0
+   mkdir mcep
 fi
 
 for i in $*
 do
   fname=`basename $i .wav`
   echo $fname
-  $SIG2FV $SIG2FVPARAMS -otype ascii $i -o /tmp/tmp.$$.ascii
-  if [ ! -f festival/f0/$fname.f0 ]
-  then
-     $ESTDIR/bin/pda -s 0.01 -o festival/f0/$fname.f0 -otype ascii $PDA_PARAMS wav/$fname.wav
-  fi
-  $ESTDIR/bin/ch_track -pc first -itype ascii -s 0.010 -otype htk festival/f0/$fname.f0 /tmp/tmp.$$.ascii -o festival/coeffs/$fname.dcoeffs
-  rm /tmp/tmp.$$.*
+  $SIG2FV $SIG2FVPARAMS -otype est_binary $i -o mcep/$fname.mcep -pm pm/$fname.pm -window_type hamming
 done
 
 

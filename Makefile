@@ -1,98 +1,104 @@
-############################################################################
-###                                                                       ##
-###                    Alan W Black and Kevin Lenzo                       ##
-###                         Copyright (c) 1998                            ##
-###                        All Rights Reserved.                           ##
-###                                                                       ##
-###  Permission to use, copy, modify,  and licence this software and its  ##
-###  documentation for any purpose, is hereby granted without fee,        ##
-###  subject to the following conditions:                                 ##
-###   1. The code must retain the above copyright notice, this list of    ##
-###      conditions and the following disclaimer.                         ##
-###   2. Any modifications must be clearly marked as such.                ##
-###   3. Original authors' names are not deleted.                         ##
-###                                                                       ##
-###  THE AUTHORS OF THIS WORK DISCLAIM ALL WARRANTIES WITH REGARD TO      ##
-###  THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY   ##
-###  AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY         ##
-###  SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES            ##
-###  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN   ##
-###  AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,          ##
-###  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       ##
-###  THIS SOFTWARE.                                                       ##
-###                                                                       ##
-############################################################################
-###                                                                       ##
-###  "Building Voices in The Festival Speech Synthesis System"            ##
-###     by Alan W Black and Kevin Lenzo                                   ##
-###  Robotics Institute, Carnegie Mellon University, Fall 98              ##
-###                                                                       ##
-############################################################################
-###                                                                       ##
-###  Documention, examples scripts and scheme files                       ##
-###                                                                       ##
-############################################################################
+###########################################################################
+##                                                                       ##
+##                   Carnegie Mellon University and                      ##
+##                   Alan W Black and Kevin A. Lenzo                     ##
+##                      Copyright (c) 1998-2000                          ##
+##                        All Rights Reserved.                           ##
+##                                                                       ##
+##  Permission is hereby granted, free of charge, to use and distribute  ##
+##  this software and its documentation without restriction, including   ##
+##  without limitation the rights to use, copy, modify, merge, publish,  ##
+##  distribute, sublicense, and/or sell copies of this work, and to      ##
+##  permit persons to whom this work is furnished to do so, subject to   ##
+##  the following conditions:                                            ##
+##   1. The code must retain the above copyright notice, this list of    ##
+##      conditions and the following disclaimer.                         ##
+##   2. Any modifications must be clearly marked as such.                ##
+##   3. Original authors' names are not deleted.                         ##
+##   4. The authors' names are not used to endorse or promote products   ##
+##      derived from this software without specific prior written        ##
+##      permission.                                                      ##
+##                                                                       ##
+##  CARNEGIE MELLON UNIVERSITY AND THE CONTRIBUTORS TO THIS WORK         ##
+##  DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING      ##
+##  ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT   ##
+##  SHALL CARNEGIE MELLON UNIVERSITY NOR THE CONTRIBUTORS BE LIABLE      ##
+##  FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    ##
+##  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN   ##
+##  AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,          ##
+##  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       ##
+##  THIS SOFTWARE.                                                       ##
+##                                                                       ##
+###########################################################################
+##                                                                       ##
+##  Authors: Alan W Black (awb@cs.cmu.edu)                               ##
+##           Kevin A. Lenzo (lenzo@cs.cmu.edu)                           ##
+##  Version: festvox-1.1-current February 2000                           ##
+##                                                                       ##
+###########################################################################
+##                                                                       ##
+##  Documentation, tools and scripts to aid building of new synthetic    ##
+##  voice for the Festival Speech Synthesis System.                      ##
+##                                                                       ##
+##  This project's home page is http://www.festvox.org                   ##
+##                                                                       ##
+##  This release corresponds to the Festival 1.4.1 release (which        ##
+##  incorporates Edinburgh Speech Tools 1.2.1)                           ##
+##                                                                       ##
+###########################################################################
 TOP=.
 DIRNAME=.
+BUILD_DIRS = src doc
+ALL_DIRS=config festvox.org $(BUILD_DIRS)
+OTHERS = README ACKNOWLEDGEMENTS ANNOUNCE-1.1
+FILES = Makefile $(OTHERS)
 
-TEXT= festvox.texi refs.texi intro.texi copy.texi utt.texi \
-      diphone.texi unitsel.texi \
-      prosody.texi lexicons.texi text.texi resources.texi \
-      eval.texi exam.texi
-SRCDIPHONES = src/diphones/diphlist.scm src/diphones/phonealign_main.cc \
-              src/diphones/darpaschema.scm \
-              src/diphones/darpaasmrpa.scm \
-              src/diphones/darpaaswb.scm \
-              src/diphones/play_them \
-              src/diphones/align_phones \
-              src/diphones/make_diph_index.sh \
-              src/diphones/make_diphs_utts.scm \
-              src/diphones/make_labs \
-	      src/diphones/Makefile src/diphones/phonealign_test 
-SRCUNITSEL =  src/unitsel/Makefile \
-              src/unitsel/make_mcep
-SRCINTONE =   src/intonation/Makefile \
-              src/intonation/tree_f0.scm
-SRCGENERAL =  src/general/Makefile \
-	      src/general/make_dirs \
-	      src/general/make_pm \
-	      src/general/make_pm_wave \
-              src/general/make_lpc \
-              src/general/find_unknowns.sh
-SRCDB = src/db_example
-SCRIPTS = 
-OTHERS = texinfo.tex plan README stuff.ed
-#PATCHFILES = fest-1.3.0.1.patch sptools-1.1.0.1.patch
-FILES = Makefile $(OTHERS) $(TEXT) $(SRCDIPHONES) $(SRCUNITSEL) \
-        $(SRCGENERAL) $(SRCDB) $(SRCINTONE)
+ALL = $(BUILD_DIRS)
 
-doc: festvox.ps festvox.html festvox.info 
+# Try and say if config hasn't been created
+config_dummy := $(shell test -f config/config || { echo '*** '; echo '*** Please Copy config/config-dist to config and edit to set options ***'; echo '*** '; }  >&2)
 
-festvox.html: $(TEXT)
-	@ if [ ! -d html ] ; \
-          then mkdir -p html ; fi
-	(cd html; texi2html -number -split_chapter ../festvox.texi)
-	# give the html files background color of white
-	@ for i in html/*.html ; \
-	  do \
-	    sed 's/<BODY>/<BODY bgcolor="#ffffff">/' $$i >ttt.html; \
-	    mv ttt.html $$i ; \
-	  done
-	cat stuff.ed | ed html/festvox_toc.html
-festvox.ps: festvox.dvi
-	dvips -f festvox.dvi >festvox.ps
-festvox.dvi: $(TEXT)
-	tex festvox.texi
-	texindex festvox.cp
-	tex festvox.texi
-festvox.info: $(TEXT)
-	makeinfo festvox.texi
-refs:
-	texirefs $(TEXT)
-clean:
-	rm -rf *~ *.aux *.cp *.fn *.ky *.log *.pg *.toc *.tp *.vr *.cps
-backup:
-	@ ls -d $(FILES) | sed 's/^/festvox\//' >.filelist
-	@ (cd ..; tar zcvf festvox/festvox.tar.gz `cat festvox/.filelist`)
-	@ ls -l festvox.tar.gz
+# force a check on the system file
+system_dummy := $(shell $(MAKE) -C $(TOP)/config -f make_system.mak TOP=.. system.mak)
+
+include $(TOP)/config/common_make_rules
+
+release: 
+	rm -f html/index.html html/festvox.ps.gz html/festvox.tar.gz
+	cp -p doc/festvox.ps html/festvox.ps
+	gzip html/festvox.ps
+	ln -s festvox_toc.html html/index.html
+	$(MAKE) dist
+	cp -p $(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz html/
+	ln html/$(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz html/festvox.tar.gz
+
+backup: time-stamp
+	@ $(RM) -f $(TOP)/FileList
+	@ $(MAKE) file-list
+	@ echo .time-stamp >>FileList
+	@ sed 's/^\.\///' <FileList | sed 's/^/festvox\//' >.file-list-all
+	@ (cd ..; tar zcvf festvox/$(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz `cat festvox/.file-list-all`)
+	@ $(RM) -f $(TOP)/.file-list-all
+	@ ls -l $(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz
+
+# dist doesn't include the festvox.org site html files
+dist: time-stamp
+	@ $(RM) -f $(TOP)/FileList
+	@ $(MAKE) file-list
+	@ echo .time-stamp >>FileList
+	@ sed 's/^\.\///' <FileList | grep -v "festvox.org" | sed 's/^/festvox\//' >.file-list-all
+	@ ls html/*.html | sed 's/^/festvox\//' >>.file-list-all
+	@ ls html/*.png | sed 's/^/festvox\//' >>.file-list-all
+	@ ls html/festvox.ps.gz | sed 's/^/festvox\//' >>.file-list-all
+	@ (cd ..; tar zcvf festvox/$(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz `cat festvox/.file-list-all`)
+	@ $(RM) -f $(TOP)/.file-list-all
+	@ ls -l $(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz
+
+time-stamp :
+	@ echo $(PROJECT_NAME) >.time-stamp
+	@ echo $(PROJECT_PREFIX) >.time-stamp
+	@ echo $(PROJECT_VERSION) >.time-stamp
+	@ echo $(PROJECT_DATA) >.time-stamp
+	@ echo $(PROJECT_STATE) >.time-stamp
+	@ date >>.time-stamp
 

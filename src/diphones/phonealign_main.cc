@@ -1,39 +1,44 @@
-/**************************************************************************/
-/*                                                                        */
-/*                     Alan W Black and Kevin Lenzo                       */
-/*                          Copyright (c) 1998                            */
-/*                         All Rights Reserved.                           */
-/*                                                                        */
-/*   Permission to use, copy, modify,  and licence this software and its  */
-/*   documentation for any purpose, is hereby granted without fee,        */
-/*   subject to the following conditions:                                 */
-/*    1. The code must retain the above copyright notice, this list of    */
-/*       conditions and the following disclaimer.                         */
-/*    2. Any modifications must be clearly marked as such.                */
-/*    3. Original authors' names are not deleted.                         */
-/*                                                                        */
-/*   THE AUTHORS OF THIS WORK DISCLAIM ALL WARRANTIES WITH REGARD TO      */
-/*   THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY   */
-/*   AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY         */
-/*   SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES            */
-/*   WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN   */
-/*   AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,          */
-/*   ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       */
-/*   THIS SOFTWARE.                                                       */
-/*                                                                        */
-/*   This file is part "Building Voices in the Festival Speech            */
-/*   Synthesis System" by Alan W Black and Kevin Lenzo written at         */
-/*   Robotics Institute, Carnegie Mellon University, fall 98              */
-/**************************************************************************/
-/*                                                                        */
-/*   Simple alignment program takes, a label file and track file from a   */
-/*   a prompt and a track file from the response.  Produces a new label   */
-/*   file form the response using a simple dp alignment.                  */
-/*                                                                        */
-/*   This is very crude but hopefully adequate for autolabelling diphones */
-/*   which are very constrained                                           */
-/*                                                                        */
-/**************************************************************************/
+/*************************************************************************/
+/*                                                                       */
+/*                   Carnegie Mellon University and                      */
+/*                   Alan W Black and Kevin A. Lenzo                     */
+/*                      Copyright (c) 1998-2000                          */
+/*                        All Rights Reserved.                           */
+/*                                                                       */
+/*  Permission is hereby granted, free of charge, to use and distribute  */
+/*  this software and its documentation without restriction, including   */
+/*  without limitation the rights to use, copy, modify, merge, publish,  */
+/*  distribute, sublicense, and/or sell copies of this work, and to      */
+/*  permit persons to whom this work is furnished to do so, subject to   */
+/*  the following conditions:                                            */
+/*   1. The code must retain the above copyright notice, this list of    */
+/*      conditions and the following disclaimer.                         */
+/*   2. Any modifications must be clearly marked as such.                */
+/*   3. Original authors' names are not deleted.                         */
+/*   4. The authors' names are not used to endorse or promote products   */
+/*      derived from this software without specific prior written        */
+/*      permission.                                                      */
+/*                                                                       */
+/*  CARNEGIE MELLON UNIVERSITY AND THE CONTRIBUTORS TO THIS WORK         */
+/*  DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING      */
+/*  ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT   */
+/*  SHALL CARNEGIE MELLON UNIVERSITY NOR THE CONTRIBUTORS BE LIABLE      */
+/*  FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    */
+/*  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN   */
+/*  AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,          */
+/*  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       */
+/*  THIS SOFTWARE.                                                       */
+/*                                                                       */
+/*************************************************************************/
+/*                                                                       */
+/*  Simple alignment program takes, a label file and track file from a   */
+/*  a prompt and a track file from the response.  Produces a new label   */
+/*  file form the response using a simple dp alignment.                  */
+/*                                                                       */
+/*  This is very crude but hopefully adequate for autolabelling diphones */
+/*  which are very constrained                                           */
+/*                                                                       */
+/*************************************************************************/
 
 #include <EST.h>
 #include <EST_math.h>
@@ -285,17 +290,17 @@ static void map_relation(const EST_Track &itrack,
     // Map the end feature values
     for (i=olabel.head(); i != 0; i=next(i))
     {
-	end = i->fF("end");
+	end = i->F("end");
 	thisi = itrack.index(end);
 	thisj = map(itrack.index(end));
 	cost = dpt(thisi,thisj);
 	end = otrack.t(map(itrack.index(end)));
-	i->fset("end",end);
+	i->set("end",end);
 	if (pa_withcosts)
 	{
 	    // Find number of steps to get here
 	    dist = find_distance(dpp,lasti, lastj,thisi, thisj);
-	    i->fset("cost",(cost-lastcost)/(float)dist);
+	    i->set("cost",(cost-lastcost)/(float)dist);
 	}
 	lastcost = cost;
 	lasti = thisi;

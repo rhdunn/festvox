@@ -1,0 +1,638 @@
+@chapter Utterances
+
+@menu
+* Utterance structure::
+* Modules::
+* Utterance access::
+* Utterance building::
+* Extracting features from utterances::
+@end menu
+
+@node Utterance structure, Modules, , Utterances
+@section Utterance structure
+
+@cindex utterance
+@cindex relations
+@cindex items
+The basic building block for Festival is the @emph{utterance}.  The
+structure consists of a set of @emph{relations} over a set of
+@emph{items}.  Each item represents a object such as a word, segment,
+syllable, etc. while relations relate these items together.  An item may
+appear in multiple relations, such as a segment will be in a
+@code{Segment} relation and also in the @code{SylStructure} relation.
+Relations define an ordered structure over the items within them, in
+general these may be arbitrary graphs but in practice so far we have
+only used @emph{lists} and @emph{trees} Items may contain a number of
+features.
+
+There are no built-in relations in Festival and the names and use of
+them is controlled by the particular modules used to do synthesis.
+Language, voice and module specific relations can easy be created and
+manipulated.  However within our basic voices we have followed a number
+of conventions that should be followed if you wish to use some of the
+existing modules.
+
+@cindex basic relations
+The relation names used will depend on the particular structure chosen
+for your voice.  So far most of our released voices have the same
+basic structure though some of our research voices contain quite 
+a different set of relations.  For our basic English voices the
+relations used are as follows
+@table @code
+@item Text
+@cindex Text relation
+Contains a single item which contains a feature with the input character
+string that is being synthesized
+@item Token
+@cindex Token relation
+A list of trees where each root of each tree is the white space
+separated tokenized object from the input character string.  Punctuation
+and whitespace has been stripped and placed on features on these token
+items.  The daughters of each of these roots are the list of words
+that the token is associated with.   In many cases this is a one
+to one relationship, but in general it is one to zero or
+more.  For example tokens comprising of digits will typically
+be associated with a number of words.
+@item Word 
+@cindex Word relation
+@cindex words
+The words in the utterance.  By @emph{word} we typically mean something
+that can be given a pronunciation from a lexicon (or letter to sound
+rules).  However in most of our voices we distinguish pronunciation by
+the words and a part of speech feature.  Words with also be leaves of the
+@code{Token} relation, leaves of the @code{Phrase} relation and roots of
+the @code{SylStructure} relation.
+@item Phrase
+@cindex Phrase relation
+A simple list of trees representing the prosodic phrasing on the
+utterance.  In our voices we only have one level of prosodic phrase
+below the utterance (though you can easily add a deeper hierarchy
+if your models require it).  The tree roots are labelled with
+the phrase type and the leaves of these trees are in the
+@code{Word} relation.
+@item Syllable 
+@cindex Syllable relation
+A simple list of syllable items.  These syllable items are intermediate
+nodes in the @code{SylStructure} relation allowing access to the words
+these syllables are in and the segments that are in these syllables.
+In this format no further onset/coda distinction is made explicit but can
+be derived from this information.
+@item Segment 
+@cindex Segment relation
+A simple list of segment (phone) items.  These form the leaves of
+the @code{SylStructure} relation through which we can find where each
+segment is placed within its syllable and word.  By convention
+silence phones do not appear in any syllable (or word) but will 
+exist in the segment relation.
+@item SylStructure
+@cindex SylStructure relation
+A list of tree structures over the items in the @code{Word}, 
+@code{Syllable} and @code{Segment} items.
+@item IntEvent
+@cindex IntEvent relation
+A simple list of intonation events (accents and boundaries).
+These are related to syllables through the @code{Intonation} relation.
+@item Intonation
+@cindex Intonation relation
+A list of trees whose roots are items in the @code{Syllable} relation,
+and daughters are in the @code{IntEvent} relation. It is assumed that a
+syllable may have a number of intonation events associated with it (at
+least accents and boundaries), but an intonation event may only by
+associated with one syllable.
+@item Wave
+@cindex Wave relation
+A relation consisting of a single item that has a feature with the
+synthesized waveform.
+@item Target
+@cindex Target relation
+A list of trees whose roots are segments and daughters are
+F0 target points.  This is only used by some intonation modules.
+@item Unit, SourceSegments, Frames, SourceCoef TargetCoef
+A number of relations used the the @code{UniSyn} module.
+@end table
+
+@node Modules, Utterance access, Utterance structure, Utterances
+@section Modules
+
+@cindex modules
+The basic synthesis process in Festival is viewed as applying
+a set of @emph{modules} to an utterance.  Each module will access
+various relations and items and potentially generate new features,
+items and relations.  Thus as the modules are applied the utterance
+structure is filled in with more and more relations until
+ultimately the waveform is generated.
+
+@cindex utterance types
+Modules may be written in C++ or Scheme.  Which modules are executed are
+defined in terms of the utterance @code{type}, a simple feature on the
+utterance itself.  For most text to speech cases this is defined to be
+of type @code{Tokens}.  The function @code{utt.synth} simply looks up an
+utterance's type and then looks up the definition of the defined
+synthesis process for that type and applies the named modules.
+Synthesis types maybe defined using the function @code{defUttType}.
+For example definition for utterances of type @code{Tokens}
+is
+@lisp
+(defUttType Tokens
+  (Token_POS utt) 
+  (Token utt)        
+  (POS utt)
+  (Phrasify utt)
+  (Word utt)
+  (Pauses utt)
+  (Intonation utt)
+  (PostLex utt)
+  (Duration utt)
+  (Int_Targets utt)
+  (Wave_Synth utt)
+  )
+@end lisp
+While a simpler case is when the input is phone names
+and we don't wish to do all that text analysis and prosody 
+prediction. Then we use the type @code{Phones} which simply
+loads the phones, applies fixed prosody and the synthesizes
+the waveform
+@lisp
+(defUttType Phones
+  (Initialize utt)
+  (Fixed_Prosody utt)
+  (Wave_Synth utt)
+  )
+@end lisp
+In general the modules named in the type definitions are general and
+actually allow further selection of more specific modules within
+them.  For example the @code{Duration} module respects the global
+parameter @code{Duration_Method} and will call then desired duration
+module depending on this value.  
+
+When building a new voice you will probably not need to change any of
+these definitions, though you may wish to add a new module and we will
+show how to do that without requiring any change to the synthesis
+definitions in a later chapter.
+
+There are many modules in the system, some simply wraparounds
+to choose between other modules.  However the basic modules
+used for text to speech have the basic following function
+@table @code
+@item Token_POS
+@cindex Token_POS module
+basic token identification, used for homograph disambiguation
+@item Token
+@cindex Token module
+Apply the token to word rules building the @code{Word} relation.
+@item POS
+@cindex POS module
+@cindex port of speech tagging
+A standard part of speech tagger (if desired)
+@item Phrasify
+@cindex Phrasify module
+Build the @code{Phrase} relation using the specified method.  Various
+are offered, from statistically trained models to simple CART trees.
+@item Word
+@cindex Word module
+Lexical look up building the @code{Syllable} and @code{Segment}
+relations and the @code{SylStructure} related these together.
+@item Pauses
+@cindex Pauses module
+Prediction of pauses, inserting silence into the @code{Segment}
+relation, again through a choice of different prediction mechanisms.
+@item Intonation
+@cindex Intonation module
+Prediction of accents and boundaries, building the @code{IntEvent}
+relation and the @code{Intonation} relation that links IntEvents
+to syllables.  This can easily be parameterized for most practical
+intonation theories.
+@item PostLex
+@cindex PostLex module
+Post lexicon rules that can modify segments based on their
+context.  This is used for things like vowel reduction,
+contractions, etc.
+@item Duration
+@cindex Duration module
+Prediction of durations of segments.
+@item Int_Targets
+@cindex Int_Targets module
+The second part of intonation.  This creates the @code{Target}
+relation representing the desired F0 contour.
+@item Wave_Synth
+@cindex Wave_Synth module
+A rather general function that in turn calls the appropriate
+method to actually generate the waveform.
+@end table
+
+@node Utterance access, Utterance building, Modules, Utterances
+@section Utterance access
+
+@cindex utterance access
+A set of simple access methods exist for utterances, relations,
+items and features, both in Scheme and C++.  As much as possible these
+access methods are as similar as possible.
+
+As the users of this document will primarily be accessing utterance via
+Scheme we will describe the basic Scheme functions available for access
+and give some examples of idioms to achieve various standard functions.
+
+In general the required arguments to a lisp function are reflected in
+the first parts of the name of the function.  Thus
+@code{item.relation.next} requires an item, and relation name and will
+return the next item in that named relation from the given one.
+
+A listing a short description of the major utterance access and
+manipulation functions is given in the Festival manual.
+
+An important notion to be aware of is that an item is always viewed
+through so particular relation.  For example, assuming
+a typically utterance called @code{utt1}.
+@example
+(set! seg1 (utt.relation.first utt1 'Segment))
+@end example
+@code{seg1} is an item viewed from the @code{Segment} relation.  Calling
+@code{item.next} on this will return the next item in the @code{Segment}
+relation.  A @code{Segment} item may also be in the @code{SylStructure}
+item. If we traverse it using next in that relation we will hit
+the end when we come to the end of the segments in that syllable.
+
+@cindex item views
+You may @emph{view} a given item from a specified relation by
+requesting a view from that.  In Scheme @code{nil} will
+be returned if the item is not in the relation.  The
+function @code{item.relation} takes an item and relation
+name and returns the item as view from that relation.
+
+Here is a short example to help illustrate the basic
+structure.
+@lisp
+(set! utt1 (utt.synth (Utterance Text "A short example.")))
+@end lisp
+The first segment in @code{utt!} will be silence. 
+@lisp
+(set! seg1 (utt.relation.first utt1 'Segment))
+@end lisp
+This item will be a silence as can shown by
+@lisp
+(item.name seg1)
+@end lisp
+If we find the next item we will get the schwa representing the 
+indefinite article.
+@lisp
+(set! seg2 (item.next seg1))
+(item.name seg2)
+@end lisp
+Let us move onto the "sh" to illustrate the different between
+traversing the @code{Segment} relation as opposed to the 
+@code{SylStructure}
+@lisp
+(set! seg3 (item.next seg2))
+@end lisp
+Let use define a function which will take an item, print its
+name name call next on it @emph{in the same relation} and 
+continue until it reaches the end.
+@lisp
+(define (toend item) 
+  (if item
+      (begin
+       (print (item.name item))
+       (toend (item.next item)))))
+@end lisp
+If we call this function on @code{seg3} which is in the @code{Segment}
+relation we will get a list of all segments until the end of the utterance
+@lisp
+festival> (toend seg3)
+"sh"
+"oo"
+"t"
+"i"
+"g"
+"z"
+"aa"
+"m"
+"p"
+"@@"
+"l"
+"#"
+nil
+festival>
+@end lisp
+However if we first changed the view of seg3 to the @code{SylStructure}
+relation we will be traversing the leaf nodes of the syllable structure
+tree which will terminate at the end of that syllable.
+@lisp
+festival> (toend (item.relation seg3 'SylStructure)
+"sh"
+"oo"
+"t"
+nil
+festival> 
+@end lisp
+Note that @code{item.next} returns the item immediately to the next in
+that relation.  Thus it return @code{nil} when the end of a sub-tree is
+found.  @code{item.next} is most often used for traversing simple lists
+through it is defined for any of the structure supported by relations.
+The function @code{item.next_item} allows traversal of any relation
+returning a next item until it has visiting them all.  In the simple
+list case this this equivalent to @code{item.next} but in the tree case
+it will traverse the tree in @emph{pre-order} that is it will visit
+roots before their daughters, and before their next siblings.
+
+@cindex relation traversal
+@cindex traversing a relation
+Scheme is particularly adept at using functions as first class
+objects.  A typical traversal idiom is to apply so
+function to each item in a a relation.  For example support
+we have a function@code{PredictDuration} which takes a single item 
+and assigns a duration.  We can apply this to each item in the
+@code{Segment} relation
+@lisp
+(mapcar
+ PredictDuration
+ (utt.relation.items utt1 'Segment))
+@end lisp
+The function @code{utt.relation.items} returns all items in the
+relation as a simple lisp list.  
+
+Another method to traverse the items in a relation is use
+the @code{while} looping paradigm which many people are more
+familiar with.
+@lisp
+(let ((f (utt.relation.first utt1 'Segment)))
+  (while f
+   (PredictDuration f)
+   (set! f (item.next_item f))))
+@end lisp
+
+If you wish to traverse only the leaves of a tree you
+may call @code{utt.relation.leafs} instead of 
+@code{utt.relation.items}.  A leaf is defined to be an item with
+no daughters.  Or in the @code{while} case, there isn't standardly
+defined a @code{item.next_leaf} but code easily be defined
+as 
+@lisp
+(define (item.next_leaf i)
+  (let ((n (item.next_item i)))
+   (cond
+    ((null n) nil)
+    ((item.daughters n) (item.next_leaf n))
+    (t n))))
+@end lisp
+
+@subsection Features as pathnames
+
+@cindex feature pathnames
+Rather than explicitly calling a set of functions to find your way round
+an utterance we also allow access through a linear flat @emph{pathname}
+mechanism.  This mechanism is read-only but can succinctly access not
+just features on a given item but features on related items too.
+
+For example rather than calling an explicit next function
+to find the name of the following item thus
+@lisp
+(item.name (item.next i))
+@end lisp
+You can access it via the pathname
+@lisp
+(item.feat i "n.name")
+@end lisp
+Festival will interpret the feature name as a pathname.  In addition
+to traversing the current relation you can switch between
+relations via the element @code{R:<relationame>}.  Thus to
+find the stress value of an segment item @code{seg} we need
+to switch to the @code{SylStructure} relation, find its parent
+and check the @code{stress} feature value.
+@lisp
+(item.feat seg "R:SylStructure.parent.stress")
+@end lisp
+Feature pathnames make the definition of various prediction
+models much easier.  CART trees for example simply specify
+a pathname as a feature, dumping features for training is also
+a simple task.  Full function access is still useful when 
+manipulation of the data is required but as most access is 
+simply to find values pathnames are the most efficient way to 
+access information in an utterance.
+
+@subsection Access idioms
+
+For example suppose you wish to traverse each segment in an
+utterance replace all vowels in unstressed syllables with a
+schwa (a rather over-aggressive reduction strategy but it servers
+for this illustrative example.
+@lisp
+(define (reduce_vowels utt)
+ (mapcar
+  (lambda (segment)
+   (if (and (string-equal "+" (item.feat segment "ph_vc"))
+            (string-equal 
+             "1" (item.feat segment "R:SylStructure.parent.stress")))
+        (item.set_name segment "@@")))
+  (utt.relation.items 'Segment)))
+@end lisp
+
+@node Utterance building, Extracting features from utterances, Utterance access, Utterances
+@section Utterance building
+
+@cindex building utterances
+@cindex utterance building
+@cindex database as utterances
+As well as using Utterance structures in the actual runtime
+process of converting text to speech we also use them in 
+database representation.  Basically we wish to build utterance
+structures for each utterance in a speech database.  Once they
+are in that structure, as if they had been (correctly) synthesized,
+we can use these structures for training various models.  For example
+given the actually durations for the segments in a speech database
+and utterance structures for these we can dump the actual durations
+and features (phonetic, prosodic context etc.) which we feel influence
+the durations and train models on that data.
+
+Obviously real speech isn't as clean as synthesized speech so its not
+always easy to build (reasonably) accurate utterances for the real
+utterances.  However here we will itemize a number of functions that
+will make the building of utterance from real speech easier.  Building
+utterance structures is probably worth the effort considering how
+easy it is to build various models from them.  Thus we recommend
+this even though at first the work may not immediately seem
+worthwhile.
+
+In order to build an utterance of the type used for our English voices
+(and which is suitable for most of the other languages we have done),
+you will need label files for the following relations.  Below
+we will discuss how to get these labels, automatically, by 
+hand or derived from other label files in this list and the relative
+merits of such derivations.
+
+@cindex basic labels
+The basic label types required are
+@table @code
+@item Segment
+segment labels with (near) correct boundaries, in the phone set
+of your language.
+@item Syllable
+Syllables, with stress marking (if appropriate) whose boundaries
+are closely aligned with the segment boundaries.
+@item Word
+Words with boundaries aligned (close) to the syllables and segments.
+By @emph{words} we mean the things which can be looked up in a lexicon
+thus @samp{1986} would not be considered a word and should be
+rendered as three words @samp{nineteen eighty six}.
+@item IntEvent
+Intonation labels aligned to a syllable (either within the syllable
+boundary or explicitly naming the syllable they should align to.  If
+using ToBI (or some derivative) these would be standard ToBI labels,
+while in something like Tilt these would be @samp{a} and @samp{b}
+marking accents and labels.
+@item Phrase
+A name and marking for the end of each prosodic phrase.
+@item Target
+The mean F0 value in Hertz at the mid-point of each segment
+in the utterance.
+@end table
+
+@cindex segment labelling
+@cindex autolabelling
+@cindex labelling speech
+Segment labels are probably the hardest to generate.  Knowing what
+phones are there can only really be done by actually listening to the
+examples and labelling them.  Any automatic method will have to make low
+level phonetic classifications which machines are not particularly good
+at (nor are humans for that matter).  Some discussion of autoaligning
+phones is given in the diphone chapter where an aligner distributed with
+this document is described.  This may help but as much depends on the
+segmental accuracy getting it right ultimately hand correction at least
+is required.  We have used that aligner on a speech database though we
+already knew from another (not so accurate) aligner what the phone
+sequences probably were.  Our aligner improved the quality of exist
+labels and the synthesizer (phonebox) that used it, but there are
+external conditions that made this a reasonably thing to do.
+
+@cindex word labelling
+Word labelling can most easily be done by hand, it is much
+easier than to do than segment labelling.  In the continuing process
+of trying to build automatic labellers for databases we currently
+reckon that word labelling could be the last to be done automatically.
+Basically because with word labelling, segment, syllable and intonation
+labelling becomes a much more constrained task.  However it is
+important that word labels properly align with segment labels even
+when spectrally there may not be any real boundary between
+words in continuous speech. 
+
+@cindex syllable labelling
+Syllable labelling can probably best be done automatically given segment
+(and word) labelling. The actual algorithm for syllabification may
+change but whatever is chosen (or defined from a lexicon) it is
+important that that syllabification is consistently used throughout the
+rest of the system (e.g. in duration modelling).  Note that automatic
+techniques in aligning lexical specifications of syllabification are in
+their nature inexact.  There are multiple acceptable ways to say words
+and it is relatively important to ensure that the labelling reflects
+what is actually there.  That is simply looking up a word in a lexicon
+and aligning those phones to the signal is not necessarily correct.
+Ultimately this is what we would like to do but so far we have
+discovered our unit selection algorithms are nowhere near robust enough
+to do this.
+
+@cindex F0 targets
+The Target labelling required here is a single average F0 value for each
+segment.  This currently is done fully automatically from the signal.
+This is naive and a better representation of F0 could be more
+appropriate, it is used only in some of the model building described
+below.  Ultimately it would be good if the F0 need not be explicitly
+used at all but just use the factors that determine the F0 value, but
+this is still a research topic.
+
+@cindex phrase labelling
+Phrases could potentially be determined by a combination of F0 power and
+silence detection but the relationship is not obvious.  In general we
+hand label phrases as part of the intonation labelling process.
+Realistically only two levels of phrasing can reliably be labelled, even
+though there are probably more.  That is, roughly, sentence internal and
+sentence final, what ToBI would label as (2 or 3) and 4.  More exact
+labellings would be useful.
+
+@cindex intonation labelling
+@cindex ToBI
+@cindex Tilt
+For intonation events we have more recently been using Tilt accent
+labelling.  This is simpler than ToBI and we feel more reliable.  The
+hand labelling part marks @code{a} (for accent) and @code{b} for
+boundary.  We have also split boundaries into @code{rb} (rising
+boundary) and @code{fb} (falling boundary).  We have been experimenting
+with autolabelling these and have had some success but that's still a
+research issue.  Because there is a well defined and fully automatic
+method of going from a/b labelled waveforms to a parameterization of the
+F0 contour we've found Tilt the most useful Intonation labelling.  Tilt
+is described in @cite{taylor99}.
+
+ToBI accent/tone labelling @cite{silverman92} is useful too but time
+consuming to label.  If it exists for the database then its usually
+worth using.
+
+@cindex make_utts
+In the standard Festival distribution there is a festival
+script @file{festival/examples/make_utts} which will build
+utterance structures from the labels for the six basic relations.
+
+This function can most easily be used given the following
+directory/file structure in the database directory.  @file{festival/relations/}
+should contain a directory for each set of labels named for the 
+utterance relation it is to be part of (e.g. @file{Segment/}, 
+@file{Word/}, etc.
+
+The constructed utterances will be saved in @file{festival/utts/}.
+
+An example of the label files is given with this document
+in @url{src/db_example/festival/relations/} and the
+build utterance in @url{src/db_example/festival/utts/}
+
+@node Extracting features from utterances, , Utterance building, Utterances
+@section Extracting features from utterances
+
+@cindex dumpfeats
+Many of the training techniques that are described in the 
+following chapters extract basic features (via pathnames) from 
+a set of utterances.  This can most easily be done by the
+@file{festival/examples/dumpfeats} Festival script.  It takes
+a list of feature/pathnames, as a list or from a file and saves 
+the values for a given set of items in a single feature file (or
+one for each utterance).  Call @file{festival/examples/dumpfeats}
+with the argument @code{-h} for more details.
+
+For example suppose for all utterances we want the segment
+duration, its name, the name of the segment preceding it
+and the segment following it.
+@example
+dumpfeats -feats "(segment_duration name p.name n.name)" \
+    -relation Segment -output dur.feats festival/utts/*.utt
+@end example
+If you wish to save the features in separate files one
+for each utterance, if the output filename contains a @samp{%s}
+it will be filled in with the utterance fileid.  Thus to dump
+all features named in the file @file{duration.featnames} we
+would call
+@example
+dumpfeats -feats duration.featnames -relation Segment \
+         -output feats/%s.dur festival/utts/*.utt
+@end example
+The file @file{duration.featnames} should contain the features/pathnames
+one per line (without the opening and closing parenthesis.
+
+Other features and other specific code (e.g. selecting a
+voice that uses an appropriate phone set), can be included in this
+process by naming a scheme file with the @code{-eval} option.
+
+The dumped feature files consist of a line for each
+item in the named relation containing the requested feature values
+white space separated.  For example
+@example
+0.399028 pau 0 sh 
+0.08243 sh pau iy 
+0.07458 iy sh hh 
+0.048084 hh iy ae 
+0.062803 ae hh d 
+0.020608 d ae y 
+0.082979 y d ax 
+0.08208 ax y r 
+0.036936 r ax d 
+0.036935 d r aa 
+0.081057 aa d r 
+...
+@end example
+
