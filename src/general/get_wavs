@@ -37,7 +37,7 @@
 
 if [ $# = 0 ]
 then
-   echo "Extract EGG (LAR) signal from recordings"
+   echo "Extract wave signal from recordings"
    echo "Usage:  bin/get_wavs recording/*.wav"
    echo "Extract track 0 (first track) from stereo recordings into wav/"
    exit 1

@@ -53,7 +53,7 @@ fi
 for i in $*
 do
   fname=`basename $i .wav`
-  echo $fname
+  echo $fname F0
   $ESTDIR/bin/pda -L -fmin 70 -fmax 240 -o f0/$fname.f0 -otype ssff $PDA_PARAMS wav/$fname.wav
 done
 

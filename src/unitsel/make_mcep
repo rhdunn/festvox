@@ -45,7 +45,6 @@ then
    echo '   csh% setenv ESTDIR /home/awb/projects/speech_tools/'
    exit 1
 fi
-PDA_PARAMS="-fmax 180 -fmin 80"
 SIG2FV=$ESTDIR/bin/sig2fv
 #SIG2FVPARAMS='-coefs melcep -delta melcep -melcep_order 12 -fbank_order 24 -shift 0.01 -factor 2.5 -preemph 0.97'
 SIG2FVPARAMS='-coefs melcep -melcep_order 12 -fbank_order 24 -shift 0.01 -factor 2.5 -preemph 0.97'
@@ -67,7 +66,7 @@ fi
 for i in $*
 do
   fname=`basename $i .wav`
-  echo $fname
+  echo $fname MCEP
   $SIG2FV $SIG2FVPARAMS -otype est_binary $i -o mcep/$fname.mcep -pm pm/$fname.pm -window_type hamming
 done
 

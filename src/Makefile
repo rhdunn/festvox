@@ -36,9 +36,9 @@
 ###########################################################################
 TOP=..
 DIRNAME=src
-BUILD_DIRS = general diphones
+BUILD_DIRS = general diphones eval
 ALL_DIRS= db_example intonation duration unitsel \
-          ldom vox_diphone vox_files prosody $(BUILD_DIRS)
+          ldom vox_diphone vox_files prosody st $(BUILD_DIRS)
 FILES = Makefile 
 
 ALL = 

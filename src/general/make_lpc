@@ -59,7 +59,7 @@ fi
 for i in $*
 do
    fname=`basename $i .wav`
-   echo $i
+   echo $i LPC
 
    # Potentially normalise the power (if powfact is there)
    if [ -f etc/powfacts ]

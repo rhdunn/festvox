@@ -43,15 +43,13 @@ Festival and Speech Tools
     This uses speech tools programs and festival itself at various
     stages in builidng voices as well as (of course) for the final
     voices.  Festival and the Edinburgh Speech Tools are available from
-       http://www.cstr.ed.ac.uk/projects/festival.html
+       http://www.cstr.ed.ac.uk/projects/festival/
     or
-       http://www.speech.cs.cmu.edu/festival
+       http://www.festvox.org/festival
 
     It is recommended that you compile your own versions of these
     as you will need the libraries and include files to build some
-    programs in this festvox.  Also some parts require support for
-    the clunits module which is not compiled in by default in the
-    standard distributions.
+    programs in this festvox.
 EMU Labeller
     The University of Macquarie's Speech Hearing and Language Research
     Centre distribute labelling tools for speech databases.  We use
@@ -75,37 +73,29 @@ INSTALLATION
 You must have the Edinburgh Speech Tools and Festival instllation
 before you can build the tools in the festvox distribution.
 
-Unpack festvox-1.1-beta.tar.gz
+Unpack festvox-2.0-release.tar.gz
 
-    tar zxvf festvox-1.1-beta.tar.gz
-    cd festvox/config
-    cat config-dist >config
-
-Edit the file config, and set ESTDIR to point to your
-locally installed version of the Speech Tools (and if you have the
-festival distribution in an unusual place modify the variable FESTDIR
-too.
-
-    cd ..
+    tar zxvf festvox-2.0-release.tar.gz
+    cd festvox
+    ./configure
     make
 
-This should build the phone aligner, and various festival scripts.  
+The configuration basically tries to find your version of 
+the Edinburgh Speech Tools and uses its configuration to set
+compiler type etc.  So you must have that installed.  If configure
+fails try expliciting setting your ESTDIR environment variable
+to point ot your compiled version of the Speech Tools.
 
-pre-generated version of the document in html and postscript are
+A pre-generated version of the document in html and postscript are
 distributed in the html/ directory
 
-If you need to build the document itself, you will need:
+If you need to build the document itself, you will need a working
+version of the docbook tools, which may (or may not) already
+be installed on your system
     
-    a working version of TeX
-    texi2html (http://wwwinfo.cern.ch/dis/texi2html/)
-    dvips
-    makeinfo
-
-Most of these should be installed on you Unix system but maybe not.
-
 To build the documenation
    
-    cd doc
+    cd docbook
     make doc
 
 Note that even if the documentation build fails you can still use all
@@ -115,12 +105,12 @@ To use the scripts and programs in the festvox distribution each
 user is expected to have the environment variables ESTDIR and
 FESTVOXDIR set for example as (if you use bash, zsh, ksh or sh)
 
-   export ESTDIR=/home/awb/projects/1.4.1/speech_tools
+   export ESTDIR=/home/awb/projects/1.4.3/speech_tools
    export FESTVOXDIR=/home/awb/projects/festvox
 
 Or if you use csh or tcsh
 
-   setenv ESTDIR /home/awb/projects/1.4.1/speech_tools
+   setenv ESTDIR /home/awb/projects/1.4.3/speech_tools
    setenv FESTVOXDIR /home/awb/projects/festvox
 
 Remember to set these to where *your* installations are, not *ours*.

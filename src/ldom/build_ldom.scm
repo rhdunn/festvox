@@ -41,7 +41,7 @@
 
 (require 'clunits_build)
 
-(defvar INST_LDOM_VOX::ldom_dir "CURRENTDIR")
+(defvar INST_LDOM_VOX::ldom_dir ".")
 
 ;;; Basic voice definition file with voice defines and clunit
 ;;; parameter definitoin for run time.
@@ -101,7 +101,7 @@
 	 ;; Wagon tree building params
 ;	 (trees_dir "festvox/")  ;; in INST_LDOM_VOX_ldom.scm
 	 '(wagon_field_desc "festival/clunits/all.desc")
-	 '(wagon_progname "ESTDIR/bin/wagon")
+	 '(wagon_progname "$ESTDIR/bin/wagon")
 	 '(wagon_cluster_size 10)
 	 '(prune_reduce 0)
 	 '(cluster_prune_limit 20)
@@ -142,6 +142,7 @@ Get setup ready for (do_all) (or (do_init))."
   "(do_prompt name text) 
 Synthesize given text and save waveform and labels for prompts."
   (let ((utt1 (utt.synth (eval (list 'Utterance 'Text text)))))
+    (utt.save utt1 (format nil "prompt-utt/%s.utt" name))
     (utt.save.segs utt1 (format nil "prompt-lab/%s.lab" name))
     (utt.save.wave utt1 (format nil "prompt-wav/%s.wav" name))))
 

@@ -2,7 +2,7 @@
 ##                                                                       ##
 ##                   Carnegie Mellon University and                      ##
 ##                   Alan W Black and Kevin A. Lenzo                     ##
-##                      Copyright (c) 1998-2001                          ##
+##                      Copyright (c) 1998-2003                          ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -33,7 +33,7 @@
 ##                                                                       ##
 ##  Authors: Alan W Black (awb@cs.cmu.edu)                               ##
 ##           Kevin A. Lenzo (lenzo@cs.cmu.edu)                           ##
-##  Version: festvox-1.5 2001                                            ##
+##  Version: festvox-2.0 December 2002                                   ##
 ##                                                                       ##
 ###########################################################################
 ##                                                                       ##
@@ -42,35 +42,35 @@
 ##                                                                       ##
 ##  This project's home page is http://www.festvox.org                   ##
 ##                                                                       ##
-##  This release corresponds to the Festival 1.4.1 release (which        ##
-##  incorporates Edinburgh Speech Tools 1.2.1)                           ##
+##  This release corresponds to the Festival 1.4.3 release (which        ##
+##  incorporates Edinburgh Speech Tools 1.2.3)                           ##
 ##                                                                       ##
 ###########################################################################
 TOP=.
 DIRNAME=.
-BUILD_DIRS = src doc 
-ALL_DIRS=config festvox.org course docbook $(BUILD_DIRS)
-OTHERS = README ACKNOWLEDGEMENTS ANNOUNCE-1.1 ANNOUNCE-1.2
-FILES = Makefile $(OTHERS)
+BUILD_DIRS = src 
+ALL_DIRS=config docbook festvox.org course $(BUILD_DIRS)
+CONFIG=configure configure.in config.sub config.guess \
+       missing install-sh mkinstalldirs
+OTHERS = README ACKNOWLEDGEMENTS ANNOUNCE-1.1 ANNOUNCE-1.2 ANNOUNCE-2.0
+FILES = Makefile $(OTHERS) $(CONFIG)
 
 ALL = $(BUILD_DIRS)
 
 # Try and say if config hasn't been created
-config_dummy := $(shell test -f config/config || { echo '*** '; echo '*** Making default config file ***'; echo '*** '; cat config/config-dist >config/config; }  >&2)
-
-# force a check on the system file
-system_dummy := $(shell $(MAKE) -C $(TOP)/config -f make_system.mak TOP=.. system.mak)
+config_dummy := $(shell test -f config/config || ( echo '*** '; echo '*** Making default config file ***'; echo '*** '; ./configure; )  >&2)
 
 include $(TOP)/config/common_make_rules
 
+config/config: config/config.in config.status
+	./config.status
+
+configure: configure.in
+	autoconf
+
 release: 
-	rm -f html/index.html html/festvox.ps.gz html/festvox.tar.gz
-	cp -p doc/festvox.ps html/festvox.ps
-	gzip html/festvox.ps
-	ln -s festvox_toc.html html/index.html
 	$(MAKE) dist
 	cp -p $(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz html/
-	ln html/$(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz html/festvox.tar.gz
 
 backup: time-stamp
 	@ $(RM) -f $(TOP)/FileList
@@ -81,15 +81,14 @@ backup: time-stamp
 	@ $(RM) -f $(TOP)/.file-list-all
 	@ ls -l $(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz
 
-# dist doesn't include the festvox.org site html files
+# dist doesn't include the festvox.org site html files or the course
 dist: time-stamp
 	@ $(RM) -f $(TOP)/FileList
 	@ $(MAKE) file-list
 	@ echo .time-stamp >>FileList
-	@ sed 's/^\.\///' <FileList | grep -v "festvox.org" | grep -v "^course/" | grep -v "^docbook/" | sed 's/^/festvox\//' >.file-list-all
-	@ ls html/*.html | sed 's/^/festvox\//' >>.file-list-all
-	@ ls html/*.png | sed 's/^/festvox\//' >>.file-list-all
-	@ ls html/festvox.ps.gz | sed 's/^/festvox\//' >>.file-list-all
+	@ sed 's/^\.\///' <FileList | grep -v "festvox.org" | grep -v "^course/" | sed 's/^/festvox\//' | grep -v ANNOUNCE >.file-list-all
+	@ echo ANNOUNCE-$(PROJECT_VERSION) | sed 's/^/festvox\//' >>.file-list-all
+	@ find html -type f -print | sed 's/^/festvox\//' >>.file-list-all
 	@ (cd ..; tar zcvf festvox/$(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz `cat festvox/.file-list-all`)
 	@ $(RM) -f $(TOP)/.file-list-all
 	@ ls -l $(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz

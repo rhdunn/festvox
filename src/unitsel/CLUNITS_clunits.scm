@@ -130,8 +130,17 @@ changes the basic classification of unit for the clustering.  By default
 this we just use the phone name, but you may want to make this, phone
 plus previous phone (or something else)."
   (let ((name (item.name i)))
-    name
-    ))
+    (cond
+     ((and (not INST_LANG_VOX::clunits_loaded)
+	   (or (string-equal "h#" name) 
+	       (string-equal "1" (item.feat i "ignore"))
+	       (and (string-equal "pau" name)
+		    (or (string-equal "pau" (item.feat i "p.name"))
+			(string-equal "h#" (item.feat i "p.name")))
+		    (string-equal "pau" (item.feat i "n.name")))))
+      "ignore")
+     (t
+      name))))
 
 (define (INST_LANG_VOX::clunits_load)
   "(INST_LANG_VOX::clunits_load)

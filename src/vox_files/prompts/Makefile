@@ -40,7 +40,8 @@ BUILD_DIRS =
 ALL_DIRS= 
 
 PROMPTFILES = time.data tel.data uniphone.data date.data \
-              weather.data 3ph.data jtime.data num.data
+              weather.data 3ph.data jtime.data num.data \
+              timit.data
 
 FILES = Makefile $(PROMPTFILES)
 

@@ -80,7 +80,7 @@ do
    $ESTDIR/bin/na_play prompt-wav/$f.wav
 
    echo start recording for $duration seconds ...
-   $ESTDIR/bin/na_record -f 16000 -time $duration -o wav/$f.wav
+   $ESTDIR/bin/na_record -f 16000 -time $duration -o wav/$f.wav -otype riff
    echo ... end recording
 
    # If you don't want to hear the review comment out the following lines

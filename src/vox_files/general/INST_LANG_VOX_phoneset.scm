@@ -37,6 +37,11 @@
 ;;;  Feeel free to add new feature values, or new features to this
 ;;;  list to make it more appropriate to your language
 
+;; This is where it'll fall over if you haven't defined a 
+;; a phoneset yet, if you have, delete this, if you haven't
+;; define one then delete this error message
+(error "You have not yet defined a phoneset for LANG (and others things ?)\n            Define it in festvox/INST_LANG_VOX_phoneset.scm\n")
+
 (defPhoneSet
   INST_LANG
   ;;;  Phone Features

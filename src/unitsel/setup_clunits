@@ -106,6 +106,7 @@ cp -p $FESTVOXDIR/src/general/make_pm_fix bin
 cp -p $FESTVOXDIR/src/general/make_f0 bin
 cp -p $FESTVOXDIR/src/general/get_lars bin
 cp -p $FESTVOXDIR/src/general/get_wavs bin
+cp -p $FESTVOXDIR/src/general/do_build bin
 cp -p $FESTVOXDIR/src/general/find_powerfactors bin
 cp -p $FESTVOXDIR/src/general/simple_powernormalize bin
 cp -p $FESTVOXDIR/src/general/find_powercontours bin
@@ -116,6 +117,9 @@ cp -p $FESTVOXDIR/src/general/traintest bin
 cp -p $FESTVOXDIR/src/general/emu_lab.tpl etc/emu_lab.tpl
 cp -p $FESTVOXDIR/src/general/emu_pm.tpl etc/emu_pm.tpl
 cp -p $FESTVOXDIR/src/general/emu_f0.tpl etc/emu_f0.tpl
+cp -p $FESTVOXDIR/src/st/sphinxtrain bin
+cp -p $FESTVOXDIR/src/st/sphinx_lab bin
+cp -p $FESTVOXDIR/src/st/build_st.scm festvox
 
 if [ $# = 4 ]
 then
@@ -159,7 +163,6 @@ do
    sed 's%INST%'$FV_INST'%g' |
    sed 's%LANG%'$FV_LANG'%g' |
    sed 's%VOX%'$FV_VOX'%g' |
-   sed 's%ESTDIR%'$ESTDIR'%g' |
    sed 's%CURRENTDIR%'$CURRENTDIR'%g' >festvox/$fname
 done
 

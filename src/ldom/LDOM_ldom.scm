@@ -321,7 +321,8 @@ Define voice for limited domain: LDOM."
 	(Parameter.set 'Synth_Method 'Cluster)))
   
 
-  (set! cluster_synth_pre_hooks (list INST_LDOM_VOX::fix_pauses))
+;  (set! cluster_synth_pre_hooks (list INST_LDOM_VOX::fix_pauses))
+  (set! cluster_synth_pre_hooks nil)
 
   ;; This is where you can modify power (and sampling rate) if desired
   (set! after_synth_hooks nil)

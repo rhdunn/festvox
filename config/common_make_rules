@@ -34,15 +34,6 @@
 ##                                                                       ##
 ###########################################################################
 
-# System type
-include $(TOP)/config/system.mak
-
-ifeq ($(SYSTEM_LOADED),)
-	MACHINETYPE=unknown
-	OSTYPE=unknown
-	OSREV=
-endif
-
 #  Include project specific rules
 
 -include $(TOP)/config/project.mak
@@ -50,7 +41,14 @@ endif
 ## User defined configuration options
 include $(TOP)/config/config
 
+# System type
+include $(ESTDIR)/config/system.mak
 
+ifeq ($(SYSTEM_LOADED),)
+	MACHINETYPE=unknown
+	OSTYPE=unknown
+	OSREV=
+endif
 
 all: .make_build_dirs $(ALL) nothing
 

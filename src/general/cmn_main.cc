@@ -40,51 +40,55 @@
 #include "EST.h"
 
 static void find_meanstd(EST_Track &ss, EST_StrList &files);
-static void cep_normalize(EST_Track &tt, const EST_Track &ss);
+static void cep_normalize(EST_Track &tt, const EST_Track &ss, EST_Relation &rr);
+
+#define num_phones 43
+const char *phonetab [num_phones] = {
+     "aa", "ae", "ah", "ao", "aw", "ax", "ay", "b", "ch", "d", "dh",
+    "eh", "er", "ey", "f", "g", "h#", "ih", "iy",
+    "jh", "k", "l", "m", "n", "ng", "ow", "oy", "p", "pau", "r", "s", 
+    "sh", "t",
+     "th", "uh", "uw", "v", "w", "y", "z", "zh", "other", NULL };
+
+static int get_phone_id(const char* phone)
+{
+    int i;
+
+    for (i=0; phonetab[i]; i++)
+	if (streq(phone,phonetab[i]))
+	    return i;
+
+    return i;
+}
 
 int main(int argc,char **argv)
 {
     EST_Option al;
     EST_StrList files;
     EST_Litem *p;
-    EST_Track ss;
+    EST_Track ss,tt;
+    EST_Relation rr;
 
     parse_command_line
 	(argc,argv,
-	 EST_String("[options]")+
-	 "Summary: find (and apply) means/stddev for cepstral normalization\n"+
-         "         in applymsd case files are overwritten\n"+
-	 "-h        Options help\n"+
-	 "-findmsd  Args are treated as (example) cep files form which\n"+
-         "          stats are generated\n"+
-         "-omsd <ofile> {msd.out}\n"+
-         "          Output file for means and stddev for coefficients\n"+
-         "-applymsd Args are treated as files to be normalized\n"+
-	 "-imsd <ifile> {msd.out}\n"+
-         "          Input file for means and stddev\n",
+	 EST_String("[options] mcep/*.mcep")+
+	 "Summary: find (and apply) phone based means/stddev for \n"+
+         "         cepstral normalization.  Outputs to nmcep/\n"+
+	 "-h        Options help\n",
 	 files,al);
 
-    if (al.present("-findmsd"))
-    {
-	find_meanstd(ss,files);
-	ss.save(al.val("-omsd"));
-    }
-    else if (al.present("-applymsd"))
-    {
-	EST_Track tt;
+    printf("Finding stats\n");
+    find_meanstd(ss,files);
 
-	ss.load(al.val("-imsd"));
-	for (p=files.head(); p != 0; p=next(p))
-	{
-	    tt.load(files(p));
-	    cep_normalize(tt,ss);
-	    tt.save(files(p));
-	}
-    }
-    else
+    printf("Applying stats\n");
+    for (p=files.head(); p != 0; p=next(p))
     {
-	cerr << "cmn: neither -findmsd or -applymsd specified" << endl;
-	exit(-1);
+	tt.load(files(p));
+	printf("%s\n",(const char *)files(p));
+	rr.load(EST_String("lab/")+basename(files(p)).before(".")+".lab");
+	cep_normalize(tt,ss,rr);
+	tt.save(EST_String("n")+files(p),"est_binary");
+	rr.clear();
     }
 
     return 0;
@@ -97,7 +101,11 @@ static void find_meanstd(EST_Track &ss, EST_StrList &files)
     float v;
     EST_Litem *p;
     EST_Track tt;
-    EST_SuffStats *sstable = 0;
+    EST_Item *s;
+    EST_Relation rr;
+    EST_SuffStats **sstable = 0;
+    int phoneid;
+    EST_String lll;
 
     p = files.head();
     if (p == NULL)
@@ -107,14 +115,21 @@ static void find_meanstd(EST_Track &ss, EST_StrList &files)
     }
     tt.load(files(p));
 
-    ss = tt;
-    ss.resize(2,tt.num_channels());
-    sstable = new EST_SuffStats[tt.num_channels()];
+    sstable = new EST_SuffStats*[num_phones];
+    for (i=0; i< num_phones; i++)
+	sstable[i] = new EST_SuffStats[tt.num_channels()];
     
     for (p=files.head(); p != 0; p=next(p))
     {
 	tt.load(files(p));
-	for (i=0; i<tt.num_frames(); i++)
+	lll = EST_String("lab/")+basename(files(p)).before(".")+".lab";
+	printf("%s\n",(const char *)lll);
+	rr.clear();
+	rr.load(lll);
+	phoneid = get_phone_id("pau");
+	for (s=rr.head(),i=0; i<tt.num_frames(); i++)
+	{
+/*	    printf("%s %f %f\n", phonetab[phoneid], s->F("end"),tt.t(i)); */
 	    for (j=0; j<tt.num_channels(); j++)
 	    {
 		v = tt.a_no_check(i,j);
@@ -122,23 +137,39 @@ static void find_meanstd(EST_Track &ss, EST_StrList &files)
 		    v = 100;
 		if (fabs(v) > 100)
 		    v = 100;
-		sstable[j] += v;
+		sstable[phoneid][j] += v;
 	    }
+	    if (s && next(s) && (s->F("end") < tt.t(i)))
+	    {
+		s = next(s);
+		phoneid = get_phone_id(s->S("name"));
+/*		printf("%s\n",phonetab[phoneid]); */
+	    }
+	}
     }
 
-    for (j=0; j<ss.num_channels(); j++)
+    ss.resize(2*num_phones,tt.num_channels());
+    for (i=0; i<num_phones; i++)
     {
-	ss.a_no_check(0,j) = sstable[j].mean();
-	ss.a_no_check(1,j) = sstable[j].stddev();
+	printf("%s\n",phonetab[i]);
+	for (j=0; j<ss.num_channels(); j++)
+	{
+	    printf("%d %f %f\n",j,sstable[i][j].mean(), 
+		   sstable[i][j].stddev());
+	    ss.a_no_check((i*2)+0,j) = sstable[i][j].mean();
+	    ss.a_no_check((i*2)+1,j) = sstable[i][j].stddev();
+	}
+	delete [] sstable[i];
     }
-
     delete [] sstable;
 }
 
-static void cep_normalize(EST_Track &tt, const EST_Track &ss)
+static void cep_normalize(EST_Track &tt, const EST_Track &ss, EST_Relation &rr)
 {
     // Normalize coefficeints in tt from means and stddevs in ss
     int i,j;
+    EST_Item *s;
+    int phoneid;
 
     if (tt.num_channels() != ss.num_channels())
     {
@@ -147,18 +178,30 @@ static void cep_normalize(EST_Track &tt, const EST_Track &ss)
 	exit(-1);
     }
 
+    phoneid = get_phone_id("pau");
+    s = rr.head();
     for (i=0; i < tt.num_frames(); i++)
+    {
+/*	printf("%s %f %f\n", phonetab[phoneid], s->F("end"),tt.t(i)); */
 	for (j=0; j < tt.num_channels(); j++)
 	{
 //	    printf("i %d j %d\n",i,j);
 //	    printf("tt(i,j) %f ss.mean %f ss.stddev %f\n",
 //		   tt.a_no_check(i,j),ss.a_no_check(0,j),ss.a_no_check(1,j));
 	    tt.a_no_check(i,j) = 
-		(tt.a_no_check(i,j) - ss.a_no_check(0,j)) / ss.a_no_check(1,j);
+		(tt.a_no_check(i,j) - 
+		 ss.a_no_check((phoneid*2)+0,j)) / 
+		ss.a_no_check((phoneid*2)+1,j);
 //	    if (tt.a_no_check(i,j) > 50)
 //		tt.a_no_check(i,j) = 50;
 //	    else if (tt.a_no_check(i,j) < -50)
 //		tt.a_no_check(i,j) = -50;
 	}
+	while (s && next(s) && (s->F("end") < tt.t(i)))
+	{
+	    s = next(s);
+	    phoneid = get_phone_id(s->S("name"));
+	}
+    }
 }
 

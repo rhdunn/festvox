@@ -83,4 +83,5 @@ mkdir versions
 mkdir prompt-wav
 mkdir prompt-lab
 mkdir prompt-cep
+mkdir prompt-utt
 mkdir cep
