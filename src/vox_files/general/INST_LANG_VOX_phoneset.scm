@@ -50,9 +50,9 @@
    ;; vowel length: short long dipthong schwa
    (vlng s l d a 0)
    ;; vowel height: high mid low
-   (vheight 1 2 3 0)
+   (vheight 1 2 3 0 -)
    ;; vowel frontness: front mid back
-   (vfront 1 2 3 0)
+   (vfront 1 2 3 0 -)
    ;; lip rounding
    (vrnd + - 0)
    ;; consonant type: stop fricative affricative nasal liquid
@@ -64,7 +64,7 @@
    (cvox + - 0)
    )
   (
-   (SIL  - 0 - - - 0 0 -)  ;; slience ... 
+   (pau  - 0 - - - 0 0 -)  ;; slience ... 
 
    ;; insert the phones here, see examples in 
    ;; festival/lib/*_phones.scm
@@ -72,7 +72,7 @@
   )
 )
 
-(PhoneSet.silences '(SIL))
+(PhoneSet.silences '(pau))
 
 (define (INST_LANG_VOX::select_phoneset)
   "(INST_LANG_VOX::select_phoneset)

@@ -612,10 +612,17 @@ recommended value is <varname>0.8</varname>.
 
 </para></listitem></varlistentry>
 <varlistentry>
-<term><varname>ac_duration_penality FLOAT</varname></term>
+<term><varname>dur_pen_weight FLOAT</varname></term>
 <listitem><para>
 
 The penalty factor for duration mismatch between units. 
+
+</para></listitem></varlistentry>
+<varlistentry>
+<term><varname>f0_pen_weight FLOAT</varname></term>
+<listitem><para>
+
+The penalty factor for F0 mismatch between units. 
 
 </para></listitem></varlistentry>
 <varlistentry>

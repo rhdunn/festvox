@@ -1,23 +1,23 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >Utterance access</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
 REL="UP"
 TITLE="A Practical Speech Synthesis System"
-HREF="bsv-festival-ch.html"><LINK
+HREF="c180.html"><LINK
 REL="PREVIOUS"
 TITLE="Modules"
 HREF="x380.html"><LINK
 REL="NEXT"
 TITLE="Utterance building"
-HREF="bsv-uttbuild-sect.html"></HEAD
+HREF="x591.html"></HEAD
 ><BODY
 CLASS="SECT1"
 BGCOLOR="#FFFFFF"
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,19 +46,21 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x380.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 3. A Practical Speech Synthesis System</TD
+>A Practical Speech Synthesis System</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
-HREF="bsv-uttbuild-sect.html"
+HREF="x591.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -71,7 +74,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AEN492"
->3.4. Utterance access</A
+>Utterance access</A
 ></H1
 ><P
 >&#13;A set of simple access methods exist for utterances, relations, 
@@ -84,9 +87,9 @@ and give some examples of idioms to achieve various standard functions. </P
 ><P
 >In general the required arguments to a lisp function are reflected in 
 the first parts of the name of the function. Thus 
-<TT
+<CODE
 CLASS="VARNAME"
->item.relation.next</TT
+>item.relation.next</CODE
 > requires an item, and relation name and will 
 return the next item in that named relation from the given one. </P
 ><P
@@ -95,9 +98,9 @@ manipulation functions is given in the Festival manual. </P
 ><P
 >An important notion to be aware of is that an item is always viewed 
 through so particular relation. For example, assuming 
-a typically utterance called <TT
+a typically utterance called <CODE
 CLASS="VARNAME"
->utt1</TT
+>utt1</CODE
 >. 
 <A
 NAME="AEN503"
@@ -109,26 +112,26 @@ CLASS="LITERALLAYOUT"
 >(set!&nbsp;seg1&nbsp;(utt.relation.first&nbsp;utt1&nbsp;'Segment))</P
 ></BLOCKQUOTE
 >
-<TT
+<CODE
 CLASS="VARNAME"
->seg1</TT
-> is an item viewed from the <TT
+>seg1</CODE
+> is an item viewed from the <CODE
 CLASS="VARNAME"
->Segment</TT
+>Segment</CODE
 > relation. Calling 
-<TT
+<CODE
 CLASS="VARNAME"
->item.next</TT
-> on this will return the next item in the <TT
+>item.next</CODE
+> on this will return the next item in the <CODE
 CLASS="VARNAME"
->Segment</TT
+>Segment</CODE
 > 
-relation. A <TT
+relation. A <CODE
 CLASS="VARNAME"
->Segment</TT
-> item may also be in the <TT
+>Segment</CODE
+> item may also be in the <CODE
 CLASS="VARNAME"
->SylStructure</TT
+>SylStructure</CODE
 > 
 item. If we traverse it using next in that relation we will hit 
 the end when we come to the end of the segments in that syllable. </P
@@ -137,14 +140,14 @@ the end when we come to the end of the segments in that syllable. </P
 CLASS="EMPHASIS"
 >view</I
 > a given item from a specified relation by 
-requesting a view from that. In Scheme <TT
+requesting a view from that. In Scheme <CODE
 CLASS="VARNAME"
->nil</TT
+>nil</CODE
 > will 
 be returned if the item is not in the relation. The 
-function <TT
+function <CODE
 CLASS="VARNAME"
->item.relation</TT
+>item.relation</CODE
 > takes an item and relation 
 name and returns the item as view from that relation. </P
 ><P
@@ -160,9 +163,9 @@ CLASS="LITERALLAYOUT"
 >(set!&nbsp;utt1&nbsp;(utt.synth&nbsp;(Utterance&nbsp;Text&nbsp;"A&nbsp;short&nbsp;example.")))</P
 ></BLOCKQUOTE
 >
-The first segment in <TT
+The first segment in <CODE
 CLASS="VARNAME"
->utt!</TT
+>utt!</CODE
 > will be silence. 
 <A
 NAME="AEN521"
@@ -199,13 +202,13 @@ CLASS="LITERALLAYOUT"
 ></BLOCKQUOTE
 >
 Let us move onto the "sh" to illustrate the different between 
-traversing the <TT
+traversing the <CODE
 CLASS="VARNAME"
->Segment</TT
+>Segment</CODE
 > relation as opposed to the 
-<TT
+<CODE
 CLASS="VARNAME"
->SylStructure</TT
+>SylStructure</CODE
 > 
 <A
 NAME="AEN529"
@@ -237,12 +240,12 @@ CLASS="LITERALLAYOUT"
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(toend&nbsp;(item.next&nbsp;item)))))</P
 ></BLOCKQUOTE
 >
-If we call this function on <TT
+If we call this function on <CODE
 CLASS="VARNAME"
->seg3</TT
-> which is in the <TT
+>seg3</CODE
+> which is in the <CODE
 CLASS="VARNAME"
->Segment</TT
+>Segment</CODE
 > 
 relation we will get a list of all segments until the end of the utterance 
 <A
@@ -269,9 +272,9 @@ nil<br>
 festival&#62;</P
 ></BLOCKQUOTE
 >
-However if we first changed the view of seg3 to the <TT
+However if we first changed the view of seg3 to the <CODE
 CLASS="VARNAME"
->SylStructure</TT
+>SylStructure</CODE
 > 
 relation we will be traversing the leaf nodes of the syllable structure 
 tree which will terminate at the end of that syllable. 
@@ -290,27 +293,27 @@ nil<br>
 festival&#62;&nbsp;</P
 ></BLOCKQUOTE
 >
-Note that <TT
+Note that <CODE
 CLASS="VARNAME"
->item.next</TT
+>item.next</CODE
 > returns the item immediately to the next in 
-that relation. Thus it return <TT
+that relation. Thus it return <CODE
 CLASS="VARNAME"
->nil</TT
+>nil</CODE
 > when the end of a sub-tree is 
-found. <TT
+found. <CODE
 CLASS="VARNAME"
->item.next</TT
+>item.next</CODE
 > is most often used for traversing simple lists 
 through it is defined for any of the structure supported by relations. 
-The function <TT
+The function <CODE
 CLASS="VARNAME"
->item.next_item</TT
+>item.next_item</CODE
 > allows traversal of any relation 
 returning a next item until it has visiting them all. In the simple 
-list case this this equivalent to <TT
+list case this this equivalent to <CODE
 CLASS="VARNAME"
->item.next</TT
+>item.next</CODE
 > but in the tree case 
 it will traverse the tree in <I
 CLASS="EMPHASIS"
@@ -327,9 +330,9 @@ CLASS="EMPHASIS"
 >PredictDuration</I
 > which takes a single item 
 and assigns a duration. We can apply this to each item in the 
-<TT
+<CODE
 CLASS="VARNAME"
->Segment</TT
+>Segment</CODE
 > relation 
 <A
 NAME="AEN554"
@@ -343,16 +346,16 @@ CLASS="LITERALLAYOUT"
 &nbsp;(utt.relation.items&nbsp;utt1&nbsp;'Segment))</P
 ></BLOCKQUOTE
 >
-The function <TT
+The function <CODE
 CLASS="VARNAME"
->utt.relation.items</TT
+>utt.relation.items</CODE
 > returns all items in the 
 relation as a simple lisp list. </P
 ><P
 >Another method to traverse the items in a relation is use 
-the <TT
+the <CODE
 CLASS="VARNAME"
->while</TT
+>while</CODE
 > looping paradigm which many people are more 
 familiar with. 
 <A
@@ -370,21 +373,21 @@ CLASS="LITERALLAYOUT"
 ></P
 ><P
 >If you wish to traverse only the leaves of a tree you 
-may call <TT
+may call <CODE
 CLASS="VARNAME"
->utt.relation.leafs</TT
+>utt.relation.leafs</CODE
 > instead of 
-<TT
+<CODE
 CLASS="VARNAME"
->utt.relation.items</TT
+>utt.relation.items</CODE
 >. A leaf is defined to be an item with 
-no daughters. Or in the <TT
+no daughters. Or in the <CODE
 CLASS="VARNAME"
->while</TT
+>while</CODE
 > case, there isn't standardly 
-defined a <TT
+defined a <CODE
 CLASS="VARNAME"
->item.next_leaf</TT
+>item.next_leaf</CODE
 > but code easily be defined 
 as 
 <A
@@ -408,7 +411,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN568"
->3.4.1. Features as pathnames</A
+>Features as pathnames</A
 ></H2
 ><P
 >&#13;Rather than explicitly calling a set of functions to find your way round 
@@ -444,24 +447,24 @@ CLASS="LITERALLAYOUT"
 >
 Festival will interpret the feature name as a pathname. In addition 
 to traversing the current relation you can switch between 
-relations via the element <TT
+relations via the element <CODE
 CLASS="VARNAME"
->R:</TT
+>R:</CODE
 ><I
 CLASS="EMPHASIS"
 >relationname</I
 >. Thus to 
-find the stress value of an segment item <TT
+find the stress value of an segment item <CODE
 CLASS="VARNAME"
->seg</TT
+>seg</CODE
 > we need 
-to switch to the <TT
+to switch to the <CODE
 CLASS="VARNAME"
->SylStructure</TT
+>SylStructure</CODE
 > relation, find its parent 
-and check the <TT
+and check the <CODE
 CLASS="VARNAME"
->stress</TT
+>stress</CODE
 > feature value. 
 <A
 NAME="AEN584"
@@ -487,7 +490,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN586"
->3.4.2. Access idioms</A
+>Access idioms</A
 ></H2
 ><P
 >For example suppose you wish to traverse each segment in an 
@@ -518,6 +521,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -529,6 +533,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x380.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -537,6 +542,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -544,7 +550,8 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="bsv-uttbuild-sect.html"
+HREF="x591.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -559,7 +566,8 @@ WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="bsv-festival-ch.html"
+HREF="c180.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD

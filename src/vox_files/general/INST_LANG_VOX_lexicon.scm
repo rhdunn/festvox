@@ -69,44 +69,105 @@ Basic lexicon should (must ?) have basic letters, symbols and punctuation."
 (lex.add.entry '("!" punc nil))
 )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Hand written letter to sound rules
-;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'lts)
 
 ;;;  Function called when word not found in lexicon
+;;;  and you've trained letter to sound rules
 (define (INST_LANG_lts_function word features)
   "(INST_LANG_lts_function WORD FEATURES)
 Return pronunciation of word not in lexicon."
-  (format stderr "failed to find pronunciation for %s\n" word)
-  (let ((dword (downcase word)))
-    ;; Note you may need to use a letter to sound rule set to do
-    ;; casing if the language has non-ascii characters in it.
-    (if (lts.in.alphabet word 'INST_LANG)
-	(list
-	 word
-	 features
-	 ;; This syllabification is almost certainly wrong for
-	 ;; this language (its not even very good for English)
-	 ;; but it will give you something to start off with
-	 (lex.syllabify.phstress
-	   (lts.apply word 'INST_LANG)))
-	(begin
-	  (format stderr "unpronouncable word %s\n" word)
-	  ;; Put in a word that means "unknown" with its pronunciation
-	  '("nepoznat" nil (((N EH P) 0) ((AO Z) 0) ((N AA T) 0))))))
+  (if (not boundp 'INST_LANG_lts_rules)
+      (require 'INST_LANG_lts_rules))
+  (let ((dword (downcase word)) (phones) (syls))
+    (set! phones (lts_predict dword INST_LANG_lts_rules))
+    (set! syls (INST_LANG_lex_syllabify_phstress phones))
+    (list word features syls)))
+
+;; utf8 letter based one
+;(define (INST_LANG_lts_function word features)
+;  "(INST_LANG_lts_function WORD FEATURES)
+;Return pronunciation of word not in lexicon."
+;  (let ((dword word) (phones) (syls))
+;    (set! phones (utf8explode dword))
+;    (set! syls (INST_LANG_lex_syllabify_phstress phones))
+;    (list word features syls)))
+
+(define (INST_LANG_is_vowel x)
+  (string-equal "+" (phone_feature x "vc")))
+
+(define (INST_LANG_contains_vowel l)
+  (member_string
+   t
+   (mapcar (lambda (x) (INST_LANG_is_vowel x)) l)))
+
+(define (INST_LANG_lex_sylbreak currentsyl remainder)
+  "(INST_LANG_lex_sylbreak currentsyl remainder)
+t if this is a syl break, nil otherwise."
+  (cond
+   ((not (INST_LANG_contains_vowel remainder))
+    nil)
+   ((not (INST_LANG_contains_vowel currentsyl))
+    nil)
+   (t
+    ;; overly naive, I mean wrong
+    t))
 )
 
-;; You may or may not be able to write a letter to sound rule set for
-;; your language.  If its largely lexicon based learning a rule
-;; set will be better and easier that writing one (probably).
-(lts.ruleset
- INST_LANG
- (  (Vowel WHATEVER) )
- (
-  ;; LTS rules 
-  ))
+(define (INST_LANG_lex_syllabify_phstress phones)
+ (let ((syl nil) (syls nil) (p phones) (stress 0))
+    (while p
+     (set! syl nil)
+     (set! stress 0)
+     (while (and p (not (INST_LANG_lex_sylbreak syl p)))
+       (if (string-matches (car p) "xxxx")
+           (begin
+             ;; whatever you do to identify stress
+             (set! stress 1)
+             (set syl (cons (car p-stress) syl)))
+           (set! syl (cons (car p) syl)))
+       (set! p (cdr p)))
+     (set! syls (cons (list (reverse syl) stress) syls)))
+    (reverse syls)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; OR: Hand written letter to sound rules
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; ;;;  Function called when word not found in lexicon
+; (define (INST_LANG_lts_function word features)
+;   "(INST_LANG_lts_function WORD FEATURES)
+; Return pronunciation of word not in lexicon."
+;   (format stderr "failed to find pronunciation for %s\n" word)
+;   (let ((dword (downcase word)))
+;     ;; Note you may need to use a letter to sound rule set to do
+;     ;; casing if the language has non-ascii characters in it.
+;     (if (lts.in.alphabet word 'INST_LANG)
+; 	(list
+; 	 word
+; 	 features
+; 	 ;; This syllabification is almost certainly wrong for
+; 	 ;; this language (its not even very good for English)
+; 	 ;; but it will give you something to start off with
+; 	 (lex.syllabify.phstress
+; 	   (lts.apply word 'INST_LANG)))
+; 	(begin
+; 	  (format stderr "unpronouncable word %s\n" word)
+; 	  ;; Put in a word that means "unknown" with its pronunciation
+; 	  '("nepoznat" nil (((N EH P) 0) ((AO Z) 0) ((N AA T) 0))))))
+; )
+
+; ;; You may or may not be able to write a letter to sound rule set for
+; ;; your language.  If its largely lexicon based learning a rule
+; ;; set will be better and easier that writing one (probably).
+; (lts.ruleset
+;  INST_LANG
+;  (  (Vowel WHATEVER) )
+;  (
+;   ;; LTS rules 
+;   ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -133,10 +194,10 @@ A postlexical rule form correcting phenomena over word boundaries."
 (lex.create "INST_LANG")
 (lex.set.phoneset "INST_LANG")
 (lex.set.lts.method 'INST_LANG_lts_function)
-;;; If you have a compiled lexicon uncomment this
-;(lex.set.compile.file (path-append INST_LANG_VOX_dir "festvox/INST_LANG_lex.out"))
+(if (probe_file (path-append INST_LANG_VOX::dir "festvox/INST_LANG_lex.out"))
+    (lex.set.compile.file (path-append INST_LANG_VOX::dir 
+                                       "festvox/INST_LANG_lex.out")))
 (INST_LANG_addenda)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

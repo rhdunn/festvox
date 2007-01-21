@@ -37,7 +37,7 @@
 TOP=../..
 DIRNAME=src/vox_files
 BUILD_DIRS = 
-ALL_DIRS= us general uk prompts
+ALL_DIRS= us general uk prompts es
 
 FILES = Makefile speaker.licence
 

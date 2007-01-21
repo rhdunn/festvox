@@ -56,38 +56,23 @@ then
    exit 1
 fi
 
-#  if [ $# != 3 ]
-#  then
-#      echo "Build dirs, copy scripts etc for prosody modelling (F0 and duration)"
-#      echo "or add such scripts to an existing ldom directory "
-#      echo "Usage: setup_prosody INST DOMAIN VOX"
-#      echo "INST is the insstitute building the language, e.g. cmu, cstr, ogi"
-#      echo "     if there isn't an appropriate institute use, net."
-#      echo "DOMAIN is the domain identifier, e.g. time, eliza etc"
-#      echo "SPEAKER is speaker/style identifier e.g kal, awb, golem"
-#      exit 1
-#  fi
+LANG=C; export LANG
+. etc/voice.defs
 
-FV_INST=$1
-FV_LDOM=$2
-FV_VOX=$3
-
-if [ -d etc ]
-then
-   echo "I'm going to make a whole bunch of new directories in"
-   echo `pwd`
-   echo "This directory currently non-empty, are you sure this is "
-   echo "directory you want these new directories built in?"
-   echo -n "Answer y/n? "
-   read answer
-   if [ "$answer" != "y" ]
-   then
-       echo "setup aborted"
-       exit -1
-   fi
-fi
-
-#$FESTVOXDIR/src/ldom/setup_clunits $FV_INST $FV_LDOM $FV_VOX
+# if [ -d etc ]
+# then
+#    echo "I'm going to make a whole bunch of new directories in"
+#    echo `pwd`
+#    echo "This directory currently non-empty, are you sure this is "
+#    echo "directory you want these new directories built in?"
+#    echo -n "Answer y/n? "
+#    read answer
+#    if [ "$answer" != "y" ]
+#    then
+#        echo "setup aborted"
+#        exit -1
+#    fi
+# fi
 
 $FESTVOXDIR/src/prosody/make_dirs_prosody
 CURRENTDIR=`pwd`
@@ -97,15 +82,17 @@ cp -p $FESTVOXDIR/src/prosody/build_prosody.scm festvox
 
 echo Copying intonation files
 cp -p $FESTVOXDIR/src/intonation/make_f0_pm bin
+cp -p $FESTVOXDIR/src/intonation/find_f0_stats bin
 cp -p $FESTVOXDIR/src/intonation/make_f0_model bin
 cp -p $FESTVOXDIR/src/intonation/f0.feats festival/f0/etc
+cp -p $FESTVOXDIR/src/intonation/tree_f0.scm festvox
 
 echo Copying duration files
 cp -p $FESTVOXDIR/src/duration/make_dur_model bin
 cp -p $FESTVOXDIR/src/duration/logdurn.scm festival/dur/etc
 cp -p $FESTVOXDIR/src/duration/dur.feats festival/dur/etc
 
-echo "Set up for "$FV_INST"_"$FV_LDOM"_"$FV_VOX" prosody complete"
+echo "Set up for "$FV_VOICENAME" prosody complete"
 
 
 

@@ -37,16 +37,117 @@
 ##                                                                       ##
 ###########################################################################
 
+LANG=C; export LANG
+
+if [ ! "$FESTVOXDIR" ]
+then
+   echo "environment variable FESTVOXDIR is unset"
+   echo "set it to your local festvox directory e.g."
+   echo '   bash$ export FESTVOXDIR=/home/awb/projects/festvox/'
+   echo or
+   echo '   csh% setenv FESTVOXDIR /home/awb/projects/festvox/'
+   exit 1
+fi
+
+if [ ! "$ESTDIR" ]
+then
+   echo "environment variable ESTDIR is unset"
+   echo "set it to your local Edinburgh Speech Tools directory e.g."
+   echo '   bash$ export ESTDIR=/home/awb/projects/speech_tools/'
+   echo or
+   echo '   csh% setenv ESTDIR /home/awb/projects/speech_tools/'
+   exit 1
+fi
+
+if [ $# = 0 ]
+then
+#   $0 setup $*
+   # import prompt list
+   $0 build_prompts
+   # import/record waveform files
+   $0 label
+   $0 build_utts
+   $0 do_pm
+   $0 do_mcep
+   $0 build_clunits
+   exit 0
+fi
+
+if [ "$1" = "setup" ]
+then
+   shift
+   mkdir $1"_"$2"_"$3
+   cd $1"_"$2"_"$3
+   $FESTVOXDIR/src/unitsel/setup_clunits $1 $2 $3
+   $FESTVOXDIR/src/prosody/setup_prosody $1 $2 $3
+   exit 0
+fi
+
+# we've already got a set up voice
 . ./etc/voice.defs
 
-festival -b festvox/build_$FV_TYPE.scm '(build_prompts "etc/txt.done.data")'
+if [ "$1" = "build_prompts" ]
+then
+   $ESTDIR/../festival/bin/festival --heap 10000000 -b festvox/build_clunits.scm '(build_prompts "etc/txt.done.data")'
 
-./bin/make_labs prompt-wav/*.wav
+   exit 0
+fi
 
-festival -b festvox/build_$FV_TYPE.scm '(build_utts "etc/txt.done.data")'
+if [ "$1" = "record" ]
+then
+   # I doubt anyone will run this from here
+   ./bin/prompt_them etc/txt.done.data
+   exit 0
+fi
 
-./bin/make_pm_wave wav/*.wav
-#./bin/make_pm lar/*.lar
-./bin/make_mcep wav/*.wav
+if [ "$1" = "label" ]
+then
+   $FESTVOXDIR/src/ehmm/bin/do_ehmm
+   exit 0
+fi
 
-festival -b festvox/build_$FV_TYPE.scm '(build_clunits "etc/txt.done.data")'
+if [ "$1" = "label_dtw" ]
+then
+   ./bin/make_labs prompt-wav/*.wav
+   exit 0
+fi
+
+if [ "$1" = "label_sphinx" ]
+then
+    ./bin/sphinxtrain
+   exit 0
+fi
+
+if [ "$1" = "build_utts" ]
+then
+    $ESTDIR/../festival/bin/festival --heap 10000000 -b festvox/build_clunits.scm '(build_utts "etc/txt.done.data")'
+   exit 0
+fi
+
+if [ "$1" = "do_pm" ]
+then
+    ./bin/make_pm_wave etc/txt.done.data
+   exit 0
+fi
+
+if [ "$1" = "do_mcep" ]
+then
+    ./bin/make_mcep etc/txt.done.data
+   exit 0
+fi
+
+if [ "$1" = "build_clunits" ]
+then
+    $ESTDIR/../festival/bin/festival --heap 10000000 -b festvox/build_clunits.scm '(build_clunits "etc/txt.done.data")'
+   exit 0
+fi
+
+if [ "$1" = "do_dur" ]
+then
+    ./bin/make_dur_model &&
+    cp -p festvox/$FV_VOICENAME"_dur.scm" festvox/$FV_VOICENAME"_durdara.scm"
+   exit 0
+fi
+
+echo $0 unknown option $1
+exit 1

@@ -45,6 +45,8 @@
 ##                                                                       ##
 ###########################################################################
 
+LANG=C; export LANG
+
 if [ $# = 0 ]
 then
    echo "Find power normalization factor for each file"
@@ -59,11 +61,11 @@ do
    echo $fname >/dev/tty
    cat $i |
    awk 'BEGIN {fname="'$fname'"; }
-        {if (($3 ~ /^[AaEeIiOoUu].*/) &&
+        {if (($3 ~ /^[AaEeIiOoUu@].*/) &&
              ($3 != "using"))
          {
 	   printf("echo START %s %s\n",fname,$3);
-           printf("ch_wave -start %f -end %f wav/%s.wav -otype raw -ostype ascii\n",ltime,$1,fname);
+           printf("$ESTDIR/bin/ch_wave -start %f -end %f wav/%s.wav -otype raw -ostype ascii\n",ltime,$1,fname);
          }
          if ($3 != "DB")
             ltime=$1}' | sh |

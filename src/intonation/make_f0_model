@@ -54,6 +54,8 @@
 #      exit 1
 #  fi
 
+LANG=C; export LANG
+
 if [ ! "$ESTDIR" ]
 then
    echo "environment variable ESTDIR is unset"
@@ -108,7 +110,7 @@ $WAGON_TEST -heap 2000000 -data festival/f0/data/f0.data.test -desc festival/f0/
 ) | tee $PREF.S$STOP.out
 
 echo ";;; Constructing the f0 model as a loadable scheme file"
-festival -b --heap 2000000 festvox/build_prosody.scm $VOICENAME '(finalize_f0_model "'$MODELNAME'" "'$PREF.S$STOP.tree'")'
+$ESTDIR/../festival/bin/festival -b --heap 2000000 festvox/build_prosody.scm $VOICENAME '(finalize_f0_model "'$MODELNAME'" "'$PREF.S$STOP.tree'")'
 
 exit
 

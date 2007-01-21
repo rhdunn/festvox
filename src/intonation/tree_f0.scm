@@ -73,7 +73,7 @@ and end for this syllable."
 
 (define (tpt_after_pause syl)
   "(tpt_after_pause syl)
-Retursn t if segment immediately before this is a pause (or utterance
+Returns t if segment immediately before this is a pause (or utterance
 start).  nil otherwise."
   (let ((pseg (item.relation.prev (item.relation.daughter1 syl 'SylStructure)
 				  'Segment)))

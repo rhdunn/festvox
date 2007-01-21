@@ -1,17 +1,17 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >Modules</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
 REL="UP"
 TITLE="A Practical Speech Synthesis System"
-HREF="bsv-festival-ch.html"><LINK
+HREF="c180.html"><LINK
 REL="PREVIOUS"
 TITLE="Utterance structure"
 HREF="x261.html"><LINK
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,19 +46,21 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x261.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 3. A Practical Speech Synthesis System</TD
+>A Practical Speech Synthesis System</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
 HREF="x492.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -71,7 +74,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AEN380"
->3.3. Modules</A
+>Modules</A
 ></H1
 ><P
 >&#13;The basic synthesis process in Festival is viewed as applying 
@@ -85,27 +88,27 @@ structure is filled in with more and more relations until
 ultimately the waveform is generated. </P
 ><P
 >&#13;Modules may be written in C++ or Scheme. Which modules are executed are 
-defined in terms of the utterance <TT
+defined in terms of the utterance <CODE
 CLASS="VARNAME"
->type</TT
+>type</CODE
 >, a simple feature on the 
 utterance itself. For most text-to-speech cases this is defined to be 
-of type <TT
+of type <CODE
 CLASS="VARNAME"
->Tokens</TT
->. The function <TT
+>Tokens</CODE
+>. The function <CODE
 CLASS="VARNAME"
->utt.synth</TT
+>utt.synth</CODE
 > simply looks up an 
 utterance's type and then looks up the definition of the defined 
 synthesis process for that type and applies the named modules. 
-Synthesis types maybe defined using the function <TT
+Synthesis types maybe defined using the function <CODE
 CLASS="VARNAME"
->defUttType</TT
+>defUttType</CODE
 >. 
-For example definition for utterances of type <TT
+For example definition for utterances of type <CODE
 CLASS="VARNAME"
->Tokens</TT
+>Tokens</CODE
 > 
 is 
 <A
@@ -132,9 +135,9 @@ CLASS="LITERALLAYOUT"
 >
 While a simpler case is when the input is phone names 
 and we don't wish to do all that text analysis and prosody 
-prediction. Then we use the type <TT
+prediction. Then we use the type <CODE
 CLASS="VARNAME"
->Phones</TT
+>Phones</CODE
 > which simply 
 loads the phones, applies fixed prosody and the synthesizes 
 the waveform 
@@ -154,13 +157,13 @@ CLASS="LITERALLAYOUT"
 >
 In general the modules named in the type definitions are general and 
 actually allow further selection of more specific modules within 
-them. For example the <TT
+them. For example the <CODE
 CLASS="VARNAME"
->Duration</TT
+>Duration</CODE
 > module respects the global 
-parameter <TT
+parameter <CODE
 CLASS="VARNAME"
->Duration_Method</TT
+>Duration_Method</CODE
 > and will call then desired duration 
 module depending on this value. </P
 ><P
@@ -178,30 +181,30 @@ used for text-to-speech have the basic following function
 CLASS="VARIABLELIST"
 ><DL
 ><DT
-><TT
+><CODE
 CLASS="VARNAME"
->Token_POS</TT
+>Token_POS</CODE
 ></DT
 ><DD
 ><P
 >&#13;basic token identification, used for homograph disambiguation </P
 ></DD
 ><DT
-><TT
+><CODE
 CLASS="VARNAME"
->Token</TT
+>Token</CODE
 ></DT
 ><DD
 ><P
->&#13;Apply the token to word rules building the <TT
+>&#13;Apply the token to word rules building the <CODE
 CLASS="VARNAME"
->Word</TT
+>Word</CODE
 > relation. </P
 ></DD
 ><DT
-><TT
+><CODE
 CLASS="VARNAME"
->POS</TT
+>POS</CODE
 ></DT
 ><DD
 ><P
@@ -209,72 +212,72 @@ CLASS="VARNAME"
 A standard part of speech tagger (if desired) </P
 ></DD
 ><DT
-><TT
+><CODE
 CLASS="VARNAME"
->Phrasify</TT
+>Phrasify</CODE
 ></DT
 ><DD
 ><P
->&#13;Build the <TT
+>&#13;Build the <CODE
 CLASS="VARNAME"
->Phrase</TT
+>Phrase</CODE
 > relation using the specified method. Various 
 are offered, from statistically trained models to simple CART trees. </P
 ></DD
 ><DT
-><TT
+><CODE
 CLASS="VARNAME"
->Word</TT
+>Word</CODE
 ></DT
 ><DD
 ><P
->&#13;Lexical look up building the <TT
+>&#13;Lexical look up building the <CODE
 CLASS="VARNAME"
->Syllable</TT
-> and <TT
+>Syllable</CODE
+> and <CODE
 CLASS="VARNAME"
->Segment</TT
+>Segment</CODE
 > 
-relations and the <TT
+relations and the <CODE
 CLASS="VARNAME"
->SylStructure</TT
+>SylStructure</CODE
 > related these together. </P
 ></DD
 ><DT
-><TT
+><CODE
 CLASS="VARNAME"
->Pauses</TT
+>Pauses</CODE
 ></DT
 ><DD
 ><P
->&#13;Prediction of pauses, inserting silence into the <TT
+>&#13;Prediction of pauses, inserting silence into the <CODE
 CLASS="VARNAME"
->Segment</TT
+>Segment</CODE
 > 
 relation, again through a choice of different prediction mechanisms. </P
 ></DD
 ><DT
-><TT
+><CODE
 CLASS="VARNAME"
->Intonation</TT
+>Intonation</CODE
 ></DT
 ><DD
 ><P
->&#13;Prediction of accents and boundaries, building the <TT
+>&#13;Prediction of accents and boundaries, building the <CODE
 CLASS="VARNAME"
->IntEvent</TT
+>IntEvent</CODE
 > 
-relation and the <TT
+relation and the <CODE
 CLASS="VARNAME"
->Intonation</TT
+>Intonation</CODE
 > relation that links IntEvents 
 to syllables. This can easily be parameterized for most practical 
 intonation theories. </P
 ></DD
 ><DT
-><TT
+><CODE
 CLASS="VARNAME"
->PostLex</TT
+>PostLex</CODE
 ></DT
 ><DD
 ><P
@@ -283,31 +286,31 @@ context. This is used for things like vowel reduction,
 contractions, etc. </P
 ></DD
 ><DT
-><TT
+><CODE
 CLASS="VARNAME"
->Duration</TT
+>Duration</CODE
 ></DT
 ><DD
 ><P
 >&#13;Prediction of durations of segments. </P
 ></DD
 ><DT
-><TT
+><CODE
 CLASS="VARNAME"
->Int_Targets</TT
+>Int_Targets</CODE
 ></DT
 ><DD
 ><P
->&#13;The second part of intonation. This creates the <TT
+>&#13;The second part of intonation. This creates the <CODE
 CLASS="VARNAME"
->Target</TT
+>Target</CODE
 > 
 relation representing the desired F0 contour. </P
 ></DD
 ><DT
-><TT
+><CODE
 CLASS="VARNAME"
->Wave_Synth</TT
+>Wave_Synth</CODE
 ></DT
 ><DD
 ><P
@@ -323,6 +326,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -334,6 +338,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x261.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -342,6 +347,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -350,6 +356,7 @@ ALIGN="right"
 VALIGN="top"
 ><A
 HREF="x492.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -364,7 +371,8 @@ WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="bsv-festival-ch.html"
+HREF="c180.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD

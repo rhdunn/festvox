@@ -1,11 +1,11 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >F0 Generation</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,19 +46,21 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x1748.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 8. Building prosodic models</TD
+>Building prosodic models</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
 HREF="x1900.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -71,7 +74,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AEN1803"
->8.3. F0 Generation</A
+>F0 Generation</A
 ></H1
 ><P
 >&#13;Predicting where accents go (and their types) is only half of the 
@@ -90,7 +93,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN1809"
->8.3.1. F0 by rule</A
+>F0 by rule</A
 ></H2
 ><P
 >&#13;
@@ -158,7 +161,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN1824"
->8.3.2. F0 by linear regression</A
+>F0 by linear regression</A
 ></H2
 ><P
 >&#13;This technique was developed specifically to avoid the difficult 
@@ -195,20 +198,20 @@ better to follow them (or at least find the features which influence
 the F0 in that language). Extracting features for F0 modeling 
 is similar to extracting features for the other models. This 
 time we want the means F0 at the start middle and end of 
-each utterance. The Festival features <TT
+each utterance. The Festival features <CODE
 CLASS="VARNAME"
->syl_startpitch</TT
+>syl_startpitch</CODE
 >, 
-<TT
+<CODE
 CLASS="VARNAME"
->syl_midpitch</TT
-> and <TT
+>syl_midpitch</CODE
+> and <CODE
 CLASS="VARNAME"
->syl_endpitch</TT
+>syl_endpitch</CODE
 > proved this. Note 
-that <TT
+that <CODE
 CLASS="VARNAME"
->syl_midpitch</TT
+>syl_midpitch</CODE
 > returns the pitch at the mid of the 
 vowel in the syllable rather than the middle of the syllable. </P
 ><P
@@ -221,29 +224,29 @@ converted. The standard technique for this is to introduce new features,
 one for each possible value in the class and output values of 0 or 1 
 for these modified features depending on the value of the base features. 
 For example in a ToBI environment the output of the feature 
-<TT
+<CODE
 CLASS="VARNAME"
->tobi_accent</TT
-> will include <TT
+>tobi_accent</CODE
+> will include <CODE
 CLASS="VARNAME"
->H*</TT
->, <TT
+>H*</CODE
+>, <CODE
 CLASS="VARNAME"
->L*</TT
->, <TT
+>L*</CODE
+>, <CODE
 CLASS="VARNAME"
->L+H*</TT
+>L+H*</CODE
 > etc. 
 In the modified form you would have features of the form 
-<TT
+<CODE
 CLASS="VARNAME"
->tobi_accent_H*</TT
->, <TT
+>tobi_accent_H*</CODE
+>, <CODE
 CLASS="VARNAME"
->tobi_accent_L*</TT
->, <TT
+>tobi_accent_L*</CODE
+>, <CODE
 CLASS="VARNAME"
->tobi_accent_L_H*</TT
+>tobi_accent_L_H*</CODE
 >, 
 etc. </P
 ><P
@@ -265,9 +268,9 @@ ordinary least squares algorithm used to find the coefficients
 cannot, in general, deal with features that are directly correlated 
 with others as this causes a singularity when inverting the 
 matrix. The solution to this is to exclude such features. The 
-option <TT
+option <CODE
 CLASS="VARNAME"
->-robust</TT
+>-robust</CODE
 > enables that though at the expense of a longer 
 compute time. Again like <TT
 CLASS="FILENAME"
@@ -275,23 +278,23 @@ CLASS="FILENAME"
 > a stepwise option is included 
 so that the best subset of features may be found. </P
 ><P
->The resulting models may be used by the <TT
+>The resulting models may be used by the <CODE
 CLASS="VARNAME"
->Int_Targets_LR</TT
+>Int_Targets_LR</CODE
 > module 
-which takes its LR models from the variables <TT
+which takes its LR models from the variables <CODE
 CLASS="VARNAME"
->f0_lr_start</TT
+>f0_lr_start</CODE
 >, 
-<TT
+<CODE
 CLASS="VARNAME"
->f0_lr_mid</TT
-> and <TT
+>f0_lr_mid</CODE
+> and <CODE
 CLASS="VARNAME"
->f0_lr_end</TT
->. The output of <TT
+>f0_lr_end</CODE
+>. The output of <CODE
 CLASS="VARNAME"
->ols</TT
+>ols</CODE
 > is a 
 list of coefficients (with the Intercept first). These need to be 
 converted to the appropriate bracket form including their feature names. 
@@ -315,13 +318,13 @@ how goods the models sound. </P
 ><P
 >Dump features as with the LR models, but this time there is 
 no need convert categorical features to floats. A potential 
-set of features to do this from (substitute <TT
+set of features to do this from (substitute <CODE
 CLASS="VARNAME"
->syl_midpitch</TT
+>syl_midpitch</CODE
 > 
-and <TT
+and <CODE
 CLASS="VARNAME"
->syl_endpitch</TT
+>syl_endpitch</CODE
 > for the other two models is 
 <A
 NAME="AEN1872"
@@ -390,9 +393,9 @@ CLASS="LITERALLAYOUT"
 (Parameter.set&nbsp;'Int_Target_Method&nbsp;Int_Targets_Tree)</P
 ></BLOCKQUOTE
 >
-The <TT
+The <CODE
 CLASS="VARNAME"
->int_params</TT
+>int_params</CODE
 > values allow you to use the model with 
 a speaker of a different pitch range. That is all predicted 
 values are converted using the formula 
@@ -428,7 +431,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN1883"
->8.3.3. Tilt modeling</A
+>Tilt modeling</A
 ></H2
 ><P
 >&#13;Tilt modeling is still under development and not as mature as the other 
@@ -488,6 +491,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -499,6 +503,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x1748.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -507,6 +512,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -515,6 +521,7 @@ ALIGN="right"
 VALIGN="top"
 ><A
 HREF="x1900.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -530,6 +537,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="c1637.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD

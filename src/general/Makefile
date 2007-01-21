@@ -40,7 +40,8 @@ BUILD_DIRS =
 ALL_DIRS = $(BUILD_DIRS)
 SRCS = phonealign_main.cc fix_pm_main.cc smooth_f0_main.cc \
        powcont_norm_main.cc cmn_main.cc
-EMUTPL = emu_lab.tpl emu_sg.tpl emu_f0.tpl emu_pm.tpl emu_single_f0.tpl
+EMUTPL = emu_lab.tpl emu_sg.tpl emu_f0.tpl emu_pm.tpl emu_single_f0.tpl \
+         emu_hier.tpl
 SCRIPTS = find_unknowns.sh make_dirs make_lpc make_pm \
           make_pm_epochs make_pm_wave make_f0 \
           make_pmlab_pm make_pm_pmlab \
@@ -49,14 +50,15 @@ SCRIPTS = find_unknowns.sh make_dirs make_lpc make_pm \
           prompt_them make_labs play_them phonealign_test \
           align_phones make_pm_fix simple_powernormalize traintest \
           find_powercontours contour_powernormalize \
-          make_dist guess_voice_defs make_cmn do_build
+          make_dist guess_voice_defs make_cmn do_build \
+          make_samples reduce_prompts synthfile
 FILES = Makefile $(SCRIPTS) $(EMUTPL) $(SRCS) 
 
 ALL = find_unknowns phonealign fix_pm smooth_f0 powcont_norm cmn
 
 include $(TOP)/config/common_make_rules
 
-# Try and say if EST's config is where its said to be
+# Try and see if EST's config is where its said to be
 estconfig_dummy := $(shell test -f $(ESTDIR)/config/config || { echo '*** '; echo '*** Speech Tools config not found in '; echo '*** $(ESTDIR)/config/config.'; echo '*** Check EST installation and/or ESTDIR in festvox/config/config '; echo '*** '; }  >&2)
 
 # GCC and systems settings got from EST's config

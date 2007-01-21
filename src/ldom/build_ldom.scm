@@ -207,7 +207,8 @@ to predicted labels building a new utetrances and saving it."
   "(align_utts file) 
 Synth an utterance and load in the actualed aligned segments and merge
 them into the synthesizer utterance."
-  (let ((utt1 (utt.synth (eval (list 'Utterance 'Text text))))
+  (let ((utt1 (utt.load nil (format nil "prompt-utt/%s.utt" name)))
+;	(utt1 (utt.synth (eval (list 'Utterance 'Text text))))
 	(silence (car (cadr (car (PhoneSet.description '(silences))))))
 	segments actual-segments)
 	

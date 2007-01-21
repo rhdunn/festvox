@@ -151,6 +151,9 @@ onset
 3
 4
 5
+6
+7
+8
 )
 ( syl_initial 
 0
@@ -253,6 +256,7 @@ md
 pps
 to
 wp
+punc
 )
 ( R:SylStructure.parent.parent.R:Word.p.gpos
 0
@@ -265,6 +269,7 @@ md
 pps
 to
 wp
+punc
 )
 ( R:SylStructure.parent.parent.R:Word.n.gpos
 0
@@ -277,5 +282,6 @@ md
 pps
 to
 wp
+punc
 )
 )

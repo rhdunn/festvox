@@ -40,11 +40,16 @@
      ((1.0)))))
 
 (set! INST_LANG_VOX::phone_durs
-'(
-  ;;; PHONE DATA  
-  ;; name zero mean in seconds e.g.
-  ;(# 0.0 0.250)
-  ; all other phones on INST_LANG phoneset
-))
+ ;; should be hand specified
+ ;; '(
+ ;;   (pau 0.0 0.250)
+ ;;   ...  ;; the other phones
+ ;;  )
+ ;; But this will fake it until you build a duration model 
+ (mapcar
+  (lambda (p)
+    (list (car p) 0.0 0.100))
+  (cadr (assoc_string 'phones (PhoneSet.description ))))
+)
 
 (provide 'INST_LANG_VOX_durdata)

@@ -118,6 +118,8 @@ Find diph in labelfile fname and return index entry."
 	(startp 0)
 	(midp 0)
 	(lp 0))
+    (set! oleft left)
+    (set! oright right)
     (if (string-matches left "_.*")
 	(set! left (string-after left "_")))
     (if (string-matches left ".*_")
@@ -156,8 +158,8 @@ Find diph in labelfile fname and return index entry."
 
       (if (car segs)
 	  (begin
-	    (if (and (string-equal lp left)
-		     (string-equal (item.name (car segs)) right))
+	    (if (and (string-equal lp oleft)
+		     (string-equal (item.name (car segs)) oright))
 		(set! diphinfo
 		      (list diph fname startp midp endp)))
 	    (set! startp endp)

@@ -1,17 +1,17 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >Building prosodic models</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
 REL="UP"
 TITLE="Building Synthetic Voices"
-HREF="bsv-bsv-part.html"><LINK
+HREF="p710.html"><LINK
 REL="PREVIOUS"
 TITLE="Building lexicons for new languages"
 HREF="x1630.html"><LINK
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,6 +46,7 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x1630.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -58,6 +60,7 @@ ALIGN="right"
 VALIGN="bottom"
 ><A
 HREF="x1748.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -70,15 +73,15 @@ CLASS="CHAPTER"
 ><H1
 ><A
 NAME="AEN1637"
->Chapter 8. Building prosodic models</A
-></H1
+></A
+>Building prosodic models</H1
 ><DIV
 CLASS="SECT1"
 ><H1
 CLASS="SECT1"
 ><A
 NAME="AEN1639"
->8.1. Phrasing</A
+>Phrasing</A
 ></H1
 ><P
 >&#13;Prosodic phrasing in speech synthesis makes the whole speech more 
@@ -117,18 +120,18 @@ further predicted from prosodic phrase information. </P
 ><P
 >The first basic method is by CART tree. A test is made on each 
 word to predict it is at the end of a prosodic phrase. The basic CART 
-tree returns <TT
+tree returns <CODE
 CLASS="VARNAME"
->B</TT
-> or <TT
+>B</CODE
+> or <CODE
 CLASS="VARNAME"
->BB</TT
+>BB</CODE
 > (though may return what you consider 
 is appropriate form break labels as long as the rest of 
 your models support it). The two levels identify different 
-levels of break, <TT
+levels of break, <CODE
 CLASS="VARNAME"
->BB</TT
+>BB</CODE
 > being a used to denote a bigger 
 break (and end of utterance). </P
 ><P
@@ -197,25 +200,25 @@ determine if the current word is a function of content word, one to
 determine number of words since previous punctuation (or start of 
 utterance) and one to determine number of words to next punctuation (or 
 end of utterance. The first of these functions is already provided for 
-with a feature, through the feature function <TT
+with a feature, through the feature function <CODE
 CLASS="VARNAME"
->gpos</TT
+>gpos</CODE
 >. This uses 
-the word list in the lisp variable <TT
+the word list in the lisp variable <CODE
 CLASS="VARNAME"
->guess_pos</TT
+>guess_pos</CODE
 > to determine the 
 basic category of a word. Because in most languages the set of function 
 words is very nearly a closed class they can usually be explicitly 
-listed. The format of the <TT
+listed. The format of the <CODE
 CLASS="VARNAME"
->guess_pos</TT
+>guess_pos</CODE
 > variable is a list of 
 lists whose first element is the set name and the rest of the list if 
 the words that are part of that set. Any word not a member of 
-any of these sets is defined to be in the set <TT
+any of these sets is defined to be in the set <CODE
 CLASS="VARNAME"
->content</TT
+>content</CODE
 >. For 
 example the basic definition for this for English, 
 given in <TT
@@ -391,9 +394,9 @@ CLASS="FILENAME"
 >, 
 what goes in here will depend on what you have, full part of speech 
 helps a lot but you may not have that for your language. The 
-<TT
+<CODE
 CLASS="VARNAME"
->gpos</TT
+>gpos</CODE
 > described above is a good cheap alternative. Possible 
 features may be 
 <A
@@ -432,12 +435,12 @@ CLASS="LITERALLAYOUT"
 CLASS="FILENAME"
 >festvox/phrbrk.scm</TT
 > should contain the definitions of 
-the function <TT
+the function <CODE
 CLASS="VARNAME"
->until_punctuation</TT
->, <TT
+>until_punctuation</CODE
+>, <CODE
 CLASS="VARNAME"
->since_punctuation</TT
+>since_punctuation</CODE
 > 
 and any other Lisp feature functions you define. </P
 ><P
@@ -464,12 +467,12 @@ CLASS="FILENAME"
 > the CART tree builder on this data we 
 also need create the feature description file for the data. The feature 
 description file consists of a bracketed list of feature name and type. 
-Type may be <TT
+Type may be <CODE
 CLASS="VARNAME"
->int</TT
-> <TT
+>int</CODE
+> <CODE
 CLASS="VARNAME"
->float</TT
+>float</CODE
 > or categorical where a list of 
 possible values is given. The script <TT
 CLASS="FILENAME"
@@ -488,20 +491,20 @@ CLASS="LITERALLAYOUT"
 ></BLOCKQUOTE
 >
 This script will treat all features as categorical. Thus any 
-<TT
+<CODE
 CLASS="VARNAME"
->float</TT
-> or <TT
+>float</CODE
+> or <CODE
 CLASS="VARNAME"
->int</TT
+>int</CODE
 > features will be treated categorically and 
 each value found in the data will be listed as a separate item. In our 
-example <TT
+example <CODE
 CLASS="VARNAME"
->lisp_since_punctuation</TT
-> and <TT
+>lisp_since_punctuation</CODE
+> and <CODE
 CLASS="VARNAME"
->lisp_until_punctuation</TT
+>lisp_until_punctuation</CODE
 > 
 are actually float (well maybe even int) but they will be listed as 
 categorically in <TT
@@ -629,6 +632,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -640,6 +644,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x1630.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -648,6 +653,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -656,6 +662,7 @@ ALIGN="right"
 VALIGN="top"
 ><A
 HREF="x1748.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -670,7 +677,8 @@ WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="bsv-bsv-part.html"
+HREF="p710.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD

@@ -1,17 +1,17 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >Out of vocabulary words</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
 REL="UP"
 TITLE="Lexicons"
-HREF="bsv-lexicons-ch.html"><LINK
+HREF="c1379.html"><LINK
 REL="PREVIOUS"
 TITLE="Lexicons and addenda"
 HREF="x1396.html"><LINK
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,19 +46,21 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x1396.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 7. Lexicons</TD
+>Lexicons</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
 HREF="x1429.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -71,7 +74,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AEN1405"
->7.3. Out of vocabulary words</A
+>Out of vocabulary words</A
 ></H1
 ><P
 >Because its impossible to list all words in a natural language for 
@@ -90,17 +93,17 @@ CLASS="EMPHASIS"
 >"</SPAN
 > (or its local language equivalent). By default a lexicon 
 in Festival will throw an error if a requested word isn't found. To 
-change this you can set the <TT
+change this you can set the <CODE
 CLASS="VARNAME"
->lts_method</TT
+>lts_method</CODE
 >. Most usefully you can 
 reset this to the name of function, which takes a word and a part of 
 speech specification and returns a word pronunciation as described above. </P
 ><P
 >For example is we are always going to return the 
-word <TT
+word <CODE
 CLASS="VARNAME"
->unknown</TT
+>unknown</CODE
 > but print a warning the the word is being 
 ignored a suitable function is 
 <A
@@ -169,9 +172,9 @@ A few point are worth noting in this function. This recursively calls
 the lexical lookup function on the characters in a word. Each letter 
 should appear in the lexicon with its pronunciation (in isolation). 
 But a check is made to ensure we don't recurse for ever. The 
-<TT
+<CODE
 CLASS="VARNAME"
->symbolexplode</TT
+>symbolexplode</CODE
 > function assumes that that letters are single 
 bytes, which may not be true for some languages and that function would 
 need to be replaced for that language. Note that we append the 
@@ -180,9 +183,9 @@ be too naive as there could be internal prosodic structure in such a
 spelling that this method would not allow for. In that case you would 
 want letters to be words thus the symbol explosion to happen at the 
 token to word level. Also the above function assumes that the part of 
-speech for letters is <TT
+speech for letters is <CODE
 CLASS="VARNAME"
->n</TT
+>n</CODE
 >. This is only really important where 
 letters are homographs in languages so this can be used to distinguish 
 which pronunciation you require (cf. <SPAN
@@ -205,6 +208,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -216,6 +220,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x1396.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -224,6 +229,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -232,6 +238,7 @@ ALIGN="right"
 VALIGN="top"
 ><A
 HREF="x1429.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -246,7 +253,8 @@ WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="bsv-lexicons-ch.html"
+HREF="c1379.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD

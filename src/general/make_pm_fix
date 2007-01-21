@@ -32,6 +32,8 @@
 ##                                                                       ##
 ###########################################################################
 
+LANG=C; export LANG
+
 if [ $# = 0 ]
 then
    echo "Move pitch marks to nearest peak within window wrt wave files"
@@ -52,10 +54,17 @@ fi
 
 FIX_PM=$FESTVOXDIR/src/general/fix_pm
 
-for i in $*
+PROMPTFILE=etc/txt.done.data
+if [ $# = 1 ]
+then
+   PROMPTFILE=$1
+fi
+
+awk '{print $2}' $PROMPTFILE |
+while read i
 do
-   fname=`basename $i .pm`
+   fname=$i
    echo $fname
-   $FIX_PM -wave wav/$fname.wav -pm $i -window 32 -o $fname.pm  
-   mv $fname.pm $i
+   $FIX_PM -wave wav/$fname.wav -pm pm/$fname.pm -window 32 -o $fname.pm  
+   mv $fname.pm pm/$fname.pm
 done

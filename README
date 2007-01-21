@@ -23,6 +23,12 @@ This distribution includes
     Lexicon and building Letter to Sound rule support
     Predefined scripts for building new US (and UK) English voices
 
+New in 2.1
+    Voice transformation support
+    An HMM-based labeling system (better tuned for labeling synthesis dbs)
+    Letter to sound rule build code and examples
+    F0 unit selection for F0 modeling
+
 WARNING
 
 This is not a pointy/clicky plug and play program to build new voices.
@@ -73,9 +79,9 @@ INSTALLATION
 You must have the Edinburgh Speech Tools and Festival instllation
 before you can build the tools in the festvox distribution.
 
-Unpack festvox-2.0-release.tar.gz
+Unpack festvox-2.1-release.tar.gz
 
-    tar zxvf festvox-2.0-release.tar.gz
+    tar zxvf festvox-2.1-release.tar.gz
     cd festvox
     ./configure
     make

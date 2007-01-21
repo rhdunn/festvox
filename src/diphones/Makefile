@@ -39,7 +39,7 @@ DIRNAME=src/diphones
 SCMFILES = diphlist.scm make_diphs_utts.scm  darpaasmrpa.scm \
            darpaaswb.scm 
 SCHEMAFILES = us_schema.scm uk_schema.scm ja_schema.scm
-SCRIPTS = make_diph_index.sh setup_diphone
+SCRIPTS = make_diph_index.sh setup_diphone setup_mbrola
 FILES = Makefile $(SCRIPTS) $(SCMFILES) $(SCHEMAFILES)
 
 ALL = make_diph_index

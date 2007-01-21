@@ -44,7 +44,8 @@ SCHEMEFILES = INST_uk_VOX_phoneset.scm INST_uk_VOX_tokenizer.scm \
 	      INST_uk_VOX_phrasing.scm INST_uk_VOX_intonation.scm \
 	      INST_uk_VOX_duration.scm INST_uk_VOX_f0model.scm \
               INST_uk_VOX_durdata.scm \
-	      INST_uk_VOX_other.scm
+	      INST_uk_VOX_other.scm \
+              INST_uk_VOX_diphone.scm-diphone
 
 FILES = Makefile $(SCHEMEFILES)
 

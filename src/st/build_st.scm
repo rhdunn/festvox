@@ -37,11 +37,11 @@
 ;;;                                                                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(cond
- ((probe_file "festvox/build_clunits.scm")
-  (load "festvox/build_clunits.scm"))
- ((probe_file "festvox/build_ldom.scm")
-  (load "festvox/build_ldom.scm")))
+;(cond
+; ((probe_file "festvox/build_clunits.scm")
+;  (load "festvox/build_clunits.scm"))
+; ((probe_file "festvox/build_ldom.scm")
+;  (load "festvox/build_ldom.scm")))
 
 (define (st_setup datafile vname)
 
@@ -62,30 +62,64 @@
    (t
     (cons i list))))
 
+(define (ennicen_word w)
+  (let ((ws (format nil "%s" w))
+	(lets nil) (p 0))
+    (while (< p (length ws))
+      (if (string-matches (substring ws p 1) "[A-Za-z0-9]")
+	  (set! lets (cons (substring ws p 1) lets))
+	  (set! lets (cons "Q" lets)))
+      (set! p (+ 1 p)))
+    (if (> (length lets) 20)  ;; long word names can confuse sphinx
+        (set! lets (list "x" (length lets) "Q")))
+    (apply
+     string-append
+     (reverse lets))))
+
 (defvar wordlist nil)
-(defvar wordn 1)
 
 (define (add_word_to_list name d)
   (let ((w wordlist))
-    (if (string-matches name "[A-Za-z0-9][A-Za-z0-9]*")
+    (if (string-matches name "[A-Z0-9][A-Z0-9]*")
 	(set! nicename name)
-	(set! nicename "w"))
-    (while (and 
-	    w (not (string-equal d (cadr (car w)))))
-      (set! w (cdr w)))
-    (if w
-	(caar w)
+	(set! nicename (ennicen_word (upcase name))))
+    (set! entry (assoc_string nicename wordlist))
+    (if entry
 	(begin
-	  (set! wordname (format nil "%s%d" nicename wordn))
-	  (set! wordlist
-		(cons (list wordname d) wordlist))
-	  (set! wordn (+ 1 wordn))
-	  wordname))))
+	  (set! subentry (assoc_string d (cdr entry)))
+	  (if subentry
+	      (if (string-equal "1" (cadr subentry))
+		  (car entry)
+		  (format nil "%s%d" (car entry) (cadr subentry)))
+	      (begin
+		(set-cdr!   ;; new homograph
+		 entry
+		 (cons
+		  (list d (+ 1 (cadr (cadr entry))))
+		  (cdr entry)))
+		(format nil "%s%d" (car entry) (cadr (cadr entry))))))
+	(begin ;; new word
+	  (set! wordlist ;; new word
+		(cons
+		 (list nicename (list d 1)) wordlist))
+	  nicename))))
+
+;     (while (and 
+; 	    w (not (string-equal d (cadr (car w)))))
+;       (set! w (cdr w)))
+;     (if w
+; 	(caar w)
+; 	(begin
+; 	  (set! wordname (format nil "%s%d" nicename wordn))
+; 	  (set! wordlist
+; 		(cons (list wordname d) wordlist))
+; 	  (set! wordn (+ 1 wordn))
+; 	  wordname))))
 
 (define (make_nicephone s)
   "(make_nicephone s)
 Sphinx can't deal with phone names distinguished only by case, so
-if the phones are upper case prepend CAP."
+if the phones have any upper case they are prepend CAP."
   (let ((n))
     (if (string-matches (item.name s) ".*[A-Z].*")
 	(set! n (string-append "CAP" (item.name s)))
@@ -128,9 +162,9 @@ if the phones are upper case prepend CAP."
 		  (set! pron ""))
 		)
 	    (cond
-	     ((and (string-equal (item.name s) silence)
-		   (not (string-equal (item.feat s "p.name") silence)))
-	      (format tfd " <sil>"))
+;	     ((and (string-equal (item.name s) silence)
+;		   (not (string-equal (item.feat s "p.name") silence)))
+;	      (format tfd " <sil>"))
 	     ((not (string-equal (item.name s) silence))
 	      (set! maybewordname 
 		    (item.feat s "R:SylStructure.parent.parent.name"))
@@ -138,11 +172,12 @@ if the phones are upper case prepend CAP."
 	      (set! phones (add_to_list nicephone phones))
               (set! pron (format nil "%s %s" pron nicephone))
 ;	      (format t "pron is %s\n" pron)
-	      )))
+	      )
+	     (t
+	      nil)))
 	  (utt.relation.items u 'Segment))
 	 (if (not (string-equal "" pron))
 	     (format tfd " %s" (add_word_to_list maybewordname pron)))
-	 (if (> wordn 1) (format dfd "\n"))
 	 (format tfd " </s> (%s)\n" (car p)))
        )
      (load datafile t))
@@ -150,7 +185,12 @@ if the phones are upper case prepend CAP."
     
     (mapcar
      (lambda (l)
-       (format dfd "%s %s\n" (car l) (cadr l)))
+       (mapcar
+	(lambda (ss)
+	  (if (> (cadr ss) 1)
+	      (format dfd "%s%d %s\n" (car l) (cadr ss) (car ss))
+	      (format dfd "%s %s\n" (car l) (car ss))))
+	(reverse (cdr l))))
      wordlist)
     (fclose dfd)
 

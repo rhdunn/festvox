@@ -45,11 +45,24 @@
 ESTDIR=@ESTDIR@
 
 ###########################################################################
-##  The location of your compiled Festival (1.4.3)                       ##
+##  The location of your compiled Festival (2.0)                         ##
 ###########################################################################
 
 FESTDIR=$(ESTDIR)/../festival
 
+###########################################################################
+##  General flags (note something inherit their flags from EST directly  ##
+###########################################################################
+
+CC       = @CC@
+CFLAGS   = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+DEFS     = @DEFS@
+SHFLAGS  = @SHFLAGS@
+
+AR       = @AR@
+RANLIB   = @RANLIB@
+INSTALL  = @INSTALL@
 
 
 

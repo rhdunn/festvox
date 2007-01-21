@@ -1,17 +1,17 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >Number pronunciation</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
 REL="UP"
 TITLE="Text analysis"
-HREF="bsv-text-ch.html"><LINK
+HREF="c1189.html"><LINK
 REL="PREVIOUS"
 TITLE="Token to word rules"
 HREF="x1207.html"><LINK
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,19 +46,21 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x1207.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 6. Text analysis</TD
+>Text analysis</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
 HREF="x1357.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -71,7 +74,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AEN1339"
->6.3. Number pronunciation</A
+>Number pronunciation</A
 ></H1
 ><P
 >Almost every one will expect a synthesizer to be able to 
@@ -80,13 +83,13 @@ digit strings in your lexicon. You will need to provide a function
 that returns a string of words for a given string of digits. </P
 ><P
 >In its simplest form you should provide a function that 
-decodes the string of digits. The example <TT
+decodes the string of digits. The example <CODE
 CLASS="VARNAME"
->spanish_number</TT
+>spanish_number</CODE
 > 
-(and <TT
+(and <CODE
 CLASS="VARNAME"
->spanish_number_from_digits}</TT
+>spanish_number_from_digits}</CODE
 > in the released Spanish 
 voice (<TT
 CLASS="FILENAME"
@@ -99,7 +102,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN1346"
->6.3.1. Multi-token numbers</A
+>Multi-token numbers</A
 ></H2
 ><P
 >A number of languages uses spaces within numbers where English might use 
@@ -116,9 +119,9 @@ CLASS="LITERALLAYOUT"
 >
 to denote sixty four thousand. As this will be multiple tokens in 
 Festival's basic analysis it is necessary to write multiple conditions 
-in your <TT
+in your <CODE
 CLASS="VARNAME"
->token_to_words</TT
+>token_to_words</CODE
 > function. </P
 ></DIV
 ><DIV
@@ -127,7 +130,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN1352"
->6.3.2. Declensions</A
+>Declensions</A
 ></H2
 ><P
 >In many languages, the pronunciation of a number depends on the thing 
@@ -156,6 +159,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -167,6 +171,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x1207.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -175,6 +180,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -183,6 +189,7 @@ ALIGN="right"
 VALIGN="top"
 ><A
 HREF="x1357.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -197,7 +204,8 @@ WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="bsv-text-ch.html"
+HREF="c1189.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD

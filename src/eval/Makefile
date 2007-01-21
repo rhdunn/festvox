@@ -40,23 +40,22 @@
 ###########################################################################
 TOP=../../
 DIRNAME=src/eval
-SCHEMEFILES = text2utts.scm
-SCRIPTS = abtest mostest
+SCHEMEFILES = 
+SCRIPTS = abtest mostest wave2html.scm evallog.cgi
 OTHERS = 
 
 FILES = Makefile $(SCRIPTS) $(SCHEMEFILES) $(OTHERS)
 
-ALL = text2utts
+ALL = wave2html
 
 include $(TOP)/config/common_make_rules
 
-text2utts: text2utts.scm
-	@echo making text2utts script
-	@rm -f text2utts
-	@echo "#!/bin/sh" >text2utts
-	@echo "\"true\" ; exec "$(FESTDIR)/bin/festival --script '$$0 $$*' >>text2utts
-	@cat text2utts.scm >> text2utts
-	@chmod +x text2utts
-
+wave2html: wave2html.scm
+	@echo making wave2html script
+	@rm -f wave2html
+	@echo "#!/bin/sh" >wave2html
+	@echo "\"true\" ; exec "$(FESTDIR)/bin/festival --script '$$0 $$*' >>wave2html
+	@cat wave2html.scm >> wave2html
+	@chmod +x wave2html
 
 

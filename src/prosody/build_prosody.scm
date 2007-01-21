@@ -118,7 +118,13 @@ be useds as a duration model."
     (pprintf 
      (cons
       (list silence 0.200 0.100)
-      (load "festival/dur/etc/durs.meanstd" t))
+      (mapcar
+       (lambda (x)
+         (if (string-equal (car (cddr x)) "nan")
+             (list (car x) (cadr x) 0.001)
+             x)
+         )
+       (load "festival/dur/etc/durs.meanstd" t)))
      ofd)
     (format ofd ")\n")
     (format ofd "\n\n")
