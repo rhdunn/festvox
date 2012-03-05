@@ -73,6 +73,39 @@ then
    exit 0
 fi
 
+if [ "$1" = "parallel" ]
+then
+    ACTION="$2"
+    PROMPTFILE="$3"
+    if [ "$PROMPTFILE" = "" ]
+    then
+	PROMPTFILE=etc/txt.done.data
+    fi
+    # We use xargs to parallelize our work. We split our promptfile in 16
+    # parts. Then run those in parallel with xargs
+
+    num_cpus=$(./bin/find_num_available_cpu)
+
+    seq 0 15 | xargs -n 1 -P $num_cpus $0 _parallelworker $ACTION $PROMPTFILE
+    exit 0
+fi
+
+if [ "$1" = "_parallelworker" ]
+then
+    ACTION="$2"
+    PROMPTFILE="$3"
+    INDEX="$4"
+
+    # Get our partition of PROMPTFILE
+    SPLITPROMPTFILE=/tmp/dobuild_parallelworker.$$.$INDEX
+    cat $PROMPTFILE | awk "NR%16==$INDEX {print \$0}" > $SPLITPROMPTFILE
+    
+    # Run our task
+    $0 $ACTION $SPLITPROMPTFILE
+    rm $SPLITPROMPTFILE
+    exit 0
+fi    
+
 if [ "$PROMPTFILE" = "" ]
 then
    if [ $# = 2 ]

@@ -70,8 +70,8 @@
 (define (proc_file fid)
 
     (set! fd (fopen ofile "a"))
-    (set! u1 (utt.load nil (format nil "islice/temp/%s.utt" fid)))
-    (set! dfnm (format nil "islice/temp/%s.dict" fid))
+    (set! u1 (utt.load nil (format nil "tmp/%s.utt" fid)))
+    (set! dfnm (format nil "tmp/%s.dict" fid))
     (set! fd1 (fopen dfnm "w"))
     (fclose fd1)
     (set! fd1 (fopen dfnm "a"))

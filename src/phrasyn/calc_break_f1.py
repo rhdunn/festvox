@@ -1,9 +1,9 @@
-#!/usr/local/bin/perl
+#!/usr/bin/env python
 ###########################################################################
 ##                                                                       ##
-##                                                                       ##
-##              Carnegie Mellon University, Pittsburgh, PA               ##
-##                         Copyright (c) 2007                            ##
+##                  Language Technologies Institute                      ##
+##                     Carnegie Mellon University                        ##
+##                         Copyright (c) 2010                            ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -32,86 +32,75 @@
 ##                                                                       ##
 ###########################################################################
 ##                                                                       ##
-##          Author :  S P Kishore (skishore@cs.cmu.edu)                  ##
-##          Date   :  February 2007                                      ##
+##  Author: Alok Parlikar (aup@cs.cmu.edu)                               ##
+##  Date  : July 2011                                                    ##
+###########################################################################
+## Description: Measures the F1 measure of predicted breaks              ##
+##                                                                       ##
 ##                                                                       ##
 ###########################################################################
 
-$nargs = $#ARGV + 1;
-if ($nargs < 3) {
-  print "This program extracts unique units/phones/words from the festival prompt file and prints them to a file... \n";
-  print "Expected format: <text-id> unit sequence \n"; 
-  print "Usage: perl file.pl <promp-file> <out-file> <no-of-state/unit>\n";
-  exit;
-}
+import sys
 
-$inF = $ARGV[0];
-$ouF = $ARGV[1];
-$ns  = $ARGV[2];
+if len(sys.argv) != 3:
+    print >>sys.stderr, "Usage: %s hypfile reffile"%sys.argv[0]
+    sys.exit(-1)
 
-%unit = ();
-@inL = &Get_Lines($inF);
-for (my $i = 0; $i <= $#inL; $i++) {
-  my @wrd = &Get_Words($inL[$i]);
-  for (my $j = 1; $j <= $#wrd; $j++) {  
-     #0th element is wavefile name...
-     $unit{$wrd[$j]}++;
-  }
-}
+taglist = ['3','1']
 
-open(fp_o, ">$ouF");
-foreach my $k (keys(%unit)) {
-   #print fp_o "$k $unit{$k}\n";
-   print fp_o "$k $ns\n";
-}
-close(fp_o);
+f = open(sys.argv[1])
+g = open(sys.argv[2])
 
+counts = {}
+for i in taglist:
+    counts[i] = {}
+    for j in taglist:
+        counts[i][j] = 0
 
-sub Make_SingleSpace() {
-   chomp(${$_[0]});
-   ${$_[0]} =~ s/[\s]+$//;
-   ${$_[0]} =~ s/^[\s]+//;
-   ${$_[0]} =~ s/[\s]+/ /g;
-   ${$_[0]} =~ s/[\t]+/ /g;
-}
+for hyp, ref in zip(f,g):
+    bhyp = hyp.split()[0]
+    bref = ref.split()[0]
 
-sub Check_FileExistence() {
-  my $inF = shift(@_); 
-  if (!(-e $inF)) { 
-    print "Cannot open $inF \n";
-    exit;
-  } 
-  return 1;
-}
+    if bref == '4':
+        continue # Don't count BB as they are default.
 
-sub Get_Lines() {
-  my $inF = shift(@_); 
-  &Check_FileExistence($inF);
-  open(fp_llr, "<$inF");
-  my @dat = <fp_llr>;
-  close(fp_llr);
-  return @dat;
-}
+    if bhyp == '4':
+        bhyp = '3'
 
-sub Get_Words() {
-  my $ln = shift(@_);
-  &Make_SingleSpace(\$ln);
-  my @wrd = split(/ /, $ln);
-  return @wrd;
-}
+    if bref == '4':
+        bref = '3'
+    counts[bref][bhyp] += 1
 
-sub Get_ProcessedLines() {
-  my $inF = shift(@_);
-  &Check_FileExistence($inF);
-  open(fp_llr, "<$inF");
-  my @dat = <fp_llr>;
-  close(fp_llr);
+overallcorrect = 0
+overalltotal = 0
 
-  my @nd;
-  for (my $i = 0; $i <= $#dat; $i++) {
-     my $tl = $dat[$i];
-     &Make_SingleSpace(\$tl);
-     $nd[$i]  = $tl;
-  }
-  return @nd;
-}
+truepositive = float(counts['3']['3'])
+falsepositive = float(counts['1']['3'])
+
+truenegative = float(counts['1']['1'])
+falsenegative = float(counts['3']['1'])
+
+if truepositive == 0:
+    precision = 0
+    recall = 0
+    fmeasure = 0
+else:
+    precision = truepositive/(truepositive + falsepositive)
+    recall = truepositive/(truepositive+falsenegative)
+    fmeasure = 2*(precision*recall)/(precision+recall)
+
+for i in taglist:
+    print "%2s"%i,
+    total = 0
+    correct = 0
+    for j in taglist:
+        total += counts[i][j]
+        if i==j:
+            correct = counts[i][j]
+        print "%3d"%counts[i][j],
+    overallcorrect += correct
+    overalltotal += total
+    print "\t[%d/%d]\t\t%1.2f"%(correct, total, 100.0*correct/total)
+
+print "[%3d/%3d] = %1.2f"%(overallcorrect, overalltotal, 100.0*overallcorrect/overalltotal)
+print "Prec: %1.2f Recall: %1.2f F-measure: %1.2f"%(100*precision, 100*recall, 100*fmeasure)

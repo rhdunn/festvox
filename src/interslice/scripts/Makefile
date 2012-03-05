@@ -2,7 +2,7 @@
 ##                                                                       ##
 ##                                                                       ##
 ##              Carnegie Mellon University, Pittsburgh, PA               ##
-##                        Copyright (c) 2007                             ##
+##                      Copyright (c) 2007-2010                          ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -41,16 +41,18 @@ TOP=../../../
 DIRNAME=src/interslice/scripts
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-SCRIPTS = comp_dcep.pl getwavlist.pl phfromutt.pl \
-          prmp2int.pl process_txt.pl prunelab.pl put_count.pl \
-          scale_feat.pl seqproc.pl sym2nm.pl slice_wav \
-          do_islice islice
-SCM = phseq.scm islice.scm
+SCRIPTS = do_seg.pl prepare_prompts.pl syllabifier.pm \
+	check_timestamps.pl do_seg_old.pl prepare_prompts_v1.pl test.pl \
+        combine_wav.pl ilphseq.pl prmp2int.pl \
+	comp_dcep.pl phseq.pl scale_feat.pl \
+	copy_for_testing.pl slice_wav.pl \
+        do_islice_v2.sh
+SCM = phseq.scm
 FILES = Makefile $(SCRIPTS) $(SCM)
 
 ISLICEBINDIR=../bin
 
-ALL = copyscripts
+ALL = 
 
 include $(TOP)/config/common_make_rules
 

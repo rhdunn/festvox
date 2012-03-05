@@ -111,14 +111,26 @@ then
    exit 0
 fi
 
-#if [ $1 = mcdf0 ]
-#then
-#   $0 test_mcdf0 $EXPERIMENT $TESTFILE
-#   $0 test_resynth_costs_f0 $EXPERIMENT $TESTFILE 19 1
-#   $0 test_resynth_costs_mcd $EXPERIMENT $TESTFILE 19 1 | 
-#   tee test/$EXPERIMENT/scores
-#   exit 0
-#fi
+if [ $1 = lpcf0 ]
+then
+   $0 test_lpcf0 $EXPERIMENT $TESTFILE
+   ( $0 test_resynth_costs $EXPERIMENT $TESTFILE ; 
+     $0 test_resynth_costs_f0 $EXPERIMENT $TESTFILE ;
+     $0 test_resynth_costs_lpc $EXPERIMENT $TESTFILE  ) | 
+   tee test/$EXPERIMENT/scores
+   exit 0
+fi
+
+if [ $1 = param_mm ]
+then
+   $0 test_lpcf0 $EXPERIMENT $TESTFILE
+   # Show costs for partition of the params
+   ( $0 test_resynth_costs_mm $EXPERIMENT $TESTFILE ; 
+     $0 test_resynth_costs_mm_z $EXPERIMENT $TESTFILE ) | 
+   tee test/$EXPERIMENT/scores
+   $0 test_resynth_costs_mm_each $EXPERIMENT $TESTFILE >test/$EXPERIMENT/ch.out
+   exit 0
+fi
 
 if [ $1 = resynth_n ]
 then
@@ -173,11 +185,18 @@ fi
 
 if [ $1 = "test_resynth" ]
 then
+
    $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" $CLUSTERGENDIR/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (ClusterGen_test_resynth "'$TESTFILE'" "'test/$EXPERIMENT'"))'
    exit 0
 fi
 
 if [ $1 = "test_mcdf0" ]
+then
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" $CLUSTERGENDIR/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (setq cg::generate_resynth_waves nil) (ClusterGen_test_resynth "'$TESTFILE'" "'test/$EXPERIMENT'"))'
+   exit 0
+fi
+
+if [ $1 = "test_lpcf0" ]
 then
    $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" $CLUSTERGENDIR/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (setq cg::generate_resynth_waves nil) (ClusterGen_test_resynth "'$TESTFILE'" "'test/$EXPERIMENT'"))'
    exit 0
@@ -193,6 +212,65 @@ then
    done |
    awk '{ n=1.0*$NF; sum+=$1*n; var+=$2*n; samples+=n}
         END {printf("all  mean %f std %f var %f n %d\n",sum/samples,sqrt(var/samples),var/samples,samples)}'
+  exit 0
+fi
+
+if [ $1 = "test_resynth_costs_mm" ]
+then
+   for i in `cat $TESTFILE | awk '{print $2}'`
+   do
+      fname=$i
+      $CLUSTERGENDIR/track_diff_mm ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep |
+      awk '{print $2,$6,$NF}'
+   done |
+   awk '{ n=1.0*$NF; sum+=$1*n; var+=$2*n; samples+=n}
+        END {printf("MM   mean %f std %f var %f n %d\n",sum/samples,sqrt(var/samples),var/samples,samples)}'
+  exit 0
+fi
+
+if [ $1 = "test_resynth_costs_mm_z" ]
+then
+   for i in `cat $TESTFILE | awk '{print $2}'`
+   do
+      fname=$i
+      $CLUSTERGENDIR/track_diff_mm_z ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep |
+      awk '{print $2,$6,$NF}'
+   done |
+   awk '{ n=1.0*$NF; sum+=$1*n; var+=$2*n; samples+=n}
+        END {printf("MMZ  mean %f std %f var %f n %d\n",sum/samples,sqrt(var/samples),var/samples,samples)}'
+  exit 0
+fi
+
+if [ $1 = "test_resynth_costs_mm_each" ]
+then
+   for i in `cat $TESTFILE | awk '{print $2}'`
+   do
+      fname=$i
+      $CLUSTERGENDIR/track_diff_only ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep
+   done |
+   awk '{ num_channels = NF;
+          for (i=1; i<=NF; i++)
+          {
+             countall += 1; 
+             sumall += $i; 
+             sumsqall += $i*$i
+             count[i] += 1;
+             sum[i] += $i;
+             sumsq[i] += $i*$i;
+          } 
+        }
+     function std (sum, sumx, n)
+     {
+	if (n==1) n=2;
+        return sqrt(((n*sumx)-(sum*sum)) / (n*(n-1)))
+     }
+     function mean (sum,n) { return sum/n; }
+     END {
+        for (i=1; i<=num_channels; i++)
+        {
+           printf("ch %3d %3.3f %3.3f\n", i-1,sqrt(mean(sum[i],count[i])),std(sum[i],sumsq[i],count[i]));
+        }
+     }'
   exit 0
 fi
 
@@ -238,6 +316,20 @@ then
   exit 0
 fi
 
+if [ $1 = "test_resynth_costs_lpc" ]
+then
+   for i in `cat $TESTFILE | awk '{print $2}'`
+   do
+      fname=$i
+#      echo $fname >/dev/tty
+      $CLUSTERGENDIR/track_diff_lpc ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep $4 $5|
+      awk '{print $2,$6,$NF}'
+   done |
+   awk '{ n=1.0*$NF; sum+=$1*n; var+=$2*n; samples+=n}
+        END {printf("LPC  mean %f std %f var %f n %d\n",sum/samples,sqrt(var/samples),var/samples,samples)}'
+  exit 0
+fi
+
 if [ $1 = "score_frames" ]
 then
    # not going to work any more
@@ -247,13 +339,13 @@ fi
 
 if [ $1 = "test_resynth_costs_n" ]
 then
-   for i in `cat $TESTFILE.test | awk '{print $2}'`
+   for i in `cat $TESTFILE | awk '{print $2}'`
    do
       fname=$i
 #      echo $fname >/dev/tty
 #      $CLUSTERGENDIR/track_diff_n $2 ccoefs/$i.mcep test/$3/$i.mcep |
       ## HNM
-      $CLUSTERGENDIR/track_diff_n $2 hnm/$i.hnm test/$3/$i.mcep |
+      $CLUSTERGENDIR/track_diff_n $2 ccoefs/$i.mcep test/$3/$i.mcep |
       awk '{print $2,$6,$NF}'
    done |
    awk '{ n=1.0*$NF; sum+=$1*n; var+=$2*n; samples+=n}

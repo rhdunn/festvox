@@ -3,7 +3,7 @@
 ##                                                                       ##
 ##                                                                       ##
 ##              Carnegie Mellon University, Pittsburgh, PA               ##
-##                         Copyright (c) 2007                            ##
+##                      Copyright (c) 2004-2005                          ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -33,7 +33,7 @@
 ###########################################################################
 ##                                                                       ##
 ##          Author :  S P Kishore (skishore@cs.cmu.edu)                  ##
-##          Date   :  February 2007                                      ##
+##          Date   :  June 2005                                          ##
 ##                                                                       ##
 ###########################################################################
 

@@ -116,6 +116,7 @@ cp -p $FESTVOXDIR/src/general/contour_powernormalize bin
 cp -p $FESTVOXDIR/src/general/make_dist bin
 cp -p $FESTVOXDIR/src/general/make_cmn bin
 cp -p $FESTVOXDIR/src/general/traintest bin
+cp -p $FESTVOXDIR/src/general/find_num_available_cpu bin
 cp -p $FESTVOXDIR/src/general/emu_lab.tpl etc/emu_lab.tpl
 cp -p $FESTVOXDIR/src/general/emu_pm.tpl etc/emu_pm.tpl
 cp -p $FESTVOXDIR/src/general/emu_f0.tpl etc/emu_f0.tpl

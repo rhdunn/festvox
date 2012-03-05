@@ -53,6 +53,8 @@ SCRIPTS = setup_cg make_dur_model_mcep do_clustergen cg_resynth \
           cg_get_feats_all cg_get_feats_all_traj \
           cg_test track_diff track_diff_nof0 track_diff_f0 track_diff_mcd \
 	  track_diff_n cg_mco cg_mlpg make_voicing \
+          track_diff_mm track_diff_mm_z track_diff_mm_each track_diff_only \
+          track_diff_lpc \
           do_move_label
 OTHERS = mcep.desc mceptraj.desc statedur.feats statedur.feats_flite HOWTO
 MAINS = cg_lpc_resynth_main.c

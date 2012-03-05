@@ -1,9 +1,8 @@
-#!/usr/local/bin/perl
 ###########################################################################
 ##                                                                       ##
-##                                                                       ##
-##              Carnegie Mellon University, Pittsburgh, PA               ##
-##                         Copyright (c) 2007                            ##
+##                  Language Technologies Institute                      ##
+##                     Carnegie Mellon University                        ##
+##                       Copyright (c) 2010-2011                         ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -32,79 +31,25 @@
 ##                                                                       ##
 ###########################################################################
 ##                                                                       ##
-##          Author :  S P Kishore (skishore@cs.cmu.edu)                  ##
-##          Date   :  February 2007                                      ##
+##            Authors: Gopala Krishna Anumanchipalli                     ##
+##            Email:   gopalakr@cs.cmu.edu                               ##
 ##                                                                       ##
 ###########################################################################
+##                                                                       ##
+##  Statistic Phrase Accent Model for F0                                 ##
+##                                                                       ##
+###########################################################################
+TOP=../..
+DIRNAME=src/spamf0
+SCMFILES = spamf0.scm
+SCRIPTS = make_spam rmsecor
+SRCS = 
+FILES =af.desc segphrase.desc sylacc.desc  Makefile  \
+       $(SCMFILES) $(SCRIPTS) $(SRCS)
 
-$nargs = $#ARGV + 1;
-if ($nargs < 2) {
-  print "This program extracts the wavefile names from the prompt-file \n";
-  print "Expected format: <text-id> unit sequence \n"; 
-  print "Usage: perl file.pl <promp-file> <out-file> \n";
-  exit;
-}
+ALL = 
 
-$inF = $ARGV[0];
-$ouF = $ARGV[1];
+include $(TOP)/config/common_make_rules
 
-open(fp_o, ">$ouF");
-%unit = ();
-@inL = &Get_Lines($inF);
-$nL = $#inL + 1;
-print fp_o "NoOfFiles: $nL\n";
-for (my $i = 0; $i <= $#inL; $i++) {
-  my @wrd = &Get_Words($inL[$i]);
-  #0th element is wavefile name...
-  print fp_o "$wrd[0]\n";
-}
-close(fp_o);
 
-sub Make_SingleSpace() {
-   chomp(${$_[0]});
-   ${$_[0]} =~ s/[\s]+$//;
-   ${$_[0]} =~ s/^[\s]+//;
-   ${$_[0]} =~ s/[\s]+/ /g;
-   ${$_[0]} =~ s/[\t]+/ /g;
-}
 
-sub Check_FileExistence() {
-  my $inF = shift(@_); 
-  if (!(-e $inF)) { 
-    print "Cannot open $inF \n";
-    exit;
-  } 
-  return 1;
-}
-
-sub Get_Lines() {
-  my $inF = shift(@_); 
-  &Check_FileExistence($inF);
-  open(fp_llr, "<$inF");
-  my @dat = <fp_llr>;
-  close(fp_llr);
-  return @dat;
-}
-
-sub Get_Words() {
-  my $ln = shift(@_);
-  &Make_SingleSpace(\$ln);
-  my @wrd = split(/ /, $ln);
-  return @wrd;
-}
-
-sub Get_ProcessedLines() {
-  my $inF = shift(@_);
-  &Check_FileExistence($inF);
-  open(fp_llr, "<$inF");
-  my @dat = <fp_llr>;
-  close(fp_llr);
-
-  my @nd;
-  for (my $i = 0; $i <= $#dat; $i++) {
-     my $tl = $dat[$i];
-     &Make_SingleSpace(\$tl);
-     $nd[$i]  = $tl;
-  }
-  return @nd;
-}

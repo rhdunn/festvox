@@ -69,6 +69,12 @@ then
    exit 1
 fi
 
+
+if [ "$CLUSTERGENDIR" = "" ]
+then
+    export CLUSTERGENDIR=$FESTVOXDIR/src/clustergen
+fi
+
 if [ $# = 0 ]
 then
 
@@ -84,11 +90,55 @@ then
 
    exit 0
 fi
+. ./etc/voice.defs
 
-if [ "$CLUSTERGENDIR" = "" ]
+if [ "$1" = "parallel" ]
 then
-    export CLUSTERGENDIR=$FESTVOXDIR/src/clustergen
+    ACTION="$2"
+    PROMPTFILE="$3"
+    if [ "$PROMPTFILE" = "" ]
+    then
+	PROMPTFILE=etc/txt.done.data
+    fi
+    
+    if [ "$ACTION" = "cluster" ]
+    then
+	$ESTDIR/../festival/bin/festival --heap 10000000  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(begin (set! cg:parallel_tree_build t) (build_clustergen "'$PROMPTFILE'"))'
+	exit 0
+    fi
+    # We use xargs to parallelize our work. We split our promptfile in 16
+    # parts. Then run those in parallel with xargs
+
+    num_cpus=$(./bin/find_num_available_cpu)
+    seq 0 15 | xargs -n 1 -P $num_cpus $0 _parallelworker $ACTION $PROMPTFILE
+    exit 0
 fi
+
+if [ "$1" = "process_utts" ]
+then
+    # but its not a normal prompt file its ( fileid num_frames )\n ... 
+    PROMPTFILE="$2"
+
+    $ESTDIR/../festival/bin/festival --heap 10000000  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(begin (set! cg:parallel_tree_build t) (clustergen::do_process_utts "'$PROMPTFILE'"))'
+
+    exit 0
+fi
+
+if [ "$1" = "_parallelworker" ]
+then
+    ACTION="$2"
+    PROMPTFILE="$3"
+    INDEX="$4"
+
+    # Get our partition of PROMPTFILE
+    SPLITPROMPTFILE=/tmp/dobuild_parallelworker.$$.$INDEX
+    cat $PROMPTFILE | awk "NR%16==$INDEX {print \$0}" > $SPLITPROMPTFILE
+    
+    # Run our task
+    $0 $ACTION $SPLITPROMPTFILE
+    rm $SPLITPROMPTFILE
+    exit 0
+fi    
 
 if [ "$PROMPTFILE" = "" ]
 then
@@ -100,9 +150,64 @@ then
    fi
 fi
 
-. ./etc/voice.defs
+if [ $1 = "prune_silence" ]
+then
+
+    $FESTVOXDIR/src/general/prune_silence $PROMPTFILE
+
+    exit 0
+fi
+
+if [ $1 = "islice" ]
+then
+
+    if [ ! -d pre_islice_wav ]
+    then
+        mkdir pre_islice_wav
+        cp -pr wav/*.wav pre_islice_wav
+    fi
+
+    mkdir islice
+    cp -pr $PROMPTFILE islice/islice.done.data
+    cd islice
+    $FESTVOXDIR/src/interslice/scripts/do_islice_v2.sh setup
+    
+    mv ../wav/*.wav bwav
+    mkdir txt
+    cat islice.done.data |
+    awk '{printf("echo ");
+          for (i=3; i<NF; i++)
+             printf("%s ",$i);
+          printf(">txt/%s.txt\n",$2);}' |
+    sh -v
+
+    awk '{print $2}' islice.done.data |
+    while read x
+    do
+       $FESTVOXDIR/src/interslice/scripts/do_islice_v2.sh islice txt/$x.txt bwav/$x.wav
+    done
+
+    cd ..
+    awk '{print $2}' islice/islice.done.data |
+    while read x
+    do
+       mv islice/twav/${x}_*.wav wav
+       cat islice/txt/${x}.data
+    done  >$PROMPTFILE
+
+    exit 0
+fi
 
 if [ $1 = "f0" ]
+then
+
+#    $0 f0_esps $PROMPTFILE
+    $0 f0_pda $PROMPTFILE
+
+    exit 0
+fi
+
+if [ $1 = "f0_pda" ]
 then
 
     if [ ! -f etc/f0.params ]    
@@ -110,6 +215,18 @@ then
        ./bin/find_f0_stats $PROMPTFILE
     fi
     ./bin/make_f0_pm $PROMPTFILE
+
+    exit 0
+fi
+
+if [ $1 = "f0_esps" ]
+then
+
+    if [ ! -f etc/f0.params ]    
+    then
+       ./bin/find_f0_stats $PROMPTFILE
+    fi
+    ./bin/make_f0_pm_get_f0 $PROMPTFILE
 
     exit 0
 fi
@@ -513,20 +630,20 @@ fi
 
 if [ $1 = "cluster" ]
 then
-   $ESTDIR/../festival/bin/festival --heap 10000000  -b $CLUSTERGENDIR/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_clustergen "'$PROMPTFILE'")'
+   $ESTDIR/../festival/bin/festival --heap 10000000  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_clustergen "'$PROMPTFILE'")'
    exit 0
 fi
 
 if [ $1 = "trajectory" ]
 then
-   $ESTDIR/../festival/bin/festival --heap 10000000  -b $CLUSTERGENDIR/clustergen_build.scm '(set! cluster_feature_filename "mceptraj.desc")' festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_clustergen_traj "'$PROMPTFILE'")'
+   $ESTDIR/../festival/bin/festival --heap 10000000  -b festvox/clustergen_build.scm '(set! cluster_feature_filename "mceptraj.desc")' festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_clustergen_traj "'$PROMPTFILE'")'
    exit 0
 fi
 
 if [ $1 = "trajectory_ola" ]
 then
    $ESTDIR/../festival/bin/festival --heap 10000000  -b \
-      $CLUSTERGENDIR/clustergen_build.scm \
+      festvox/clustergen_build.scm \
       '(set! cluster_feature_filename "mceptraj.desc")' \
       '(set! cg::trajectory_ola t)' \
       festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm \
@@ -558,7 +675,7 @@ then
    PRUNE_THRESHOLD=50
 
    $ESTDIR/../festival/bin/festival --heap 4000000  -b \
-       $CLUSTERGENDIR/clustergen_build.scm \
+       festvox/clustergen_build.scm \
        festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm \
        '(voice_'${FV_VOICENAME}'_cg)' \
        '(set! cg:prune_frame_threshold 1.7)' \
@@ -581,7 +698,7 @@ then
    then
       mkdir cgv/lab
    fi
-   $ESTDIR/../festival/bin/festival --heap 4000000  -b $CLUSTERGENDIR/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(begin (voice_'${FV_VOICENAME}'_cg) (cgv_label_clustergen "'$PROMPTFILE'" "cgv/lab") ) '
+   $ESTDIR/../festival/bin/festival --heap 4000000  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(begin (voice_'${FV_VOICENAME}'_cg) (cgv_label_clustergen "'$PROMPTFILE'" "cgv/lab") ) '
    exit 0
 fi
 
@@ -615,7 +732,7 @@ fi
 
 if [ $1 = "cgv_cluster" ]
 then
-   $ESTDIR/../festival/bin/festival --heap 4000000  -b $CLUSTERGENDIR/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_cgv_clustergen "'$PROMPTFILE'")'
+   $ESTDIR/../festival/bin/festival --heap 4000000  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_cgv_clustergen "'$PROMPTFILE'")'
    exit 0
 fi
 

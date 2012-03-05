@@ -38,7 +38,8 @@ DIRNAME=festvox.org/blizzard
 BUILD_DIRS = 
 ALL_DIRS = 
 HTMLBODIES= index_body.html blizzard2005_body.html  blizzard2006_body.html \
-            blizzard2008_body.html blizzard2009_body.html
+            blizzard2008_body.html blizzard2009_body.html \
+            blizzard2010_body.html blizzard2011_body.html
 HTMLBITS= sidebar.html
 FINALHTML= $(HTMLBODIES:_body.html=.html)
 PERL= 

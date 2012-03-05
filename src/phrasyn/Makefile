@@ -1,8 +1,8 @@
-#!/bin/sh
-#####################################################-*-mode:shell-script-*-
+###########################################################################
 ##                                                                       ##
+##                  Language Technologies Institute                      ##
 ##                     Carnegie Mellon University                        ##
-##                        Copyright (c) 2007                             ##
+##                       Copyright (c) 2010-2011                         ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -31,30 +31,26 @@
 ##                                                                       ##
 ###########################################################################
 ##                                                                       ##
+##            Authors: Alok Parlikar                                     ##
+##            Email:   aup@cs.cmu.edu                                    ##
+##                                                                       ##
 ###########################################################################
+##                                                                       ##
+##  Syntactic Phrasing Model                                             ##
+##                                                                       ##
+###########################################################################
+TOP=../..
+DIRNAME=src/phrasyn
+ALL_DIRS= tags desc
+SCMFILES = phrasyn.scm
+SCRIPTS = do_phrasyn test_phrasyn calc_break_f1.py
+SRCS = 
+FILES = Makefile HOWTO.org \
+       $(SCMFILES) $(SCRIPTS) $(SRCS)
 
-LANG=C; export LANG
+ALL = 
 
-if [ ! "$ESTDIR" ]
-then
-  echo "environment variable ESTDIR is unset"
-  echo "set it to your local festvox directory e.g."
-  echo '   bash$ export ESTDIR=/home/awb/projects/speechtools/'
-  echo or
-  echo '   csh% setenv ESTDIR /home/awb/projects/speechtools/'
-  exit 1
-fi
-
-wavefile=$1
-odir=$2
-times=$3
-
-cat $times |
-awk '{printf("$ESTDIR/bin/ch_wave -start %f -end %f -otype riff -scaleN 0.65 -F 16000 -o %s/%s.wav %s\n",$(NF-2),$(NF-1),"'"$odir"'",$2,"'"$wavefile"'");}' |
-sh
-
-exit 0
-
+include $(TOP)/config/common_make_rules
 
 
 

@@ -63,7 +63,7 @@ fi
 mv wav unpruned
 mkdir wav
 
-# Not yet tested if this is worthwhile to customize to the particualr voice
+# Not yet tested if this is worthwhile to customize to the particular voice
 PDAPARAMS='-fmin 70 -fmax 240'
 
 cat $PROMPTFILE |

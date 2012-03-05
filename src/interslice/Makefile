@@ -1,7 +1,7 @@
 ###########################################################################
 ##                                                                       ##
 ##             Carnegie Mellon University, Pittsburgh, PA                ##
-##                        Copyright (c) 2007                             ##
+##                     Copyright (c) 2007-2010                           ##
 ##                       All Rights Reserved.                            ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -31,11 +31,27 @@
 ###########################################################################
 ##                                                                       ##
 ##          Author :  S P Kishore (skishore@cs.cmu.edu)                  ##
-##          Date   :  February 2007                                      ##
+##          Date   :  August 2010                                        ##
 ##                                                                       ##
 ###########################################################################
 ##                                                                       ##
 ##  Interslice, segment long audio streams                               ##
+##  Version 2 (2010)                                                     ##
+##  As described in "Automatic Building of Synthetic Voices from         ##
+##  Audio Books" Kishore Prahallad, PhD Thesis, LTI, CMU, August 2010    ##
+##                                                                       ##
+##  English is well supported                                            ##
+##                                                                       ##
+##  For Non-English (experimental)                                       ##
+##                                                                       ##
+##  This has been used for other languages, but you need an acoustic     ##
+##  model for that language (trained with ehmm)                          ##
+##                                                                       ##
+##  Call setup, then edit script/phseq.scm to call the right voice       ##
+##  (language) so it'll generate split text, and generate the right      ##
+##  phones                                                               ##
+##  copy in ehmm/mod/model101.txt and etc/ph_list.int into etc/ from a   ##
+##  voice trained in the target language                                 ##
 ##                                                                       ##
 ###########################################################################
 TOP=../../

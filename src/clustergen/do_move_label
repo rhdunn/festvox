@@ -42,6 +42,7 @@ FESTIVAL=$ESTDIR/../festival/bin/festival
 
 . etc/voice.defs
 
+echo $*
 MODELNAME=$FV_VOICENAME
 VOICENAME="(voice_"$FV_VOICENAME"_cg)"
 VOICESCM=festvox/${MODELNAME}_cg.scm
@@ -79,10 +80,17 @@ then
 
    rm -rf f0; mkdir f0
    rm lab
-   ln -s ml/lab${bestpass} lab   
-   ./bin/do_clustergen build_utts ${PROMPTFILE}
-   ./bin/do_clustergen f0 ${PROMPTFILE}
-   ./bin/do_clustergen combine_coeffs_v ${PROMPTFILE}
+   ln -s ml/lab${bestpass} lab 
+   if [ "$PARALLEL" = "1" ]
+   then 
+      ./bin/do_clustergen parallel build_utts ${PROMPTFILE}
+      ./bin/do_clustergen parallel f0 ${PROMPTFILE}
+      ./bin/do_clustergen parallel combine_coeffs_v ${PROMPTFILE}
+   else
+      ./bin/do_clustergen build_utts ${PROMPTFILE}
+      ./bin/do_clustergen f0 ${PROMPTFILE}
+      ./bin/do_clustergen combine_coeffs_v ${PROMPTFILE}
+   fi
    cp -pr ml/model${bestpass}/* festival/trees
 
    echo "Pass # #moves  +ve   -ve MCD    std      F0    std"
@@ -91,6 +99,28 @@ then
    echo "Model reset to ./bin/do_clustergen cluster ${PROMPTFILE}.train from pass $bestpass"
    echo "Ready to rebuild ./bin/do_clustergen cluster ${PROMPTFILE} if desired"
    exit 0
+elif [ "$1" = "parallel" ]
+then
+   PARALLEL="1"
+   if [ "$2" = "select" ]
+   then
+      shift
+      $0 $*
+      exit 0
+   else
+   NUMPASSES=$2
+   fi
+elif [ "$1" = "_parallelworker" ]
+then
+    i="$2"
+    PROMPTFILE="$3"
+    INDEX="$4"
+    # Get our partition of PROMPTFILE
+    SPLITPROMPTFILE=/tmp/dobuild_parallelworker.$$.$INDEX
+    cat $PROMPTFILE | awk "NR%16==$INDEX {print \$0}" > $SPLITPROMPTFILE
+    $FESTIVAL --heap 10000000 -b $VOICESCM $VOICENAME $FESTVOXDIR/src/clustergen/clustergen_build.scm "(ClusterGen_move_labels '$SPLITPROMPTFILE 'ml/lab$i)" >> ml/ml.$i
+    rm $SPLITPROMPTFILE
+    exit 0
 else
    if [ $# = 1 ]
    then
@@ -111,7 +141,12 @@ fi
 ## Rebuild and get initial base figures
 rm -f ml/summary
 echo Pass 0
-./bin/do_clustergen cluster ${PROMPTFILE}.train 
+if [ "$PARALLEL" = "1" ]
+then
+   ./bin/do_clustergen parallel cluster ${PROMPTFILE}.train 
+else
+   ./bin/do_clustergen cluster ${PROMPTFILE}.train 
+fi
 echo "Pass 0 find MCDs"
 $FESTVOXDIR/src/clustergen/cg_test mcdf0 cgp0 ${PROMPTFILE}.test >ml/mcd.0
 echo -n "pass 0     0     0     0 " >ml/summary
@@ -135,10 +170,16 @@ do
    rm -f lab
    ln -s ml/lab${PREVIOUS} lab
 
-   ## Find moves that improve the prediction model
+   ## Find moves that improve the prediction model 
+   ## FIXME: should be parallelized
    echo "Pass $i moving labels"
-   $FESTIVAL --heap 10000000 -b $VOICESCM $VOICENAME $FESTVOXDIR/src/clustergen/clustergen_build.scm "(ClusterGen_move_labels '$PROMPTFILE 'ml/lab$i)" >ml/ml.$i
-
+   if [ "$PARALLEL" = "1" ]
+   then
+    num_cpus=$(cat /proc/cpuinfo | grep 'processor' | wc -l )
+    seq 0 15 | xargs -n 1 -P $num_cpus $0 _parallelworker $i $PROMPTFILE
+   else
+      $FESTIVAL --heap 10000000 -b $VOICESCM $VOICENAME $FESTVOXDIR/src/clustergen/clustergen_build.scm "(ClusterGen_move_labels '$PROMPTFILE 'ml/lab$i)" >ml/ml.$i
+   fi
    ## Doing moves multiple times per pass doesn't help
 #    rm -f lab
 #    ln -s ml/lab${i} lab
@@ -162,14 +203,24 @@ do
    ## Rebuild parameter files with new moves
    rm -rf f0; mkdir f0
    rm lab
-   ln -s ml/lab${i} lab   
-   ./bin/do_clustergen build_utts ${PROMPTFILE}
-   ./bin/do_clustergen f0 ${PROMPTFILE}
-   ./bin/do_clustergen combine_coeffs_v ${PROMPTFILE}
-   
-   ## Rebuild model with new moves
-   ./bin/do_clustergen cluster ${PROMPTFILE}.train 
+   ln -s ml/lab${i} lab  
 
+   if [ "$PARALLEL" = "1" ]
+   then
+       ./bin/do_clustergen parallel build_utts ${PROMPTFILE}
+       ./bin/do_clustergen parallel f0 ${PROMPTFILE}
+       ./bin/do_clustergen parallel combine_coeffs_v ${PROMPTFILE}
+   
+        ## Rebuild model with new moves
+       ./bin/do_clustergen parallel cluster ${PROMPTFILE}.train 
+   else
+      ./bin/do_clustergen build_utts ${PROMPTFILE}
+      ./bin/do_clustergen f0 ${PROMPTFILE}
+      ./bin/do_clustergen combine_coeffs_v ${PROMPTFILE}
+   
+       ## Rebuild model with new moves
+      ./bin/do_clustergen cluster ${PROMPTFILE}.train 
+   fi
    ## This makes it run twice as fast but give very slightly worse results
    # cat ${PROMPTFILE}.train |
    # awk '{if (('$i' % 2) == (NR%2)) print $0}' >etc/xxx.train

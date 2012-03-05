@@ -42,9 +42,9 @@
     ;; function words 
   )
   ;; Or split them into sub classes (but give them meaningful names)
-  ; (fn0 .. .. .. ..)
-  ; (fn1 .. .. .. ..)
-  ; (fn2 .. .. .. ..)
+  ; (pos_0 .. .. .. ..)
+  ; (pos_1 .. .. .. ..)
+  ; (pos_2 .. .. .. ..)
 ))
 
 (define (INST_LANG_VOX::select_tagger)

@@ -2,7 +2,7 @@
 #####################################################-*-mode:shell-script-*-
 ##                                                                       ##
 ##                     Carnegie Mellon University                        ##
-##                        Copyright (c) 2007                             ##
+##                         Copyright (c) 2005                            ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -31,6 +31,11 @@
 ##                                                                       ##
 ###########################################################################
 ##                                                                       ##
+##  Author: Alan W Black (awb@cs.cmu.edu) Sep 2010                       ##
+##                                                                       ##
+###########################################################################
+##                                                                       ##
+##  Assumes test file also has stds (gives zscores)                      ##
 ###########################################################################
 
 LANG=C; export LANG
@@ -38,12 +43,12 @@ LANG=C; export LANG
 if [ ! "$ESTDIR" ]
 then
    echo "environment variable ESTDIR is unset"
-   echo "set it to your local festvox directory e.g."
-   echo '   bash$ export ESTDIR=/home/awb/projects/speechtools/'
+   echo "set it to your local speech tools directory e.g."
+   echo '   bash$ export ESTDIR=/home/awb/projects/speech_tools/'
    echo or
-   echo '   csh% setenv ESTDIR /home/awb/projects/speechtools/'
+   echo '   csh% setenv ESTDIR /home/awb/projects/speech_tools/'
    exit 1
-fi 
+fi
 
 if [ ! "$FESTVOXDIR" ]
 then
@@ -55,56 +60,74 @@ then
    exit 1
 fi
 
-export EHMMDIR=$FESTVOXDIR/src/ehmm
-export ISLICEDIR=$FESTVOXDIR/src/interslice
-
 if [ $# = 0 ]
-then 
-  echo "pass help as argument"
-fi 
-
-if [ "$1" = "help" ]
 then
-   $0 phseq
-   $0 feats
-   $0 align
-   $0 align1
-   exit
+   echo "Distance between two tracks (actual, synthesized"
+   echo "   track_diff track1 track2"
+   exit 0
 fi
 
-if [ "$1" = "phseq" ]
+CH_TRACK=$ESTDIR/bin/ch_track
+PHONEALIGN=$FESTVOXDIR/src/general/phonealign
+
+TRACK1=$1
+TRACK1_CHANNELS=`$ESTDIR/bin/ch_track -info $1 | grep "Number of channels" | awk '{print $NF}'`
+TRACK1_FRAMES=`$ESTDIR/bin/ch_track -info $1 | grep "Number of frames" | awk '{print $NF}'`
+TRACK2=$2
+TRACK2_CHANNELS=`$ESTDIR/bin/ch_track -info $2 | grep "Number of channels" | awk '{print $NF/2}'`
+TRACK2_FRAMES=`$ESTDIR/bin/ch_track -info $2 | grep "Number of frames" | awk '{print $NF}'`
+
+if [ $TRACK1_CHANNELS != $TRACK2_CHANNELS ]
 then
-    echo "EHMM extract phone sequences and base hmm state numbers"
-    $ESTDIR/../festival/bin/festival -b $ISLICEDIR/bin/phseq.scm '(genutt "islice/temp/blkf.pmt" "islice/temp/blkf.utt")'
-    $ESTDIR/../festival/bin/festival -b $ISLICEDIR/bin/phseq.scm '(phseq "islice/temp/blkf.pmt" "islice/etc/txt.phseq.data")'
-    perl $ISLICEDIR/bin/prmp2int.pl islice/etc/txt.phseq.data islice/etc/ph_list.int
-    perl $ISLICEDIR/bin/getwavlist.pl islice/etc/txt.phseq.data islice/etc/mywavelist
+   echo "Tracks have different number of channels $TRACK1_CHANNELS $TRACK2_CHANNELS"
+   exit 1
 fi
 
-if [ "$1" = "feats" ]
+if [ $TRACK1_FRAMES != $TRACK2_FRAMES ]
 then
-    echo "EHMM feature extraction and normalization"
-    $EHMMDIR/bin/FeatureExtraction islice/etc/mysp_settings islice/etc/mywavelist
-    perl $ISLICEDIR/bin/comp_dcep.pl islice/etc/mywavelist islice/feat mfcc ft 0 0
-          # (0, 0):  delta-cepstrals and delta-delta-cepstrals
-    perl $ISLICEDIR/bin/scale_feat.pl islice/etc/mywavelist islice/feat islice/mod ft 4
-          # (4): Scaling factor 
+  echo Aligning $TRACK1 to $TRACK2
+  TRACK2DIR=`dirname $TRACK2`
+  fname=`basename $TRACK2 .mcep`
+
+  $CH_TRACK -otype est_ascii ccoefs/$fname.mcep |
+  sed '1,/EST_Header_End/d' |
+  awk 'BEGIN {printf("#\n")}
+       { printf("%f 125 %d\n",$1,NR-1) }' >$TRACK2DIR/$fname.actual.lab
+  $PHONEALIGN -otrack $TRACK2 -itrack $TRACK1 -ilabel $TRACK2DIR/$fname.actual.lab -olabel $TRACK2DIR/$fname.lab -verbose -withcosts
+
+  exit
+  TRACK2=something.align
 fi
 
-if [ "$1" = "align" ]
-then
-    echo "EHMM align"
-    $EHMMDIR/bin/edec islice/etc/ph_list.int islice/etc/txt.phseq.data.int 1 islice/feat ft islice/etc/mysp_settings islice/mod 0 islice/tlab
-           # (1): Sequential Flag.. 0 - for nde Flag..
-    perl $ISLICEDIR/bin/sym2nm.pl islice/tlab islice/etc/ph_list.int  #Earlier it was .map
-    mv islice/tlab/* ./lab/
-fi
+## Calculates differences
+$ESTDIR/bin/ch_track -otype ascii $TRACK1 |
+awk '{for (i=1; i<= NF; i++)
+         printf("%s ",$i);
+      printf("\n");}' >actual.mcep
+$ESTDIR/bin/ch_track -otype ascii $TRACK2 |
+awk '{for (i=1; i<= NF; i++)
+         printf("%s ",$i);
+      printf("\n");}' >test.mcep
+paste actual.mcep test.mcep |
+awk '{t=0;
+      if (channels == 0)
+         channels = NF;
+      if (channels == NF)
+      {
+         anf = NF/3
+         for (i=1; i<anf; i++)
+         {
+            std = $((2*i)+anf);
+            if (std==0)
+                std=1;
+            d = ($i-$((2*i)+anf-1))/std;
+            if (d < 0)
+               d = -1 * d;
+            printf("%f ",d*d);
+         }
+      }
+      printf("\n")
+      }'
 
-if [ "$1" = "align1" ]
-then
-    echo "EHMM align"
-    $EHMMDIR/bin/edec islice/etc/ph_list.int islice/etc/txt.phseq.data.int 1 islice/feat ft islice/etc/mysp_settings islice/mod 1 islice/tlab
-           # (1): Sequential Flag.. 1 - ndeFlag....
-    perl $ISLICEDIR/bin/sym2nm.pl islice/tlab islice/etc/ph_list.int  #Earlier it was .map
-    mv islice/tlab/* ./lab/
-fi
+exit 0
+

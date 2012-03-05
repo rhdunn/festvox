@@ -1,4 +1,5 @@
 #!/usr/local/bin/perl
+use strict;
 ###########################################################################
 ##                                                                       ##
 ##                                                                       ##
@@ -37,26 +38,26 @@
 ##                                                                       ##
 ###########################################################################
 
-$nargs = $#ARGV + 1;
-if ($nargs < 2) {
+my $nargs = $#ARGV + 1;
+if ($nargs != 2) {
   print "Usage: perl file.pl <prmpF> <map-file>\n";
   exit;
 }
 
-$mF  = $ARGV[1];
-@ml = &Get_ProcessedLines($mF);
-%map = ();
+my $mF  = $ARGV[1];
+my @ml = &Get_ProcessedLines($mF);
+my %map = ();
 
 ##Since we changed from .map to .int, the first three lines are not used here..
-$stpnt = 3;
+my $stpnt = 3;
 
 for (my $i = $stpnt; $i <= $#ml; $i++) {
    my @wd = &Get_Words($ml[$i]);
   $map{$wd[1]} = $wd[0];
 }
 
-$prmF = $ARGV[0];
-$nprmF = $prmF.".int";
+my $prmF = $ARGV[0];
+my $nprmF = $prmF.".int";
 
 open(fp_out, ">$nprmF");
 my @pl = &Get_Lines($prmF);

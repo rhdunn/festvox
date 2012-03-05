@@ -118,7 +118,7 @@ bin/traintest festival/dur/data/dur.data.train
 # Build description file
 echo ";;; Build feature description file"
 $ESTDIR/bin/make_wagon_desc festival/dur/data/dur.data festival/dur/etc/statedur.feats festival/dur/etc/dur.desc
-$ESTDIR/../festival/bin/festival -b festvox/build_prosody.scm $VOICESCM $VOICENAME '(build_dur_feats_desc)'
+$ESTDIR/../festival/bin/festival --heap 20000000 -b festvox/build_prosody.scm $VOICESCM $VOICENAME '(build_dur_feats_desc)'
 
 # emacs festival/dur/etc/dur.desc
 
