@@ -132,10 +132,10 @@ do
 
    # HNM fix -c 1 vs -c 0
    $ESTDIR/bin/ch_track -c 0 festival/disttabs/$x.mcep -otype ascii -o $$.f0
-#   cut --delimiter=" " -f 2- festival/feats/$x.feats |
-#   paste --delimiter=" " xxx.f0 - >festival/feats/${x}_f0.feats
-   cut --delimiter=" " -f 2- festival/feats/$x.feats >$$.mcep
-   paste --delimiter=" " $$.f0 $$.mcep >festival/feats/${x}_f0.feats
+#   cut -d " " -f 2- festival/feats/$x.feats |
+#   paste -d " " xxx.f0 - >festival/feats/${x}_f0.feats
+   cut -d " " -f 2- festival/feats/$x.feats >$$.mcep
+   paste -d " " $$.f0 $$.mcep >festival/feats/${x}_f0.feats
    rm -f $$.f0 $$.mcep
 
 done

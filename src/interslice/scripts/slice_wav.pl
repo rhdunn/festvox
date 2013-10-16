@@ -66,8 +66,8 @@ for (my $i = 0; $i <= $#inL; $i++) {
   my $begT = $wrd[1];
   my $endT = $wrd[2];
   print "Processing $wvID $begT $endT\n";
-  print "$ESTDIR/bin/ch_wave -start $begT -end $endT -otype riff -scaleN 0.65 -F 16000 -o $twvD/$wvID.wav $wvF \n";
-  system("$ESTDIR/bin/ch_wave -start $begT -end $endT -otype riff -scaleN 0.65 -F 16000 -o $twvD/$wvID.wav $wvF");
+  print "$ESTDIR/bin/ch_wave -start $begT -end $endT -otype riff -o $twvD/$wvID.wav $wvF \n";
+  system("$ESTDIR/bin/ch_wave -start $begT -end $endT -otype riff -o $twvD/$wvID.wav $wvF");
 }
 
 

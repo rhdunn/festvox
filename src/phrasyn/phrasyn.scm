@@ -46,7 +46,7 @@
    (lambda (x)
      (format t "Dumping Phrasing Tree: %10s\r" (car x))
      (set! utt1 (utt.load nil (format nil "festival/utts/%s.utt" (car x))))
-     (format ofd "( ")
+     (format ofd "( ( ")
      (mapcar
       (lambda (w)
         ;(format ofd "%s " (item.feat w "phr_pos"))
@@ -58,7 +58,7 @@
             (format ofd ") ( "))
         )
       (utt.relation.items utt1 'Word))
-     (format ofd ")\n"))
+     (format ofd ") )\n"))
    (load datafile t))
   (format t "Done dumping trees %20s\n" "")  
   (fclose ofd))

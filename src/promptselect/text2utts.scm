@@ -62,6 +62,7 @@
   -otype <string>  data (default) or raw, utts, wavs.
   -itype <string>  raw (default) or data, utts.
   -nopunc          don't output punctuation for Words (default nil).
+  -parainfo        output paragraph position features (default nil).
   -upto <int>      Stop after finding <int> sentences
   -eval <string>   File or lisp s-expression to be evaluated before
                    processing.
@@ -78,14 +79,20 @@
 (defvar nice_utts_only nil)
 (defvar nice_utts_only_latin nil)
 (defvar nopunc nil)
-(defvar dbname "txt_")
+(defvar dbname "txt")
 (defvar txtnum 1)
 (defvar level "Token")
 (defvar otype "data")
 (defvar raw nil)
+(defvar parainfo nil)
 (defvar itype "raw")
 (defvar word_output_hook nil)
 (defvar upto 0)
+
+;; For keeping track of paragraph boundaries
+(defvar utt_number 0)
+(defvar para_number 0)
+(defvar para_sentence_number 0)
 
 ;;; Get options
 (define (get_options)
@@ -113,6 +120,8 @@
           (set! nice_utts_only nil))
 	 ((string-equal "-nopunc" (car o))
           (set! nopunc t))
+	 ((string-equal "-parainfo" (car o))
+          (set! parainfo t))
 	 ((string-equal "-otype" (car o))
 	  (if (not (cdr o))
 	      (text2utts_error "no otype specified"))
@@ -291,6 +300,13 @@
        (let ((punc (item.feat token "punc"))
 	     (prepunctuation (item.feat token "prepunctuation")))
 	 (set! name (item.name token))
+         (set! actual_whitespace (item.feat token "whitespace"))
+         (if (string-matches actual_whitespace ".*\n.*\n.*")
+             ;; or newline and significant indentation ?
+             (begin ;; a new paragraph
+               (set! para_sentence_number 0)
+               (set! para_number (+ 1 para_number))
+               ))
 	 (if (string-equal "0" punc) (set! punc ""))
 	 (if (string-equal "0" prepunctuation) (set! prepunctuation ""))
 	 (if (not raw)
@@ -306,9 +322,18 @@
 	 (set! whitespace " ")
 	 )
        (set! token (item.next token)))
+
     (if (not raw)
-	(format ofd "\" )"))
-    (format ofd "\n")))
+        (begin 
+          (format ofd "\"")
+          (if parainfo
+              (format ofd " (utt_number %d) (para_number %d) (para_sentence_number %d)"
+                      utt_number para_number para_sentence_number))
+          (format ofd " )")))
+    (format ofd "\n")
+    (set! utt_number (+ 1 utt_number))
+    (set! para_sentence_number (+ 1 para_sentence_number))
+    ))
 
 (define (utt_output_word utt)
   (let ((word (utt.relation.first utt 'Word)))
@@ -325,6 +350,7 @@
 	     (begin
 	       (set! punc 
 		     (if (string-equal
+
                           (item.feat word "R:Token.parent.id")
                           (item.feat word "R:Word.n.R:Token.parent.id"))
 			 "0"
@@ -335,6 +361,18 @@
                           (item.feat word "R:Word.p.R:Token.parent.id"))
 			 "0"
 			 (item.feat word "R:Token.parent.prepunctuation")))
+               (set! actual_whitespace
+		     (if (string-equal
+                          (item.feat word "R:Token.parent.id")
+                          (item.feat word "R:Word.p.R:Token.parent.id"))
+			 ""
+			 (item.feat word "R:Token.parent.whitespace")))
+               (if (string-matches actual_whitespace ".*\n.*\n.*")
+                   ;; or newline and significant indentation ?
+                   (begin ;; a new paragraph
+                     (set! para_sentence_number 0)
+                     (set! para_number (+ 1 para_number))
+                     ))
 	       (if (string-equal "0" punc) (set! punc ""))
 	       (if (string-equal "0" prepunctuation) (set! prepunctuation ""))
 	       (if (not raw)
@@ -358,9 +396,15 @@
     (if word_output_hook
         (apply_hooks word_output_hook utt)
         )
+    (if parainfo
+        (format ofd " (utt_number %d) (para_number %d) (para_sentence_number %d)"
+                utt_number para_number para_sentence_number))
     (if (not raw)
 	(format ofd " )"))
-    (format ofd "\n")))
+    (format ofd "\n")
+    (set! utt_number (+ 1 utt_number))
+    (set! para_sentence_number (+ 1 para_sentence_number))
+    ))
 
 (define (utt_output_segment utt)
   (let ((segment (utt.relation.first utt 'Segment)))

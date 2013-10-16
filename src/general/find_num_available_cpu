@@ -35,8 +35,14 @@
 #  When using multiple threads/processes, finds out the number of cpu
 #  that can be used. 
 #
+SYS=`uname`
 
-num_cpus=$(cat /proc/cpuinfo 2>/dev/null | grep 'processor' | wc -l )
+if [ $SYS = "Darwin" ]
+then
+  num_cpus=$(sysctl -n hw.ncpu)
+else
+  num_cpus=$(cat /proc/cpuinfo 2>/dev/null | grep 'processor' | wc -l )
+fi
 
 if [ $num_cpus -gt 1 ]
 then

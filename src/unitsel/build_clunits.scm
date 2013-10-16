@@ -190,16 +190,21 @@ to predicted labels building a new utetrances and saving it."
      (lambda (l)
        (format t "%s UTTS\n" (car l))
        (unwind-protect
-        (align_utt (car l) (cadr l))
+	(let ((featlist (caddr l)))
+	  (if (and (consp featlist)
+		  (consp (car featlist)))
+	      (align_utt (car l) (cadr l) featlist)
+	      (align_utt (car l) (cadr l) nil)))
         nil)
        t)
      p)
     t))
 
-(define (align_utt name text)
+(define (align_utt name text featlist)
   "(align_utts file) 
 Synth an utterance and load in the actualed aligned segments and merge
-them into the synthesizer utterance."
+them into the synthesizer utterance. featlist is a list of tuples of
+features (name-value pairs) to set in the utterance"
   (let ((utt1 (utt.load nil (format nil "prompt-utt/%s.utt" name)))
 	;(utt1 (utt.synth (eval (list 'Utterance 'Text text))))
 	(silence (car (cadr (car (PhoneSet.description '(silences))))))
@@ -291,6 +296,13 @@ them into the synthesizer utterance."
 
     (utt.relation.delete utt1 'actual-segment)
     (utt.set_feat utt1 "fileid" name)
+
+    (mapcar
+     (lambda (feattuple)
+       ;(format t "Setting Feat: %s %s\n" (car feattuple) (cadr feattuple))
+       (utt.set_feat utt1 (car feattuple) (cadr feattuple)))
+     featlist)
+
     ;; If we have an F0 add in targets too
     ;; This breaks builds more than it helps them
 ;    (if (probe_file (format nil "f0/%s.f0" name))
@@ -987,6 +999,27 @@ it as a simple assoc list."
   (system (format nil "(cd scratch/cl && emulabel ../../etc/emu_lab &)\n"))
   t
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;  Unit Selection tts 
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (tts_test ttd odir)
+
+  (mapcar
+   (lambda (x)
+     (format t "%s tts" (car x))
+     (unwind-protect
+      (begin
+        (set! utt1 (SynthText (cadr x)))
+        (utt.save.wave utt1 (format nil "%s/%s.wav" odir (car x))))
+      (begin
+        (format t " failed")))
+     (format t "\n"))
+   (load ttd t))
+  t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

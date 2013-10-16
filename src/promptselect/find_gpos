@@ -44,7 +44,7 @@ PREV="00"
 awk '{printf(" %s \n",$0)}' $1 |
 sed 's/,/_/g' >data_${PREV}.txt
 
-NUMITER=100
+NUMITER=20
 echo 1 $NUMITER |
 awk '{for (i=$1; i<=$2; i++)
          printf("%02d\n",i);}' |

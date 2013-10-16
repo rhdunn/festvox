@@ -110,25 +110,20 @@ fi
 
 ## Calculates differences
 $ESTDIR/bin/ch_track -otype ascii $TRACK1 |
-awk '{for (i=1; i<= '$ORDER'; i++)
-         printf("%s ",$i);
-      printf("\n");}' >actual.$$.mcep
-$ESTDIR/bin/ch_track -otype ascii $TRACK2 >test.$$.mcep
+awk '{print $1}' >actual.$$.mcep
+$ESTDIR/bin/ch_track -otype ascii $TRACK2 |
+awk '{print $1}' >test.$$.mcep
 paste actual.$$.mcep test.$$.mcep |
 awk '{t=0;
       if (channels == 0)
          channels = NF;
       if (channels == NF)
       {
-         for (i=1; i<NF/2; i++)
-         {
-            d = ($i-$(i+NF/2));
-            if (d < 0)
-               d = -1 * d;
-            printf("%f ",d);
-         }
+         d = ($1-$2);
+         if (d < 0)
+            d = -1 * d;
+         printf("%f\n",d);
       }
-      printf("\n")
       }' |
    tee mcep.$$.diff |
    awk '{ num_channels = NF;

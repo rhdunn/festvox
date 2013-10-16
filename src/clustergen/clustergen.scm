@@ -46,8 +46,13 @@
 (defvar clustergen_mcep_trees nil)
 (defvar cg:initial_frame_offset 0.0)
 (defvar cg:frame_shift 0.005)
-(defvar mlsa_alpha_param 0.42)
+(set! mlsa_alpha_param 0.42)
 (set! mlsa_beta_param 0.0)
+(set! cg:mlsa_lpf t)
+
+(set! framerate 16000)
+(set! mcep_length 25)
+
 ;;; deltas/mlpg
 (defvar cg:F0_smooth t)
 (defvar cg:param_smooth nil)
@@ -58,12 +63,17 @@
 (defvar cg:deltas t)
 (defvar cg:debug nil)
 (defvar cg:save_param_track nil)
+
 (set! cg:multimodel nil)
 (set! cg:mcep_clustersize 50)
 (defvar cg:gmm_transform nil)
 (set! cg:mixed_excitation nil)
 (set! cg:spamf0 nil)
 (set! cg:spamf0_viterbi nil)
+(set! cg:vuv_predict_dump nil)
+
+(defvar me_filter_track nil)
+(defvar lpf_track nil)
 
 ;; Set Phrasyn Parameters
 (set! cg:phrasyn nil)
@@ -74,8 +84,10 @@
 
 ;;; This isn't a good place for this, it assumes we are running in voice directory
 (if cg:mixed_excitation
-    (set! me_mix_filters
-          (load "etc/mix_excitation_filters.txt" t)))
+    (set! me_filter_track (track.load "festvox/mef.track")))
+
+(if cg:mlsa_lpf
+    (set! lpf_track (track.load "festvox/lpf.track")))
 
 (if cg:spamf0
     (require 'spamf0))
@@ -146,15 +158,16 @@
   (if cg:mixed_excitation
     (item.set_feat 
      (utt.relation.append utt 'Wave) 
-     "wave" 
-     (me_mlsa 
+     "wave"
+     (mlsa_resynthesis
       (utt.feat utt "param_track")
-      (utt.feat utt "str_params")))
+      (utt.feat utt "str_params")
+      me_filter_track))
     ;; Not mixed excitation
     (item.set_feat 
      (utt.relation.append utt 'Wave) 
      "wave" 
-     (mlsa_resynthesis (utt.feat utt "param_track"))))
+     (mlsa_resynthesis (utt.feat utt "param_track") nil lpf_track)))
     utt)
 
 (define (cg_wave_synth_sptk utt)
@@ -436,6 +449,12 @@
    (utt.feat (item.get_utt i) "param_track")
    (item.feat i "frame_number")
    0))
+(define (v_value i)
+  (track.get 
+   clustergen_param_vectors 
+   (item.feat i "clustergen_param_frame")
+   (- (track.num_channels clustergen_param_vectors) 2))
+)
 
 (define (cg_break s)
   "(cg_break s)
@@ -655,7 +674,7 @@ Predict the F0 (or not)."
            (string-equal "-"
             (item.feat 
              mcep "R:mcep_link.parent.R:segstate.parent.ph_cvox")))
-      (track.set param_track i 0 0.0) ;; make it unvoiced
+      (track.set param_track i 0 0.0) ;; make it unvoiced (silence)
       (track.set param_track i 0 f0_val)) ;; make it voiced
   )
 
@@ -670,27 +689,24 @@ Predict the F0 (or not)."
       nil
       t))
 
+;(set! cg_vuv_tree (car (load "vuv/vuv.tree" t)))
+;; Default voice/unvoiced prediction: can be trained with bin/make_vuv_model
+(defvar cg_vuv_tree
+  '((lisp_v_value < 5.5) ((0)) ((1))))
+
 (define (ClusterGen_voicing_v mcep)
-  (let ((vvv 
-         (track.get 
-          clustergen_param_vectors 
-          (item.feat mcep "clustergen_param_frame")
-;         (+ 1 (* (if cg:mlpg 1 2) 51))
-;          102
-          (- (track.num_channels clustergen_param_vectors) 2)
-          )))
-;  (format t "%s %f\n" (item.name mcep) vvv)
+  (let ((vp (car (last (wagon mcep cg_vuv_tree)))))
+    (if cg:vuv_predict_dump
+        (begin  ;; only used at vuv_model build time 
+          (mapcar
+           (lambda (f) (format cg:vuv_predict_dump "%s " (item.feat mcep f)))
+           cg_vuv_predict_features)
+          (format cg:vuv_predict_dump "\n")))
     (cond
      ((string-equal "pau" (item.feat mcep "R:mcep_link.parent.R:segstate.parent.name"))
       ;; pauses are always unvoiced
       nil)
-     ((string-equal 
-       "+" 
-       (item.feat mcep "R:mcep_link.parent.R:segstate.parent.ph_vc"))
-      ;; vowels are always voiced
-      t)
-     ((> vvv 0.5)
-      ;; consonants are what they are
+     ((equal? vp 1)
       t)
      (t
       nil))))
@@ -905,7 +921,9 @@ Filter synthesized voice with transformation filter and reload waveform."
              (set! c 0)
              (while (< c 5)
               (track.set str_params f c 
-                         (track.get param_track f (* 2 (+ c 51))))
+                         (track.get param_track f (* 2 (+ c 
+							  (+ 1 (* 2 mcep_length))  ; after all mcep and deltas
+							  ))))
               (set! c (+ 1 c)))
              (set! f (+ 1 f)))
           (utt.set_feat utt "str_params" str_params)))
@@ -928,7 +946,7 @@ Filter synthesized voice with transformation filter and reload waveform."
     ;; MLPG
     (if cg:mlpg  ;; assume cg:deltas too
           (let ((nf (track.num_frames param_track))
-              (nc (* 2 (+ 1 25 25))) ;; f0 static delta (mean and stddev)
+              (nc (* 2 (+ 1 mcep_length mcep_length))) ;; f0 static delta (mean and stddev)
               (f 0) (c 0))
             (if cg:debug (format t "cg:debug calling mlpg\n"))
             (set! nnn_track (track.resize nil nf nc))

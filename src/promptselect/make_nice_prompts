@@ -78,7 +78,7 @@ make_nice_prompts TYPE ARG0 ARG1 ...
 
 make_nice_prompts find_freq DATA0.txt DATA1.txt ...
    Find a word frequency table for all of the data.  Result in data.wc
-make_nice_prompts find_freq_asia DATA0.txt DATA1.txt ...
+make_nice_prompts find_freq_asis DATA0.txt DATA1.txt ...
    Find a word frequency table for all of the data.  Result in data.wc
    Doesn't assume latin character set and does no case folding
 make_nice_prompts make_freq_lex [5000]
@@ -274,6 +274,28 @@ then
    echo "Finding nice utterances in database"
    shift
    $FESTVOXDIR/src/promptselect/text2utts -upto 100000 -onlynice -eval $DBNAME.scm -dbname $DBNAME -o  $DBNAME"_nice.data" $*
+
+   # If the data has the same nice sentence multiple times it will appear
+   # in X_nice.data multiple times, so we remove the duplcates.
+   cat $DBNAME"_nice.data" |
+   awk '{ s="";
+          for (i=3; i < NF; i++)
+             s = sprintf("%s %s",s,$i);
+          if (done[s] != 1)
+          {
+             done[s] = 1;
+             print $0;
+          }}' >$DBNAME"_nice.data.tmp"
+   mv $DBNAME"_nice.data.tmp" $DBNAME"_nice.data"
+
+   exit
+fi
+
+if [ "$1" = "find_nice_asis_data" ]
+then
+   echo "Finding nice utterances in database"
+   shift
+   $FESTVOXDIR/src/promptselect/text2utts -upto 100000 -onlynice -eval $DBNAME.scm -dbname $DBNAME -o  $DBNAME"_nice.data" -itype data $*
 
    # If the data has the same nice sentence multiple times it will appear
    # in X_nice.data multiple times, so we remove the duplcates.

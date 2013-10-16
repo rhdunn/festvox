@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #####################################################-*-mode:shell-script-*-
 ##                                                                       ##
 ##                     Carnegie Mellon University                        ##
@@ -231,6 +231,54 @@ then
     exit 0
 fi
 
+if [ $1 = "f0_v_sptk" ]
+then
+    if [ ! "$SPTKDIR" ]
+    then
+	echo "environment variable SPTKDIR is unset"
+	echo "set it to your local festvox directory e.g."
+	echo '   bash$ export SPTKDIR=/usr/local/SPTK/'
+	echo or
+	echo '   csh% setenv SPTKDIR /usr/local/SPTK/'
+	exit 1
+    fi
+
+    if [ ! -f etc/f0.params ]    
+    then
+       ./bin/find_f0_stats $PROMPTFILE
+    fi
+    ./bin/make_f0_v_sptk $PROMPTFILE
+    exit 0
+fi
+
+if [ $1 = "str_sptk" ]
+then
+    if [ ! "$SPTKDIR" ]
+    then
+	echo "environment variable SPTKDIR is unset"
+	echo "set it to your local festvox directory e.g."
+	echo '   bash$ export SPTKDIR=/usr/local/SPTK/'
+	echo or
+	echo '   csh% setenv SPTKDIR /usr/local/SPTK/'
+	exit 1
+    fi
+
+    if [ ! -f etc/f0.params ]    
+    then
+       ./bin/find_f0_stats $PROMPTFILE
+    fi
+
+    if [ ! -f festvox/mef.track ]
+    then
+	echo "Mixed Excitation Filters not Generated"
+	echo "Please run ./bin/do_clustergen generate_filters"
+	echo "Before extracting strengths"
+    fi
+
+    ./bin/get_str_sptk $PROMPTFILE
+    exit 0
+fi
+
 if [ $1 = "voicing" ]
 then
 
@@ -247,6 +295,31 @@ if [ $1 = "mcep" ]
 then
    # Default is now deltas (and mlpg)
    $0 mcep_deltas $PROMPTFILE
+
+   exit 0
+fi
+
+if [ $1 = "mgc" ]
+then
+   $0 mcep_sptk $PROMPTFILE
+   exit 0
+fi
+
+
+if [ $1 = "mcep_sptk" ]
+then
+   # Default is now deltas (and mlpg)
+    if [ ! "$SPTKDIR" ]
+    then
+	echo "environment variable SPTKDIR is unset"
+	echo "set it to your local festvox directory e.g."
+	echo '   bash$ export SPTKDIR=/usr/local/SPTK/'
+	echo or
+	echo '   csh% setenv SPTKDIR /usr/local/SPTK/'
+	exit 1
+    fi
+
+   $0 mcep_sptk_deltas $PROMPTFILE
 
    exit 0
 fi
@@ -317,6 +390,100 @@ then
       rm -f $CG_TMP.*
    done
    exit 0
+fi
+
+if [ $1 = "mcep_sptk_deltas" ]
+then
+    # Extract MCEP using SPTK, but save them into mcep_deltas directory
+    # so other parts of this script continue to work
+    MCEPORDER=24
+    WINDOWTYPE=1
+    NORMALIZE=1
+    FFTLEN=2048
+    LNGAIN=1
+
+    X2X=$SPTKDIR/bin/x2x
+    MCEP=$SPTKDIR/bin/mcep
+    LPC2LSP=$SPTKDIR/bin/lpc2lsp
+    MERGE=$SPTKDIR/bin/merge
+    SOPR=$SPTKDIR/bin/sopr
+    NAN=$SPTKDIR/bin/nan
+    MINMAX=$SPTKDIR/bin/minmax
+    PITCH=$SPTKDIR/bin/pitch
+    FRAME=$SPTKDIR/bin/frame
+    WINDOW=$SPTKDIR/bin/window
+
+
+    if [ ! -d mcep_sptk ]
+    then
+	mkdir mcep_sptk
+    fi
+
+    if [ ! -d mcep_deltas ]
+    then
+	mkdir mcep_deltas
+    fi
+
+    cat $PROMPTFILE |
+    awk '{print $2}' |
+    while read i
+    do
+	fname=$i
+
+	if [ "$SAMPFREQ" = "" ]
+	then
+	    # Use the first wav file to determine sampling frequency
+	    SAMPFREQ=$($ESTDIR/bin/ch_wave -info wav/$fname.wav  | grep 'Sample rate' | cut -d ' ' -f 3)
+
+		FRAMELEN=$(echo | awk "{print int(0.025*$SAMPFREQ)}")
+		FRAMESHIFT=$(echo | awk "{print int(0.005*$SAMPFREQ)}")
+
+		FWARP[8000]=0.312
+		FWARP[11025]=0.357
+		FWARP[16000]=0.42
+		FWARP[22050]=0.455
+		FWARP[32000]=0.504
+		FWARP[44100]=0.544
+		FWARP[48000]=0.554
+
+		FREQWARP=${FWARP[$SAMPFREQ]}
+		
+		if [ "$FREQWARP" = "" ]
+		then
+			echo "mcep_sptk_deltas: Cannot handle sampling frequency $SAMPFREQ"
+			exit 1
+	    fi
+	fi
+
+	echo "$fname MCEP with deltas (SPTK)"
+	TMP=mcep_sptk_tmp.$$
+	
+	# Save raw wave out
+	$ESTDIR/bin/ch_wave -otype raw < wav/$fname.wav > $TMP.raw
+	$X2X +sf $TMP.raw > $TMP.sf
+	cat $TMP.sf | $MINMAX | $X2X +fa > $TMP.minmax
+	min=$(head -n 1 $TMP.minmax)
+	max=$(tail -n 1 $TMP.minmax)
+	if [ -s $TMP.raw -a $min -gt -32768 -a $max -lt 32767 ]
+	then
+	    $FRAME -l $FRAMELEN -p $FRAMESHIFT $TMP.sf | \
+		$WINDOW -l $FRAMELEN -L $FFTLEN -w $WINDOWTYPE -n $NORMALIZE | \
+		$MCEP -a $FREQWARP -m $MCEPORDER -l $FFTLEN -e 1.0E-08 > mcep_sptk/$fname.mcep
+	    if [ -n "`$NAN mcep_sptk/$fname.mcep`" ]
+	    then
+		echo "Failed to process $fname"
+	    else
+		$SPTKDIR/bin/delta -m $MCEPORDER -d -0.5 0.0 0.5 < mcep_sptk/$fname.mcep | \
+		    $SPTKDIR/bin/x2x +fa$(expr 2 \* \( $MCEPORDER + 1 \)) | \
+		    $ESTDIR/bin/ch_track -itype ascii -otype est_binary -s 0.005 -o mcep_deltas/$fname.mcep
+	    fi
+	else
+	    echo "Failed to process $fname"
+	fi
+
+	rm -rf $TMP.*
+    done
+    exit 0
 fi
 
 if [ $1 = "combine_coeffs" ]
@@ -396,22 +563,20 @@ then
       fi
 
       $ESTDIR/bin/ch_track -otype ascii f0/$fname.f0 |
-      awk '{if (NR == 1) { print $1; print $1} print $1}' >$CG_TMP.f0
+      awk '{if (NR == 1) { print $1;} print $1}' >$CG_TMP.f0
 
       $ESTDIR/bin/ch_track -otype ascii mcep_deltas/$fname.mcep |
-      awk '{if (NR == 1) { print $0; } print $0}' >$CG_TMP.mcep
+      sed '1d' |
+      awk '{if (NR == -1) { print $0; } print $0}' >$CG_TMP.mcep
 
-#      $ESTDIR/bin/ch_track -otype ascii pca/$fname.pca |
-#      awk '{if (NR == 1) { print $0; } print $0}' >$CG_TMP.pca
-
-      cat v/$fname.v | awk '{print 10*$1}' >$CG_TMP.v
+      cat v/$fname.v | awk '{print 10*$1}' |
+      awk '{if (NR == 1) { print $1;} print $1}' >$CG_TMP.v
 
       paste $CG_TMP.f0 $CG_TMP.mcep $CG_TMP.v |
       awk '{if (l==0) 
               l=NF;
-            else if (l == NF)
+            if (l == NF)
               print $0}' |
-      awk '{if (NR == -1) print $0; print $0}' |
       $ESTDIR/bin/ch_track -itype ascii -otype est_binary -s 0.005 -end $enddur -o ccoefs/$fname.mcep
       rm -f $CG_TMP.*
    done
@@ -441,22 +606,24 @@ then
       fi
 
       $ESTDIR/bin/ch_track -otype ascii f0/$fname.f0 |
-      awk '{if (NR == 1) { print $1; print $1} print $1}' >$CG_TMP.f0
+      awk '{if (NR == 1) { print $1} print $1}' >$CG_TMP.f0
 
       $ESTDIR/bin/ch_track -otype ascii mcep_deltas/$fname.mcep |
+      sed '1d' |
       awk '{if (NR == 1) { print $0; } print $0}' >$CG_TMP.mcep
 
-#      $ESTDIR/bin/ch_track -otype ascii pca/$fname.pca |
-#      awk '{if (NR == 1) { print $0; } print $0}' >$CG_TMP.pca
+      cat v/$fname.v | awk '{print 10*$1}' |
+      awk '{if (NR == 1) { print $1} print $1}' >$CG_TMP.v
 
-      cat v/$fname.v | awk '{print 10*$1}' >$CG_TMP.v
+      cat str/$fname.str |
+      sed '1,2d' |
+      awk '{if (NR == -1) { print $0} print $0}' >$CG_TMP.str
 
-      paste $CG_TMP.f0 $CG_TMP.mcep str/$fname.str $CG_TMP.v |
+      paste $CG_TMP.f0 $CG_TMP.mcep $CG_TMP.str $CG_TMP.v |
       awk '{if (l==0) 
               l=NF;
-            else if (l == NF)
+            if (l == NF)
               print $0}' |
-      awk '{if (NR == -1) print $0; print $0}' |
       $ESTDIR/bin/ch_track -itype ascii -otype est_binary -s 0.005 -end $enddur -o ccoefs/$fname.mcep
       rm -f $CG_TMP.*
    done
@@ -558,6 +725,47 @@ then
    exit 0
 fi
 
+if [ "$1" = "generate_filters" ]
+then
+    MEF_ORDER=47
+    LPF_ORDER=31
+
+    FRVGEN=$CLUSTERGENDIR/freq_response_vector_gen
+
+    # Find sampling rate from first wavefile
+    fname=$(head -1 $PROMPTFILE | awk '{print $2}')
+    SAMP_RATE=$($ESTDIR/bin/ch_wave -info wav/$fname.wav  | grep 'Sample rate' | cut -d ' ' -f 3)
+
+    if [ ! -d filters ]
+    then
+	mkdir filters
+    fi
+    
+    TMP=fil_$$
+    
+    # Generate MEF
+    $FRVGEN LPF $SAMP_RATE 500 > $TMP.h1.freq
+    $FRVGEN BPF $SAMP_RATE 900 1500 > $TMP.h2.freq
+    $FRVGEN BPF $SAMP_RATE 2000 3750 > $TMP.h3.freq
+    $FRVGEN BPF $SAMP_RATE 4000 6000 > $TMP.h4.freq
+    $FRVGEN BPF $SAMP_RATE 6250 7500 > $TMP.h5.freq
+    for i in $(seq 1 5)
+    do
+	$ESTDIR/bin/design_filter $TMP.h$i.freq -forder $MEF_ORDER -o $TMP.tmp
+	sed '1,/End/ d' $TMP.tmp | sed 's/ /\n/g' > filters/h$i.txt
+	sed '1,/End/ d' $TMP.tmp > $TMP.h$i
+    done
+    cat $TMP.h1 $TMP.h2 $TMP.h3 $TMP.h4 $TMP.h5 | $ESTDIR/bin/ch_track -itype ascii -s 0.005 -otype est_binary -o festvox/mef.track
+
+    # Generate LPF
+    $FRVGEN LPF $SAMP_RATE 6000 > $TMP.lpf.freq
+    $ESTDIR/bin/design_filter $TMP.lpf.freq -forder $LPF_ORDER -o $TMP.tmp
+    sed '1,/End/ d' $TMP.tmp | $ESTDIR/bin/ch_track -itype ascii -s 0.005 -otype est_binary -o festvox/lpf.track
+
+    rm -rf $TMP.*
+   exit 0
+fi
+
 if [ $1 = "generate_statenames" ]
 then
     if [ ! -f etc/silence ]
@@ -607,7 +815,7 @@ then
     fi
     if grep -q "state names" festival/clunits/mcep.desc-old
     then
-       /bin/true
+       true
     else
        cp -p $FESTVOXDIR/src/clustergen/mcep.desc festival/clunits/mcep.desc-old
     fi
@@ -850,6 +1058,32 @@ then
    exit 0
 fi
 
+if [ $1 = "nstates" ]
+then
+   # Optimize number of hmm states in ehmm
+   ./bin/find_nstates
+
+   exit 0
+fi
+
+if [ $1 = "wstop" ]
+then
+   # Optimize stop values for mcep prediction in wagon
+   ./bin/find_wstop do_wsearch_all
+   # Rebuild with new stop list (in festvox/unittype_stop_values.scm)
+   ./bin/find_wstop rebuild
+
+   exit 0
+fi
+
+if [ $1 = "do_wsearch_part" ]
+then
+   # Optimize stop values for mcep prediction in wagon
+   ./bin/find_wstop do_wsearch_part $2
+
+   exit 0
+fi
+
 if [ $1 = "move_label" ]
 then
    shift
@@ -862,6 +1096,75 @@ if [ $1 = "cg_test" ]
 then
    shift
    $CLUSTERGENDIR/cg_test $*
+
+   exit 0
+fi
+
+if [ $1 = "utt_by_utt" ]
+then
+   # Synth every utt and sort them by their MCD score
+   TDD=$2
+
+   if [ ! -d test/all ]
+   then
+      mkdir -p test/all
+   fi
+ 
+   cat $TDD |
+   awk '{print NR}' |
+   while read x
+   do
+      # Do it this way so it'll preserve quoting
+      cat $TDD | awk '{ if (NR=='$x') print $0 }' >uu.$$.data
+      fname=`cat uu.$$.data | awk '{print $2}'`
+      ./bin/do_clustergen cg_test resynth uu.$$ uu.$$.data
+      mv test/uu.$$/scores test/uu.$$/$fname.scores 
+      mv test/uu.$$/* test/all
+      mv uu.$$.data test/all/$fname.data
+      rm -rf test/uu.$$ uu.$$.data
+   done
+   
+   exit 0
+fi
+
+if [ $1 = "utt_by_utt_score" ]
+then
+   echo Order by MCD score
+   TDD=$2
+
+   cat $TDD |
+   awk '{print $2}' |
+   while read x
+   do
+      if grep -q MCD test/all/$x.scores 
+      then 
+         cat test/all/$x.data |
+         awk '{for (i=1; i<NF; i++)
+                 printf("%s ",$i)}' 
+         $ESTDIR/bin/ch_wave -info wav/$x.wav | awk '{if ($1 == "Duration:") printf("%f ",$2)}'
+         grep "^MCD" test/all/$x.scores | awk '{print $3,")"}'
+      fi
+   done |
+   awk '{print ($(NF-1)*1.0)/$(NF-2),$0}' |
+   sort -n |
+   sed 's/^[^(]*(/(/' >$TDD.ordered
+   ./bin/traintest $TDD.ordered
+
+   ## Drop 15% of each of the train and test files
+   ## Have to do this separately as test utts will typically
+   ## have lower scores than train utts
+   KEEP=0.85   
+   np=`cat $TDD.ordered.train | awk 'END {print NR}'`
+   cat $TDD.ordered.train |
+   awk 'BEGIN {np='$np'} { if (NR < (1+(np*'$KEEP'))) print $0}' |
+   sort >$TDD.uu.train
+
+   np=`cat $TDD.ordered.test | awk 'END {print NR}'`
+   cat $TDD.ordered.test |
+   awk 'BEGIN {np='$np'} { if (NR < (1+(np*'$KEEP'))) print $0}' |
+   sort >$TDD.uu.test
+
+   cat $TDD.uu.train $TDD.uu.test | sort >$TDD.uu
 
    exit 0
 fi

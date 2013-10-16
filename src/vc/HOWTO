@@ -150,7 +150,7 @@ The resulting distribution
 
    festvox_cmu_us_awb_transform.tar.gz
 
-Can be installed on other versions of festival, but becuase the filter
+Can be installed on other versions of festival, but because the filter
 use binary programs it will only run on the same architectures as you
 built the filter on.
 
