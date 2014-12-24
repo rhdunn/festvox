@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ####################################################-*-mode:shell-script-*-
 ##                                                                       ##
 ##                     Carnegie Mellon University                        ##
@@ -37,6 +37,12 @@
 
 # Keep up to SILMARGIN seconds of speech before/after first/last voiced frame
 SILMARGIN=0.2
+if [ "$(uname)" == "Darwin" ]; then
+   REVERSE="tail -r"
+else
+   REVERSE=tac
+fi
+
 
 if [ -d unpruned ]
 then
@@ -70,7 +76,7 @@ cat $PROMPTFILE |
 awk '{print $2}' |
 while read fname
 do
-    echo -n $fname
+    echo $fname | awk '{printf("%s "),$1}'
 
     $ESTDIR/bin/pda -L $PDAPARAMS -otype est_ascii unpruned/wav/$fname.wav |
     awk 'BEGIN {id="'$fname'"; start=0.0}
@@ -92,7 +98,7 @@ do
              }'
 
     $ESTDIR/bin/pda -L $PDAPARAMS -otype est_ascii unpruned/wav/$fname.wav |
-    tac |
+    $REVERSE |
     awk 'BEGIN {id="'$fname'"; end=0.0; ofinterest = 1}
          {if (NR == 1) 
           {

@@ -27,8 +27,9 @@ This distribution includes
     Scripts for designing and selecting prompts to record in
        arbitrary languages
 
-New in 2.6
+New in 2.7
 
+    Random forest models building for spectrum and duration in clustergen
     Grapheme based synthesizers (with specific support for large number
       of unicode writing systems)
     Clustergen state and stop value optimization
@@ -85,9 +86,9 @@ INSTALLATION
 You must have the Edinburgh Speech Tools and Festival instllation
 before you can build the tools in the festvox distribution.
 
-Unpack festvox-2.6-release.tar.gz
+Unpack festvox-2.7-release.tar.gz
 
-    tar zxvf festvox-2.6-release.tar.gz
+    tar zxvf festvox-2.7-release.tar.gz
     cd festvox
     ./configure
     make

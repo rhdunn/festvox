@@ -56,7 +56,7 @@ are and decide if such limitations are acceptable or not. This depends
 a lot on what you wish to use your voice for. For example if the voice 
 a Scottish English voice to be primarily used as the output of a Chinese 
 speech tranlation system, the vocabulary is constained by the 
-translation system itself so a large lexicon is probabaly not much of an 
+translation system itself so a large lexicon is probably not much of an 
 issue, but the vocabulary will include many anglosized (calenodianized 
 ?) versions of Chinese names, which are not common in standard English 
 so letter-to-sound rules should be made more sensitive for that input. 

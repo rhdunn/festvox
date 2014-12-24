@@ -31,9 +31,11 @@
 ##  THIS SOFTWARE.                                                       ##
 ##                                                                       ##
 ###########################################################################
-###                                                                      ##
-###  Prompt and record diphone set                                       ##
-###                                                                      ##
+##                                                                       ##
+##  Prompt and record a prompt file                                      ##
+##     when this works its an easy way to collect data, but it requires  ##
+##     a working play/record program and na_play na_record doesn't work  ##
+##     everywhere.  This can also work with sox's play/rec programs      ##
 ###########################################################################
 
 LANG=C; export LANG
@@ -69,6 +71,10 @@ if [ $# = 2 ]
 then
    POSITION=$2
 fi
+
+# If na_play/na_record doesn't work on your machine, but the play/rec
+# programs from the sox package do, uncomment the following line
+#USE_SOX=1
 
 cat $1 | 
 tr -d "" |
@@ -111,14 +117,27 @@ do
    if [ -f prompt-wav/$f.wav ]
    then 
       # If you don't want to hear the prompt comment out the following line
-      $ESTDIR/bin/na_play prompt-wav/$f.wav
+      if [ "$USE_SOX" = 1 ]
+      then
+         play -q prompt-wav/$f.wav
+      else
+         $ESTDIR/bin/na_play prompt-wav/$f.wav
+      fi
    fi
 
 #   echo press retrun to start recording
 #   read x </dev/tty
 
    echo start recording for $duration seconds ...
-   $ESTDIR/bin/na_record -f 16000 -time $duration -o wav/$f.wav
+#   arecord -t wav -r 16000 -d $duration wav/$f.wav
+   if [ "$USE_SOX" = 1 ]
+   then
+      # This isn't going to record properly for times longer than 60secs
+      d2=`echo $duration | awk '{printf("%0d\n",$1)}'`
+      rec -q -c 1 -r 16000 -b 16 wav/$f.wav trim 0 00:$d2
+   else
+      $ESTDIR/bin/na_record -f 16000 -time $duration -o wav/$f.wav
+   fi
    echo ... end recording
 
    POSITION=`echo $POSITION | awk '{printf("%d",$1+1)}'`

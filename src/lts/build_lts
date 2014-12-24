@@ -40,7 +40,13 @@ then
    FESTIVALDIR=$ESTDIR/../festival
 fi
 FESTIVAL=$FESTIVALDIR/bin/festival
-HEAP=20000000
+
+if [ "$SIODHEAPSIZE" = "" ]
+then
+   SIODHEAPSIZE=20000000
+   export SIODHEAPSIZE
+fi
+HEAPSIZE=$SIODHEAPSIZE
 
 if [ $# = 0 ]
 then

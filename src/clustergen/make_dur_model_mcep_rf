@@ -47,6 +47,10 @@
 ##  This is modified from make_dur_model, this version is for clustergen ##
 ##                                                                       ##
 ###########################################################################
+##                                                                       ##
+##  Random forest version -- that builds a random subset of the features ##
+##                                                                       ##
+###########################################################################
 
 LANG=C; export LANG
 
@@ -91,9 +95,18 @@ fi
 cat $PROMPTFILE |
 awk '{printf("festival/utts_hmm/%s.utt\n",$2)}' >utthmmfile
 
+# rf (spectral) models are particularly big
+# try to guess the size of the database, but you might need to 
+# tune this yourself
+NUMLINES=`cat $PROMPTFILE | awk 'END {print NR}'`
 if [ "$SIODHEAPSIZE" = "" ]
 then
-   SIODHEAPSIZE=20000000
+   if [ $NUMLINES -gt 4500 ]
+   then
+      SIODHEAPSIZE=60000000
+   else
+      SIODHEAPSIZE=20000000
+   fi
    export SIODHEAPSIZE
 fi
 HEAPSIZE=$SIODHEAPSIZE
@@ -122,23 +135,53 @@ bin/traintest festival/dur/data/dur.data.train
 # Build description file
 echo ";;; Build feature description file"
 $ESTDIR/bin/make_wagon_desc festival/dur/data/dur.data festival/dur/etc/statedur.feats festival/dur/etc/dur.desc
-$ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/build_prosody.scm $VOICESCM $VOICENAME '(build_dur_feats_desc)'
+
+#  Random feature part
+SEED=`echo $$ | awk '{ print $1%10000 }'`
+mv festival/dur/etc/dur.desc festival/dur/etc/dur.desc.all
+cat festival/dur/etc/dur.desc.all |
+   awk 'BEGIN {for (i=1;i<'$SEED'; i++)
+                      randint(10)}
+        function randint(n) { return int(n * rand()) }
+        {if (NR < 3)
+         {
+            print $0
+         }
+         else if (substr($0,1,1) == "(")
+         {
+            p = randint(100);
+            if (p < 40)
+            {
+               printf("%s %s ignore ",$1,$2);
+               for (i=3; i<=NF; i++)
+                  printf("%s ",$i);
+               printf("\n");
+            }
+            else
+               print $0
+         }
+         else
+            print $0
+        }' >festival/dur/etc/dur.desc
+
+$ESTDIR/../festival/bin/festival --heap $SIODHEAPSIZE -b festvox/build_prosody.scm $VOICESCM $VOICENAME '(build_dur_feats_desc)'
 
 # emacs festival/dur/etc/dur.desc
 
 STOP=25
 PREF=dur
+rm -f festival/dur/tree/$PREF.S*.tree
 
 (
 echo ";;; Build the duration model itself"
 $WAGON -data festival/dur/data/dur.data.train.train -desc festival/dur/etc/dur.desc -test festival/dur/data/dur.data.train.test -stop $STOP -output festival/dur/tree/$PREF.S$STOP.tree || exit -1
 
 echo ";;; Test the duration model"
-$WAGON_TEST -heap $HEAPSIZE -data festival/dur/data/dur.data.test -desc festival/dur/etc/dur.desc -tree festival/dur/tree/$PREF.S$STOP.tree ) |
+$WAGON_TEST -heap $SIODHEAPSIZE -data festival/dur/data/dur.data.test -desc festival/dur/etc/dur.desc -tree festival/dur/tree/$PREF.S$STOP.tree ) |
 tee dur.$PREF.S$STOP.out
 
 echo ";;; Constructing the duration model as a loadable scheme file"
-$ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/build_prosody.scm $VOICESCM $VOICENAME '(finalize_dur_model "'$MODELNAME'" "'$PREF.S$STOP.tree'")'
+$ESTDIR/../festival/bin/festival --heap $SIODHEAPSIZE -b festvox/build_prosody.scm $VOICESCM $VOICENAME '(finalize_dur_model "'$MODELNAME'" "'$PREF.S$STOP.tree'")'
 
 exit
 

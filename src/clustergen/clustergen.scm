@@ -46,16 +46,28 @@
 (defvar clustergen_mcep_trees nil)
 (defvar cg:initial_frame_offset 0.0)
 (defvar cg:frame_shift 0.005)
-(set! mlsa_alpha_param 0.42)
-(set! mlsa_beta_param 0.0)
+(set! mlsa_beta_param 0.4)
 (set! cg:mlsa_lpf t)
 
 (set! framerate 16000)
+(cond
+ ;; This mapping should match that in do_clustergen for mcep_sptk_deltas
+ ((equal? framerate 8000) (set! mlsa_alpha_param 0.312))
+ ((equal? framerate 11025) (set! mlsa_alpha_param 0.357))
+ ((equal? framerate 16000) (set! mlsa_alpha_param 0.42))
+ ((equal? framerate 22050) (set! mlsa_alpha_param 0.455))
+ ((equal? framerate 32000) (set! mlsa_alpha_param 0.504))
+ ((equal? framerate 44100) (set! mlsa_alpha_param 0.544))
+ ((equal? framerate 48000) (set! mlsa_alpha_param 0.554))
+ (t
+  (format t "Unknown framerate %d for mlsa_alpha_param\n" framerate)
+  (exit)))
 (set! mcep_length 25)
 
 ;;; deltas/mlpg
 (defvar cg:F0_smooth t)
-(defvar cg:param_smooth nil)
+(set! cg:F0_interpolate t) ;; spline interpolation
+(defvar cg:param_smooth nil) ;; not as good as mlpg
 (defvar cg:mlpg t)
 (defvar cg:gv nil)
 (defvar cg:vuv nil)
@@ -64,8 +76,12 @@
 (defvar cg:debug nil)
 (defvar cg:save_param_track nil)
 
-(set! cg:multimodel nil)
+(set! cg:multimodel nil)  ;; probably doesn't work any more!
 (set! cg:mcep_clustersize 50)
+(set! cg:rfs nil) ;; random forests, set this to 20 to get 20 rfs
+(defvar cg:rfs_models nil)  ;; will get loaded at synthesis time
+(set! cg:rfs_dur nil) ;; random forests for duration
+(defvar cg:rfs_dur_models nil)  ;; will get loaded at synthesis time
 (defvar cg:gmm_transform nil)
 (set! cg:mixed_excitation nil)
 (set! cg:spamf0 nil)
@@ -80,14 +96,6 @@
 (set! cg:phrasyn_grammar_ntcount 10)
 (set! cg:phrasyn_mode 'pos)
 ;(set! cg:phrasyn_mode 'gpos)
-
-
-;;; This isn't a good place for this, it assumes we are running in voice directory
-(if cg:mixed_excitation
-    (set! me_filter_track (track.load "festvox/mef.track")))
-
-(if cg:mlsa_lpf
-    (set! lpf_track (track.load "festvox/lpf.track")))
 
 (if cg:spamf0
     (require 'spamf0))
@@ -302,8 +310,20 @@
     )
 )
 
+(define (CG_predict_state_duration state)
+  (if cg:rfs_dur
+      ;; Random forest prediction 
+      (/ 
+       (apply +
+        (mapcar (lambda (dm) (wagon_predict state dm))
+                cg:rfs_dur_models))
+       (length cg:rfs_dur_models))
+      ;; single model
+      (wagon_predict state duration_cart_tree_cg)
+      ))
+
 (define (ClusterGen_state_duration state)
-  (let ((zdur (wagon_predict state duration_cart_tree_cg))
+  (let ((zdur (CG_predict_state_duration state))
         (ph_info (assoc_string (item.name state) duration_ph_info_cg))
         (seg_stretch (item.feat state "R:segstate.parent.dur_stretch"))
         (syl_stretch (item.feat state "R:segstate.parent.R:SylStructure.parent.dur_stretch"))
@@ -344,7 +364,8 @@
   ;; values of the vectors -- see predict_mcep below
   (let ((num_frames 0)
         (frame_advance cg:frame_shift)
-        (end 0.0))
+        (end 0.0)
+        (hmmstate_dur))
 
     ;; Make HMMstate relation and items (three per phone)
     (utt.relation.create utt "mcep")
@@ -353,7 +374,10 @@
      (lambda (state)
        ;; Predict Duration
        (set! start end)
-       (set! end (+ start (ClusterGen_state_duration state)))
+       (set! hmmstate_dur (ClusterGen_state_duration state))
+       (if (< hmmstate_dur frame_advance)
+           (set! hmmstate_dur frame_advance))
+       (set! end (+ start hmmstate_dur))
        (item.set_feat state "end" end)
        ;; create that number of mcep frames up to state end
        (set! mcep_parent (utt.relation.append utt 'mcep_link state))
@@ -797,6 +821,118 @@ Filter synthesized voice with transformation filter and reload waveform."
         (all_f0f0 (wagon m (cadr (assoc_string "all_f0_diff" clustergen_f0_all)))))
     (- (cadr all_f0) (cadr all_f0f0))))
 
+(define (cg_F0_interpolate_linear utt param_track)
+  (mapcar
+   (lambda (syl)
+     (set! start_index
+           (item.feat syl "R:SylStructure.daughter1.R:segstate.daughter1.R:mcep_link.daughter1.frame_number"))
+     (set! end_index 
+           (item.feat syl "R:SylStructure.daughtern.R:segstate.daughter1.R:mcep_link.daughtern.frame_number"))
+     (set! mid_index (nint (/ (+ start_index end_index) 2.0)))
+           
+     (set! start_f0 (track.get param_track start_index 0))
+     (set! mid_f0 (track.get param_track mid_index 0))
+     (set! end_f0 (track.get param_track (- end_index 1) 0))
+;     (format t "Syl: %s %d %f %d %f %d %f \n"
+;             (item.feat syl "R:SylStructure.parent.name")
+;             start_index start_f0
+;             mid_index mid_f0
+;             end_index end_f0)
+     (set! m (/ (- mid_f0 start_f0) (- mid_index start_index)))
+     (set! i 1)
+     (while (< (+ i start_index) mid_index)
+;            (format t "  %l %l\n" (+ i start_index) (+ start_f0 (* i m)))
+            (track.set param_track (+ i start_index) 0
+                       (+ start_f0 (* i m)))
+            (set! i (+ i 1)))
+
+     (set! m (/ (- end_f0 mid_f0) (- end_index mid_index)))
+     (set! i 1)
+     (while (< (+ i mid_index) end_index)
+            (track.set param_track (+ i mid_index) 0
+                       (+ mid_f0 (* i m)))
+            (set! i (+ i 1)))
+     )
+   (utt.relation.items utt 'Syllable))
+  utt
+)
+(define (catmull_rom_spline p p0 p1 p2 p3)
+  ;; http://www.mvps.org/directx/articles/catmull/
+  (let ((q nil))
+    (set! q (* 0.5 (+ (* 2 p1)
+            (* (+ (* -1 p0) p2) p)
+            (* (+ (- (* 2 p0) (* 5 p1)) (- (* 4 p2) p3)) (* p p))
+            (* (+ (* -1 p0) (- (* 3 p1) (* 3 p2)) p3) (* p p p)))))
+;    (format t "crs: %f  %f  %f %f %f %f\n"
+;            q p p0 p1 p2 p3)
+    q))
+     
+(define (cg_F0_interpolate_spline utt param_track)
+  (set! mid_f0 -1)
+  (set! end_f0 -1)
+  (mapcar
+   (lambda (syl)
+     (set! start_index
+           (item.feat syl "R:SylStructure.daughter1.R:segstate.daughter1.R:mcep_link.daughter1.frame_number"))
+     (set! end_index 
+           (item.feat syl "R:SylStructure.daughtern.R:segstate.daughtern.R:mcep_link.daughtern.frame_number"))
+           
+     (set! mid_index (nint (/ (+ start_index end_index) 2.0)))
+
+     (set! start_f0 (track.get param_track start_index 0))
+     (if (> end_f0 0) (set! start_f0 end_f0))
+     (if (< mid_f0 0)
+         (set! pmid_f0 start_f0)
+         (set! pmid_f0 mid_f0))
+     (set! mid_f0 (track.get param_track mid_index 0))
+     (if (item.next syl)
+         (set! end_f0 
+               (/ (+ (track.get param_track (- end_index 1) 0)
+                     (track.get param_track end_index 0)) 2.0))
+         (set! end_f0 (track.get param_track (- end_index 1) 0)))
+     (set! nmid_f0 end_f0)
+
+     (if (item.next syl)
+         (begin
+           (set! nsi
+           (item.feat syl "n.R:SylStructure.daughter1.R:segstate.daughter1.R:mcep_link.daughter1.frame_number"))
+           (set! nei
+                 (item.feat syl "n.R:SylStructure.daughtern.R:segstate.daughtern.R:mcep_link.daughtern.frame_number"))
+           (set! nmi (nint (/ (+ nsi nei) 2.0)))
+           (set! nmid_f0 (track.get param_track nmi 0))))
+     
+;     (format t "Syl: %s  %2.1f  %d %2.1f  %d %2.1f  %d %2.1f  %2.1f %d\n"
+;             (item.feat syl "R:SylStructure.parent.name")
+;             pmid_f0
+;             start_index start_f0
+;             mid_index mid_f0
+;             end_index end_f0
+;             nmid_f0
+;             end_index)
+
+     (set! m (/ 1.0 (- mid_index start_index)))
+     (set! i 0)
+     (while (< (+ i start_index) mid_index)
+            (track.set param_track 
+                       (+ i start_index) 0
+                       (catmull_rom_spline 
+                        (* i m) pmid_f0 start_f0 mid_f0 end_f0))
+            (set! i (+ i 1)))
+
+     (set! m (/ 1.0 (- end_index mid_index)))
+     (set! i 0)
+     (while (< (+ i mid_index) end_index)
+            (track.set param_track 
+                       (+ i mid_index) 0
+                       (catmull_rom_spline 
+                        (* i m) start_f0 mid_f0 end_f0 nmid_f0))
+            (set! i (+ i 1)))
+     )
+   (utt.relation.items utt 'Syllable))
+  utt
+)
+(set! cg_F0_interpolate cg_F0_interpolate_spline)
+
 (define (ClusterGen_predict_mcep utt)
   (let ((param_track nil)
         (frame_advance cg:frame_shift)
@@ -854,6 +990,17 @@ Filter synthesized voice with transformation filter and reload waveform."
                (set! j 1)
                (set! f (car frame))
                (item.set_feat mcep "clustergen_param_frame" f)
+               (if cg:rfs
+                   (set! rfs_info
+                         (mapcar
+                          (lambda (rf_model)
+                            (list (cadr rf_model) 
+                                  (car (wagon 
+                                        mcep
+                                        (cadr (assoc_string 
+                                               (item.feat mcep cg_name_feature)
+                                               (car rf_model)))))))
+                          cg:rfs_models)))
                (if cg:multimodel
                    (track.set param_track i 0 
                               (/ (+ (cadr f0_val)
@@ -863,7 +1010,18 @@ Filter synthesized voice with transformation filter and reload waveform."
                                                f 0))
                                  3.0)))
                (while (< j num_channels)
-                  (if cg:multimodel
+                  (cond
+                   ((not (null cg:rfs_models))
+                    (track.set param_track i j
+                     (/
+                      (apply +
+                       (mapcar 
+                        (lambda (rfs_item)
+                        (track.get (car rfs_item) (cadr rfs_item)
+                                   (* (if cg:mlpg 1 2) j)))
+                       rfs_info))
+                      (length rfs_info))))
+                   ((not (null cg:multimodel))
                       (begin
                         (if (and (boundp 'clustergen_str_mcep_trees)
                                  (> j (* 2 (+ 50)))
@@ -891,13 +1049,12 @@ Filter synthesized voice with transformation filter and reload waveform."
                                  (track.get clustergen_param_vectors 
                                             f (* (if cg:mlpg 1 2) j))
                                  ) 2.0))))
-                        )
-                      (begin
-                        (track.set param_track i j
-                                   (track.get clustergen_param_vectors 
-                                              f (* (if cg:mlpg 1 2) j)))
                         ))
-
+                   (t
+                    (track.set param_track i j
+                               (track.get clustergen_param_vectors 
+                                          f (* (if cg:mlpg 1 2) j)))
+                    ))
                   (set! j (+ 1 j)))
                (set! j (- num_channels 1))
                (track.set param_track i j
@@ -927,6 +1084,8 @@ Filter synthesized voice with transformation filter and reload waveform."
               (set! c (+ 1 c)))
              (set! f (+ 1 f)))
           (utt.set_feat utt "str_params" str_params)))
+
+    (if cg:F0_interpolate (cg_F0_interpolate utt param_track))
 
     (if (or cg:vuv cg:with_v)
            ;; need to get rid of the vuv coefficient (last one)

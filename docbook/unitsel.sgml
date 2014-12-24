@@ -1025,7 +1025,7 @@ environment variables <filename>FESTVOXDIR</filename> and
 directories.  For example as
 <blockquote><literallayout>
 export FESTVOXDIR=/home/awb/projects/festvox
-export ESTDIR=/home/awb/projects/1.4.3/speech_tools
+export ESTDIR=/home/awb/projects/speech_tools
 </literallayout></blockquote>
 Next you must select a name for the voice, by convention we use
 three part names consisting of a institution name, a language, and

@@ -172,6 +172,7 @@ a duration model for the state names
 
 <blockquote><literallayout>
    ./bin/do_clustergen generate_statenames
+   ./bin/do_clustergen generate_filters
    ./bin/do_clustergen cluster
    ./bin/do_clustergen dur
 </literallayout></blockquote>
@@ -235,6 +236,67 @@ for all features in the parameter vector, for F0 alone, for all but
 F0, and MCD (mel ceprstral distortion).
 </para>
 
+</sect1>
+<sect1><title>Making it better:Mixed excitation and Random Forests</title>
+
+<para>
+Given the base form of a clustergen voice, you can make better, both
+in using better signal parameterization, and/or better machine
+learning techniques.  There is actually a large number of options
+available here, many of which are experimental, and some are dependent
+on the particualr voice (and the quality of the recordings) and some
+are just experimental, and don't actually making it better.
+</para>
+<para>
+Adding <filename>parallel</filename> as the first argument
+to <filename>do_clustergen</filename> will make the script us all
+processors on the current machines.  This will typically make builds
+much faster.
+</para>
+<para>
+On important technique is mixed-excitation, this provides a better
+model for the excitation of the spectral signal.  This can be used by
+first generating the the mixed-excitation strengths.  You must have 
+NITECH's SPTK3.6 (or later) installed to do this.
+<blockquote><literallayout>
+    export SPTKDIR=/usr/local/SPTK
+    ./bin/do_clustergen parallel str_sptk
+</literallayout></blockquote>
+Then you need to combine these extra (5 coefficients per frame) to
+the standard combined coefficients.
+<blockquote><literallayout>
+    ./bin/do_clustergen parallel combine_coeffs_me
+</literallayout></blockquote>
+
+Then you need to set the lisp variable
+in <filename>festvox/clustergen.scm</filename> to use mixed excitation
+<blockquote><literallayout>
+    (set! cg:mixed_excitation t)
+</literallayout></blockquote>
+Then you can cluster the new set of parameters
+<blockquote><literallayout>
+    ./bin/do_clustergen parallel cluster etc/txt.done.data.train
+</literallayout></blockquote>
+You can generate an MCD for the text set with
+<blockquote><literallayout>
+    ./bin/do_clustergen cg_test resynth cgp etc/txt.done.data.test
+</literallayout></blockquote>
+</para>
+<para>
+We also support using random forests to get a better use of the
+limited data in a voice.  We have scripts to build random forests, by
+randomly varying which features to use, for spectrum and duration
+prediction.  We also include scripts to subselect the from the set of
+models generated to find an almost optimal set.  This is best shown in
+the script <filename>build_cg_rfs_voice</filename> this somewhat
+ambitious script does a full build (with mixed excitation, move label
+and random forests), as well as build flite versions of the voice on
+the way.  We have used this script for the released version of voices
+in festival 2.4 (and flite 2.0).  We have used this for arctic type
+voices, large 20 hour voices and a large number of other language
+voices, both with crafted language components and grapheme based
+versions.
+</para>
 </sect1>
 
 </chapter>

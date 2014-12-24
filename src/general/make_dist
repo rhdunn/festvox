@@ -94,6 +94,26 @@ then
     rm $fvdir
 fi        
 
+# Voice distribution has festival/lib/voice/LANG/voicename as prefix
+# for all files
+if [ $1 = "festvox_diphone" ]
+then
+    fvdir=festival/lib/voices/$FV_LANG/$FV_FULLVOICENAME
+    if [ ! -f $fvdir ]
+    then
+       mkdir -p `dirname $fvdir`
+       (cd `dirname $fvdir`; ln -s ../../../.. $FV_FULLVOICENAME)
+    fi
+    fvsigdir=$fvdir/wav
+    tar zcvf versions/festvox_$FV_FULLVOICENAME$OPTNAME.tar.gz \
+         $fvdir/README \
+         $fvdir/COPYING \
+         $fvdir/festvox/*.scm \
+         $fvdir/group/*.group \
+    # that symlink causes some people problesm in cp's 
+    rm $fvdir
+fi        
+
 # For storing forever, or at least a clean copy of the base form of
 # everything.
 if [ $1 = "backup" ]

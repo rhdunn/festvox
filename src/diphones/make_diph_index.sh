@@ -158,8 +158,8 @@ Find diph in labelfile fname and return index entry."
 
       (if (car segs)
 	  (begin
-	    (if (and (string-equal lp oleft)
-		     (string-equal (item.name (car segs)) oright))
+	    (if (and (string-equal lp left)
+		     (string-equal (item.name (car segs)) right))
 		(set! diphinfo
 		      (list diph fname startp midp endp)))
 	    (set! startp endp)

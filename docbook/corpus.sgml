@@ -73,8 +73,8 @@ Please also note the copyright of the data you are selecting from.  In
 CMU ARCTIC we used out-of-copyright texts from the Gutenberg project,
 so there would be no issue in distributing the data.  Copyright law in
 many countries allows for small subsets for copyright data, but this
-fair use is often argued by some.  There may note actually be a good
-solution to this, News stories, are typically copyright but the press
+fair use is often argued by some.  There may not actually be a good
+solution to this, News stories, are typically copyright by the press
 agency releasing them.  Licenses on LDC data are often sufficient for
 using such texts to build prompts and then having no restriction on
 the voices generated, but the database itself may be under question.

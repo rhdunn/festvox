@@ -52,6 +52,13 @@ then
    mkdir ml
 fi
 
+if [ "$SIODHEAPSIZE" = "" ]
+then
+   SIODHEAPSIZE=20000000
+   export SIODHEAPSIZE
+fi
+HEAPSIZE=$SIODHEAPSIZE
+
 PREVIOUS=0
 NUMPASSES=20
 PROMPTFILE=etc/txt.done.data
@@ -61,7 +68,7 @@ then
    # call "$0 select" when finished moving labels to select best pass
    if [ ! -f ml/summary ]
    then
-      echo "No ml.summary file"
+      echo "No ml/summary file"
       exit 1
    fi
    # selects best MCD score
@@ -69,7 +76,9 @@ then
    then
       bestpass=$2
    else
-      bestpass=`sort --key=6 -n ml/summary | awk '{if (NR==1) print $2}'`
+      # Sometimes the passes fail, so only find those with a full line 
+      # in the summary file (might not be robust enough -- but should help
+      bestpass=`awk '{if (NF == 10) print $0}' ml/summary | sort --key=6 -n | awk '{if (NR==1) print $2}'`
    fi
 
    if [ ! -d ml/lab${bestpass} ]
@@ -118,7 +127,7 @@ then
     # Get our partition of PROMPTFILE
     SPLITPROMPTFILE=/tmp/dobuild_parallelworker.$$.$INDEX
     cat $PROMPTFILE | awk "NR%16==$INDEX {print \$0}" > $SPLITPROMPTFILE
-    $FESTIVAL --heap 10000000 -b $VOICESCM $VOICENAME festvox/clustergen_build.scm "(ClusterGen_move_labels '$SPLITPROMPTFILE 'ml/lab$i)" >> ml/ml.$i
+    $FESTIVAL --heap $HEAPSIZE -b $VOICESCM $VOICENAME festvox/clustergen_build.scm "(ClusterGen_move_labels '$SPLITPROMPTFILE 'ml/lab$i)" >> ml/ml.$i
     rm $SPLITPROMPTFILE
     exit 0
 else
@@ -148,11 +157,13 @@ else
    ./bin/do_clustergen cluster ${PROMPTFILE}.train 
 fi
 echo "Pass 0 find MCDs"
-$FESTVOXDIR/src/clustergen/cg_test tts tts0 ${PROMPTFILE}.test
+./bin/do_clustergen parallel utt_by_utt_tts ${PROMPTFILE}.test
+rm -rf test/tts0
+mv test/all test/tts0
 #$FESTVOXDIR/src/clustergen/get_cd_dtw ${PROMPTFILE}.test wav test/tts0 >ml/tts.0
 $FESTVOXDIR/src/clustergen/cg_test mcdf0 cgp0 ${PROMPTFILE}.test >ml/mcd.0
 cp -p dur.dur.S25.out-base ml/dur.dur.S25.out.0
-echo -n "pass 0     0     0     0 " >ml/summary
+printf "pass 0     0     0     0 " >ml/summary
 (
    grep "^MCD " ml/mcd.0 | awk '{printf("%0.3f %0.3f  ",$3,$5)}'
    grep "^F0  " ml/mcd.0 | awk '{printf("%0.3f  ",$3)}'
@@ -181,10 +192,10 @@ do
    echo "Pass $i moving labels"
    if [ "$PARALLEL" = "1" ]
    then
-    num_cpus=$(cat /proc/cpuinfo | grep 'processor' | wc -l )
+    num_cpus=$(./bin/find_num_available_cpu)
     seq 0 15 | xargs -n 1 -P $num_cpus $0 _parallelworker $i $PROMPTFILE
    else
-      $FESTIVAL --heap 10000000 -b $VOICESCM $VOICENAME festvox/clustergen_build.scm "(ClusterGen_move_labels '$PROMPTFILE 'ml/lab$i)" >ml/ml.$i
+      $FESTIVAL --heap $HEAPSIZE -b $VOICESCM $VOICENAME festvox/clustergen_build.scm "(ClusterGen_move_labels '$PROMPTFILE 'ml/lab$i)" >ml/ml.$i
    fi
    ## Doing moves multiple times per pass doesn't help
 #    rm -f lab
@@ -199,7 +210,7 @@ do
 
    ## Summarizes moves in log file
    (
-      echo -n "pass $i "
+      printf "pass $i "
       grep "move boundary" ml/ml.$i | 
       awk '{ if ($0 ~ /\+/) f++;
              if ($0 ~ /\-/) m++; }
@@ -240,7 +251,9 @@ do
 
    ## Test new model
    echo "Pass $i find MCDs"
-   $FESTVOXDIR/src/clustergen/cg_test tts tts$i ${PROMPTFILE}.test
+   ./bin/do_clustergen parallel utt_by_utt_tts ${PROMPTFILE}.test 
+   rm -rf test/tts$i
+   mv test/all test/tts$i
 #   $FESTVOXDIR/src/clustergen/get_cd_dtw ${PROMPTFILE}.test wav test/tts$i >ml/tts.$i
    $FESTVOXDIR/src/clustergen/cg_test mcdf0 cgp$i ${PROMPTFILE}.test >ml/mcd.$i
 

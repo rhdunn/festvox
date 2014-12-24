@@ -1,7 +1,9 @@
+#!/bin/sh
 ###########################################################################
 ##                                                                       ##
+##                   Language Technologies Institute                     ##
 ##                     Carnegie Mellon University                        ##
-##                         Copyright (c) 2004                            ##
+##                         Copyright (c) 2014                            ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -30,35 +32,53 @@
 ##                                                                       ##
 ###########################################################################
 ##                                                                       ##
-##  The Blizzard Challange                                               ##
+##  Collect together each of the sets of the trees for the random forest ##
 ##                                                                       ##
 ###########################################################################
-TOP=../..
-DIRNAME=festvox.org/blizzard
-BUILD_DIRS = 
-ALL_DIRS = 
-HTMLBODIES= index_body.html blizzard2005_body.html  blizzard2006_body.html \
-            blizzard2008_body.html blizzard2009_body.html \
-            blizzard2010_body.html blizzard2011_body.html \
-            blizzard2012_body.html
-HTMLBITS= sidebar.html
-FINALHTML= $(HTMLBODIES:_body.html=.html)
-PERL= 
-OTHERS = 
-FILES = Makefile $(HTMLBODIES) $(HTMLBITS) $(PERL) $(OTHERS)
 
-ALL = $(FINALHTML)
+. ./etc/voice.defs
 
-LOCAL_CLEAN = $(FINALHTML) *.tmp.html
+if [ "$SIODHEAPSIZE" = "" ]
+then
+   SIODHEAPSIZE=20000000
+   export SIODHEAPSIZE
+fi
+HEAPSIZE=$SIODHEAPSIZE
 
-include $(TOP)/config/common_make_rules
+rm -f rf_models/mlist
 
-%.html : %_body.html $(HTMLBITS) ../header.html ../footer.html ../make_html
-	@ ../make_html $< "../" ../header.html ../footer.html sidebar.html >$@
+Ntimes=20
+echo 1 $Ntimes |
+awk '{for (i=$1; i<=$2; i++)
+         printf("%02d\n",i)}' |
+while read i
+do
+   echo Iteration $i
+   # Get f0 tree
+   cp -pr festival/trees/${FV_VOICENAME}_f0.tree rf_models/trees_$i
+   
+   # Collate mcep trees and build raw_params
+   for j in rf_models/trees_$i/*_?_mcep.tree
+   do
+      # sometimes the tree is zero size -- so we don't copy it in, and 
+      # use the previous tree. (you should catch this earlier in wagon_rf)
+      l=`cat $j | wc -l`
+      if [ $l != "0" ]
+      then
+         cp -pr $j festival/trees/
+      fi
+   done
 
-install:
-	scp -p $(FINALHTML) token2.metronomicon.com:websites/www.festvox.org/html/blizzard
-	scp -p /home/awb/projects/blizzard/doc/blizzard_cop.pdf  token2.metronomicon.com:websites/www.festvox.org/html/blizzard
+   $ESTDIR/../festival/bin/festival --heap $SIODHEAPSIZE -b festvox/${FV_VOICENAME}_cg.scm festvox/clustergen_build.scm '(begin
+     (set! cg:rfs nil)
+     (set! '$FV_VOICENAME':rfs_models nil)
+     (set! '$FV_VOICENAME':rfs_dur_models nil)
+     (voice_'$FV_VOICENAME'_cg)
+     (clustergen:collect_mcep_trees 
+        '$FV_VOICENAME'::clustergen_f0_trees clustergen_params "mcep")
+   )'
+   cp -pr festival/trees/${FV_VOICENAME}_mcep.* rf_models/trees_$i
 
+   lastnum=$i;
 
-
+done

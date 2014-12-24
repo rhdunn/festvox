@@ -137,7 +137,8 @@ Build cluster synthesizer for the given recorded data and domain."
      (lambda (s) (format psfd "%s\n" s))
      cg:parallelSystemCommandList)
     (fclose psfd)
-    (set! command (format nil "cat %s | xargs -d '\\n' -n 1 -P `./bin/find_num_available_cpu` sh -c\n" tfn))
+;   (set! command (format nil "cat %s | xargs -d '\\n' -n 1 -P `./bin/find_num_available_cpu` sh -c\n" tfn))
+    (set! command (format nil "cat %s | tr '\\n' '\\0' | xargs -0 -n 1 -P `./bin/find_num_available_cpu` sh -c" tfn))
     (actualSystem command)
     (delete-file tfn)
     (set! cg:parallelSystemCommandList nil)
@@ -148,6 +149,7 @@ Build cluster synthesizer for the given recorded data and domain."
   (let ()
 
     (set_backtrace t)
+    (format t "Setting clustergen params\n")
     (set! clustergen_params 
           (append
            (list
@@ -167,6 +169,7 @@ Build cluster synthesizer for the given recorded data and domain."
     (set! cg::unitid 0)
 
     (set! file_number 0)
+    (format t "Setting up numbered_files\n")
     (set! numbered_files
           (mapcar
            (lambda (f)
@@ -184,6 +187,7 @@ Build cluster synthesizer for the given recorded data and domain."
            (cadr (assoc 'files clustergen_params))))
 
     ;; Dump features and vectors -- may be done in parallel
+    (format t "Feature dump\n")
     (if cg:parallel_tree_build
         (clustergen::parallel_process_utts numbered_files clustergen_params)
         (clustergen::process_utts numbered_files))
@@ -204,7 +208,6 @@ Build cluster synthesizer for the given recorded data and domain."
      f0_desc_fd)
     (fclose f0_desc_fd)
 
-    (format t "Extracting features by unittype\n")
     (clustergen::extract_unittype_all_files datafile cg::unittypes)
     (set! cg::unittypes
           (mapcar 
@@ -273,12 +276,21 @@ Build cluster synthesizer for the given recorded data and domain."
      (t ;; Build joint spectral models (the older way)
       (format t "Building spectral model\n")
 ;; was for PCA     (set! cg::cluster_feats "-track_feats 51-75")
+      (if cg:deltas
+          (set! cg:delta_factor 2)
+          (set! cg:delta_factor 1))
       (if cg:mixed_excitation
-          (set! cg::cluster_feats (format nil "-track_feats 1-%d" (+ (* 2 mcep_length) 5))) ;; with str, w/o v
-          (set! cg::cluster_feats (format nil "-track_feats 1-%d" (* 2 mcep_length)))) ;; w/o v
+          (set! cg::cluster_feats 
+                (format nil "-track_feats 1-%d" 
+                   (+ (* cg:delta_factor mcep_length) 5))) ;; with str, w/o v
+          (set! cg::cluster_feats 
+                (format nil "-track_feats 1-%d" 
+                   (* cg:delta_factor mcep_length)))) ;; w/o v
+      (format t "Do clustering\n")
       (clustergen::do_clustering 
        cg::unittypes clustergen_params 
        clustergen_build_mcep_tree "mcep")
+      (format t "Collect trees\n")
       (clustergen:collect_mcep_trees cg::unittypes clustergen_params "mcep")
       ))
 
@@ -1781,7 +1793,9 @@ Cluster different unit types."
   (set! stopvalue (cg_find_stop_value unittype cg_params))
   (let ((command 
 	 (format nil "%s %s %s -vertex_output mean -desc %s -data '%s' -test '%s' -balance %s -track '%s' -stop %s -output '%s' %s"
-		 (get_param 'wagon_progname cg_params "$ESTDIR/bin/wagon")
+                 (if cg:rfs
+                     "./bin/wagon_rf"
+                     (get_param 'wagon_progname cg_params "$ESTDIR/bin/wagon"))
 ;                 "-stepwise -swopt rmse"
                  ""  ;; seems to be better with recent tests 12/01/06
                  cg::cluster_feats   ;; default -track_start 1
@@ -1962,6 +1976,48 @@ a track file"
             (length unittypes) vector_num)
     ))
 
+(define (rpf_dump_tree intreefile outfiletree outfileparams)
+  (let ((oft (fopen outfiletree "w"))
+        (ofp (fopen outfileparams "w"))
+        (tree (car (load intreefile t))))
+    (set! vector_num 0)
+    (pprintf (clustergen::dump_tree_vectors tree ofp) oft)
+    (fclose oft)
+    (fclose ofp)
+    t
+    )
+)
+
+(define (rpf_map_trees infiletrees outfiletrees infileparammap)
+  (let ((oft (fopen outfiletrees "w"))
+        (pmap (load infileparammap t))
+        (trees (load infiletrees t)))
+    (format oft "%l\n" (car trees)) ;; the cg_name_feat
+    (mapcar
+     (lambda (treeplus)
+       (pprintf (list (car treeplus)
+                      (rpf_map_tree (cadr treeplus) pmap)) oft)
+       t
+       )
+     (cdr trees))
+    (fclose oft)
+    t
+    )
+)
+
+(define (rpf_map_tree tree pmap)
+  "(define (rpf_map_tree tree pmap)
+Map the param number at the leave of the tree to the new value in pmap"
+(cond
+ ((cdr tree)  ;; a question
+  (list
+   (car tree)
+   (rpf_map_tree (car (cdr tree)) pmap)
+   (rpf_map_tree (car (cdr (cdr tree))) pmap)))
+ (t           ;; tree leaf 
+  (set-car! (car tree) (cadr (assoc (caar tree) pmap)))
+  tree))
+)
 
 (define (clustergen::dump_tree_vectors tree rawtrackfd)
 "(clustergen::dump_tree_vectors tree rawtrackfd)

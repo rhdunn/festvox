@@ -330,15 +330,15 @@ to work on these aspect in later releases.
 <sect1><title>Telling the time</title>
 
 <para>
-<indexterm><primary> talking clock </primary></indexterm>
-Festival includes a very simple little script that speaks the current 
-time (@file{festival/examples/saytime}). This section explains how to 
-replace the synthesizer used from this script with one that talks with 
-your own voice. This is an extreme example of a limited domain 
-synthesizer but it is a good example as it allows us to give 
-a walkthrough of the stages involved in building a limited domain 
-synthesizer. This example is also small enough that it can 
-be done in well under an hour. 
+<indexterm><primary> talking clock </primary></indexterm> Festival
+includes a very simple little script that speaks the current time
+(<filename>festival/examples/saytime</filename>). This section
+explains how to replace the synthesizer used from this script with one
+that talks with your own voice. This is an extreme example of a
+limited domain synthesizer but it is a good example as it allows us to
+give a walkthrough of the stages involved in building a limited domain
+synthesizer. This example is also small enough that it can be done in
+well under an hour.
 </para>
 <para>
 Following through this example will give a reasonable understanding 
@@ -381,7 +381,7 @@ and the Edinburgh Speech Tools respectively. Under bash and other good
 shells this may be done by commands like 
 <blockquote><literallayout>
 export FESTVOXDIR=/home/awb/projects/festvox
-export ESTDIR=/home/awb/projects/1.4.3/speech_tools
+export ESTDIR=/home/awb/projects/speech_tools
 </literallayout></blockquote>
 In earlier releases we only offered a command line based method for 
 building voices and limited domain synthesizers. In order to make the 

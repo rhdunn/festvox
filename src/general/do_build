@@ -59,6 +59,13 @@ then
    exit 1
 fi
 
+if [ "$SIODHEAPSIZE" = "" ]
+then
+   SIODHEAPSIZE=20000000
+   export SIODHEAPSIZE
+fi
+HEAPSIZE=$SIODHEAPSIZE
+
 if [ $# = 0 ]
 then
 #   $0 setup $*
@@ -86,6 +93,12 @@ then
 
     num_cpus=$(./bin/find_num_available_cpu)
 
+    if [ ! -d tmpdir ]
+    then
+       # for the split promptfile
+       mkdir tmpdir
+    fi
+
     seq 0 15 | xargs -n 1 -P $num_cpus $0 _parallelworker $ACTION $PROMPTFILE
     exit 0
 fi
@@ -97,7 +110,7 @@ then
     INDEX="$4"
 
     # Get our partition of PROMPTFILE
-    SPLITPROMPTFILE=/tmp/dobuild_parallelworker.$$.$INDEX
+    SPLITPROMPTFILE=tmpdir/dobuild_parallelworker.$$.$INDEX
     cat $PROMPTFILE | awk "NR%16==$INDEX {print \$0}" > $SPLITPROMPTFILE
     
     # Run our task
@@ -131,14 +144,14 @@ fi
 
 if [ "$1" = "build_prompts" ]
 then
-   $ESTDIR/../festival/bin/festival --heap 10000000 -b festvox/build_clunits.scm '(build_prompts "'$PROMPTFILE'")'
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/build_clunits.scm '(build_prompts "'$PROMPTFILE'")'
 
    exit 0
 fi
 
 if [ "$1" = "build_prompts_waves" ]
 then
-  $ESTDIR/../festival/bin/festival --heap 10000000 -b festvox/build_clunits.scm '(build_prompts_waves "'$PROMPTFILE'")'
+  $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/build_clunits.scm '(build_prompts_waves "'$PROMPTFILE'")'
 
    exit 0
 fi
@@ -170,7 +183,7 @@ fi
 
 if [ "$1" = "build_utts" ]
 then
-    $ESTDIR/../festival/bin/festival --heap 10000000 -b festvox/build_clunits.scm '(build_utts "'$PROMPTFILE'")'
+    $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/build_clunits.scm '(build_utts "'$PROMPTFILE'")'
    exit 0
 fi
 
@@ -194,7 +207,7 @@ fi
 
 if [ "$1" = "build_clunits" ]
 then
-    $ESTDIR/../festival/bin/festival --heap 10000000 -b festvox/build_clunits.scm '(build_clunits "'$PROMPTFILE'")'
+    $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/build_clunits.scm '(build_clunits "'$PROMPTFILE'")'
    exit 0
 fi
 
@@ -219,11 +232,11 @@ then
 
    if [ "$2" = "tts" ]
    then
-    $ESTDIR/../festival/bin/festival --heap 20000000 -b festvox/${FV_VOICENAME}_clunits.scm "(voice_"$FV_VOICENAME"_clunits)" festvox/build_clunits.scm '(tts_test "'$4'" "'test/$3'")'
+    $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/${FV_VOICENAME}_clunits.scm "(voice_"$FV_VOICENAME"_clunits)" festvox/build_clunits.scm '(tts_test "'$4'" "'test/$3'")'
    fi
    if [ "$2" = "usm" ]
    then
-    $ESTDIR/../festival/bin/festival --heap 10000000 -b festvox/${FV_VOICENAME}_clunits.scm "(voice_"$FV_VOICENAME"_clunits)" festvox/build_clunits.scm '(usm_file "'$4'" "'test/$3'")'
+    $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/${FV_VOICENAME}_clunits.scm "(voice_"$FV_VOICENAME"_clunits)" festvox/build_clunits.scm '(usm_file "'$4'" "'test/$3'")'
    fi
 
 

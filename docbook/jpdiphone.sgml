@@ -85,7 +85,7 @@ As with all parts of <filename>festvox</filename>: you must set the following
 enviroment variables to where you have installed versions of 
 the Edinburgh Speech Tools and the festvox distribution 
 <blockquote><literallayout>
-export ESTDIR=/home/awb/projects/1.4.1/speech_tools
+export ESTDIR=/home/awb/projects/speech_tools
 export FESTVOXDIR=/home/awb/projects/festvox
 </literallayout></blockquote>
 </para>
@@ -375,7 +375,7 @@ directory containing the new voice. Frist cd to
 festival's voice directory (this will vary depending on where your 
 version of festival is installed) 
 <blockquote><literallayout>
-cd /home/awb/projects/1.4.1/festival/lib/voices/japanese/
+cd /home/awb/projects/festival/lib/voices/japanese/
 </literallayout></blockquote>
 creating the language directory if it does not already exists. 
 Add a symbolic link back to where your voice was built 
@@ -404,7 +404,7 @@ Generate the distribution tarfile in the directory above the festival
 installation (the one where <filename>festival/</filename> and <filename>speech_tools/</filename> 
 directory is). 
 <blockquote><literallayout>
-cd /home/awb/projects/1.4.1/
+cd /home/awb/projects/
 tar zcvf festvox_cmu_ja_awb_lpc.tar.gz \
   festival/lib/voices/japanese/cmu_ja_awb_diphone/festvox/*.scm \
   festival/lib/voices/japanese/cmu_ja_awb_diphone/COPYING \

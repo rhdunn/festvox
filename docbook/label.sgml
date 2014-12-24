@@ -122,6 +122,11 @@ phone mapping</comment>
 <title>Labeling with Full Acoustic Models</title>
 
 <para>
+This is old -- we recommend using the builtin HMM
+labeller <filename>ehmm</filename> as it is more targeting towards
+festvox voice builds, and doesn't require other code to be installed.
+</para>
+<para>
 A second method for labeling is also available.  Here we train full
 acoustic HMM models on the recorded data.  We build a database
 specific speech recognition engine and use that engine to label the
