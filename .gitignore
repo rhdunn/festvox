@@ -1,5 +1,7 @@
 .*.swp
 
+*.o
+
 config.*
 install-sh
 missing
@@ -7,3 +9,10 @@ mkinstalldirs
 
 autom4te.cache/
 configure
+
+config/config
+
+make.depend
+
+src/diphones/make_diph_index
+src/diphones/phonealign
