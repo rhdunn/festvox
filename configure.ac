@@ -30,7 +30,7 @@ dnl ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       ##
 dnl THIS SOFTWARE.                                                       ##
 dnl                                                                      ##
 dnl########################################################################
-AC_INIT(src/unitsel/setup_clunits)
+AC_INIT(src/unitsel/make_mcep)
 
 AC_CANONICAL_SYSTEM
 AC_PROG_CC
