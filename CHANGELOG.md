@@ -6,6 +6,10 @@ Add and modernize the standard project files:
 
   * Added a CHANGELOG.md file to track the project changes.
 
+Support the GNU standard project layout:
+
+  * Added a COPYING file, taking the license text from `src/Makefile`.
+
 ## [1.1]
 
 Upstream version 1.1.
