@@ -1,29 +1,28 @@
+# FestVox: Building Voices in Festival
 
-                  "Building Voices in Festival"
-   Alan W Black (awb@cs.cmu.edu) and Kevin Lenzo (lenzo@cs.cmu.edu)
-                      http://www.festvox.org
+The included [festvox](http://www.festvox.org) documentation, scripts
+and examples should be sufficient for an interested person to build
+their own synthetic voices in currently supported languages or new
+languages in the University of Edinburgh's Festival Speech Synthesis
+System.  The quality of the result depends much on the time and skill
+of the builder.  For English it may be possible to build a new voice
+in a couple of days work, a new language may take months or years to
+build.  It should be noted that even the best voices in Festival (or
+any other speech synthesis system for that matter) are still nowhere
+near perfect quality.
 
-The included documentation, scripts and examples should be sufficient
-for an interested person to build their own synthetic voices in
-currently supported languages or new languages in the University of
-Edinburgh's Festival Speech Synthesis System.  The quality of the
-result depends much on the time and skill of the builder.  For English
-it may be possible to build a new voice in a couple of days work, a
-new language may take months or years to build.  It should be noted
-that even the best voices in Festival (or any other speech synthesis
-system for that matter) are still nowhere near perfect quality.
+This distribution includes:
 
-This distribution includes
-    Support for designing, recording and autolabelling diphone databases
-    Support for designing, recording and autolabelling unit selection dbs
-    Building simple limited domain synthesis engines
-    Support for building rule driven and data driven prosody models
-       (duration, intonation and phrasing)
-    Support for building rule driven and data driven text analysis
-    Lexicon and building Letter to Sound rule support
-    Predefined scripts for building new US (and UK) English voices
+  * Support for designing, recording and autolabelling diphone databases.
+  * Support for designing, recording and autolabelling unit selection dbs.
+  * Building simple limited domain synthesis engines.
+  * Support for building rule driven and data driven prosody models
+    (duration, intonation and phrasing).
+  * Support for building rule driven and data driven text analysis.
+  * Lexicon and building Letter to Sound rule support.
+  * Predefined scripts for building new US (and UK) English voices.
 
-WARNING
+## Warning
 
 This is not a pointy/clicky plug and play program to build new voices.
 It is instructions with discussion on the problems and an attempt to
@@ -34,34 +33,41 @@ processes involved.  There are significant pointers into the
 literature throughout the document that allow for more detailed study
 and further reading.
 
-REQUIREMENTS
+## Requirements
 
-A Unix Machine
-    although there is nothing inheritantly Unix about the scripts, no
-    attempt has yet been made about porting this to other platforms
-Festival and Speech Tools
+1.  A Unix Machine
+
+    Although there is nothing inheritantly Unix about the scripts, no
+    attempt has yet been made about porting this to other platforms.
+
+2.  Festival and Speech Tools
+
     This uses speech tools programs and festival itself at various
     stages in builidng voices as well as (of course) for the final
     voices.  Festival and the Edinburgh Speech Tools are available from
-       http://www.cstr.ed.ac.uk/projects/festival.html
+    [http://www.cstr.ed.ac.uk/projects/festival.html](http://www.cstr.ed.ac.uk/projects/festival.html)
     or
-       http://www.speech.cs.cmu.edu/festival
+    [http://www.speech.cs.cmu.edu/festival](http://www.speech.cs.cmu.edu/festival).
 
     It is recommended that you compile your own versions of these
     as you will need the libraries and include files to build some
     programs in this festvox.  Also some parts require support for
     the clunits module which is not compiled in by default in the
     standard distributions.
-EMU Labeller
+
+3.  EMU Labeller
+
     The University of Macquarie's Speech Hearing and Language Research
     Centre distribute labelling tools for speech databases.  We use
     it here for viewing speech, as spectrograms, F0s phone labels etc.
     It is available from 
-           http://www.shlrc.mq.edu.au/emu/
+    [http://www.shlrc.mq.edu.au/emu/](http://www.shlrc.mq.edu.au/emu/).
     Other waveform labeller/viewers exist and you find them more convinient
     to use but we include support for emulabel as it meets our requirements
     and is freely available.
-Patience and understanding
+
+4.  Patience and understanding
+
     Building a new voice is a lot of work, and something will probably
     go wrong which may require the repetition of some long boring and
     tedious process.  Even with lots of care a new voice still might 
@@ -70,20 +76,20 @@ Patience and understanding
     who can improve on this making the processing easier and more reliable
     in the future.
 
-INSTALLATION
+## Installation
 
 You must have the Edinburgh Speech Tools and Festival instllation
 before you can build the tools in the festvox distribution.
 
-Unpack festvox-1.1-beta.tar.gz
+Unpack `festvox-1.1-beta.tar.gz`
 
     tar zxvf festvox-1.1-beta.tar.gz
     cd festvox/config
     cat config-dist >config
 
-Edit the file config, and set ESTDIR to point to your
+Edit the file `config`, and set `ESTDIR` to point to your
 locally installed version of the Speech Tools (and if you have the
-festival distribution in an unusual place modify the variable FESTDIR
+festival distribution in an unusual place modify the variable `FESTDIR`
 too.
 
     cd ..
@@ -91,15 +97,15 @@ too.
 
 This should build the phone aligner, and various festival scripts.  
 
-pre-generated version of the document in html and postscript are
-distributed in the html/ directory
+pre-generated version of the document in `html` and postscript are
+distributed in the `html/` directory
 
 If you need to build the document itself, you will need:
     
-    a working version of TeX
-    texi2html (http://wwwinfo.cern.ch/dis/texi2html/)
-    dvips
-    makeinfo
+  * a working version of TeX
+  * [texi2html](http://wwwinfo.cern.ch/dis/texi2html/)
+  * dvips
+  * makeinfo
 
 Most of these should be installed on you Unix system but maybe not.
 
@@ -112,23 +118,15 @@ Note that even if the documentation build fails you can still use all
 the scripts and programs.  
 
 To use the scripts and programs in the festvox distribution each
-user is expected to have the environment variables ESTDIR and
-FESTVOXDIR set for example as (if you use bash, zsh, ksh or sh)
+user is expected to have the environment variables `ESTDIR` and
+`FESTVOXDIR` set for example as (if you use `bash`, `zsh`, `ksh` or `sh`):
 
-   export ESTDIR=/home/awb/projects/1.4.1/speech_tools
-   export FESTVOXDIR=/home/awb/projects/festvox
+    export ESTDIR=/home/awb/projects/1.4.1/speech_tools
+    export FESTVOXDIR=/home/awb/projects/festvox
 
-Or if you use csh or tcsh
+Or if you use csh or tcsh:
 
-   setenv ESTDIR /home/awb/projects/1.4.1/speech_tools
-   setenv FESTVOXDIR /home/awb/projects/festvox
+    setenv ESTDIR /home/awb/projects/1.4.1/speech_tools
+    setenv FESTVOXDIR /home/awb/projects/festvox
 
 Remember to set these to where *your* installations are, not *ours*.
-
-
-
-
-
-
-
-    

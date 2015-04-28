@@ -102,4 +102,4 @@ time-stamp :
 %.html: %.md _layouts/webpage.html
 	kramdown --template _layouts/webpage.html $< > $@
 
-docs: CHANGELOG.html
+docs: CHANGELOG.html README.html
