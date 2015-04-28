@@ -10,6 +10,10 @@ Support the GNU standard project layout:
 
   * Added a COPYING file, taking the license text from `src/Makefile`.
 
+Add autotools support:
+
+  * Backport configure.in from 2.0 as configure.ac.
+
 ## [1.1]
 
 Upstream version 1.1.
