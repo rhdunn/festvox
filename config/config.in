@@ -42,7 +42,7 @@
 ##  not as SHARED easier                                                 ##
 ###########################################################################
 
-ESTDIR=/home/awb/projects/1.4.1/speech_tools
+ESTDIR=@ESTDIR@
 
 ###########################################################################
 ##  The location of your compiled Festival (1.4.1)                       ##

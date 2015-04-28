@@ -56,10 +56,7 @@ FILES = Makefile $(OTHERS)
 ALL = $(BUILD_DIRS)
 
 # Try and say if config hasn't been created
-config_dummy := $(shell test -f config/config || { echo '*** '; echo '*** Please Copy config/config-dist to config and edit to set options ***'; echo '*** '; }  >&2)
-
-# force a check on the system file
-system_dummy := $(shell $(MAKE) -C $(TOP)/config -f make_system.mak TOP=.. system.mak)
+config_dummy := $(shell test -f config/config || ( echo '*** '; echo '*** Making default config file ***'; echo '*** '; ./configure; )  >&2)
 
 include $(TOP)/config/common_make_rules
 
