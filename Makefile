@@ -99,3 +99,7 @@ time-stamp :
 	@ echo $(PROJECT_STATE) >.time-stamp
 	@ date >>.time-stamp
 
+%.html: %.md _layouts/webpage.html
+	kramdown --template _layouts/webpage.html $< > $@
+
+docs: CHANGELOG.html
