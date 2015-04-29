@@ -52,7 +52,7 @@ and further reading.
     Either a Unix machine -- although there is nothing inheritantly Unix
     about the scripts -- or a Windows machine running the cygwin environment.
 
-2.  Festival 2.1.1 and Edinburgh Speech Tools 2.1.1
+2.  Festival 2.3 and Edinburgh Speech Tools 2.3
 
     This uses speech tools programs and festival itself at various
     stages in builidng voices as well as (of course) for the final
@@ -65,14 +65,9 @@ and further reading.
     as you will need the libraries and include files to build some
     programs in this festvox.
 
-3.  [EMU Labeller](http://www.shlrc.mq.edu.au/emu/)
+3.  Wavesurfer
 
-    The University of Macquarie's Speech Hearing and Language Research
-    Centre distribute labelling tools for speech databases.  We use
-    it here for viewing speech, as spectrograms, F0s phone labels etc.
-    Other waveform labeller/viewers exist and you find them more convinient
-    to use but we include support for emulabel as it meets our requirements
-    and is freely available.
+    To display wavesforms, spectragrams and phoneme labels.
 
 4.  Patience and understanding
 
@@ -104,12 +99,12 @@ festvox scripts and programs:
 
 These can be set in `sh`-based shell (e.g. `bash`, `zsh`, `ksh` or `sh`) using:
 
-    export ESTDIR=/home/awb/projects/2.1.1/speech_tools
+    export ESTDIR=/home/awb/projects/2.3/speech_tools
     export FESTVOXDIR=/home/awb/projects/festvox
 
 or a `csh`/`tcsh` shell using:
 
-    setenv ESTDIR /home/awb/projects/2.1.1/speech_tools
+    setenv ESTDIR /home/awb/projects/2.3/speech_tools
     setenv FESTVOXDIR /home/awb/projects/festvox
 
 Remember to set these to where *your* installations are, not *ours*.
@@ -148,7 +143,7 @@ with the following copyright:
 
     Carnegie Mellon University and
     Alan W Black and Kevin A. Lenzo
-    Copyright (c) 1998-2012
+    Copyright (c) 1998-2013
     All Rights Reserved.
 
 No claims are made by the authors of this work, Carnegie Mellon University

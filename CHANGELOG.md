@@ -1,5 +1,19 @@
 # Change Log
 
+## [2.6-1] - 2015-05-02 Maintenance
+
+  * Build improvements from [1.1-1](#1.1-1).
+
+## [2.6] - 2013-10-16 Release
+
+  * Grapheme based synthesizers (with specific support for large number
+    of unicode writing systems).
+  * Clustergen state and stop value optimization.
+  * Wavesurfer label support.
+  * SPAM F0 support.
+  * Phrase break support.
+  * Support for SPTK's mgc parameterization.
+
 ## [2.5.3-1] - 2015-05-02 Maintenance
 
   * Build improvements from [1.1-1](#1.1-1).
