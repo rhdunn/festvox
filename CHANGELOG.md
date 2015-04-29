@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.4-1] - 2015-05-02 Maintenance
+
+  * Build improvements from [1.1-1](#1.1-1).
+
+## [2.4] - 2010-07-05 Release
+
+  * Support for cygwin tools under Windows.
+  * Substantially improved CLUSTERGEN support with mlpg and mlsb.
+
 ## [2.1-1] - 2015-05-02 Maintenance
 
   * Build improvements from [1.1-1](#1.1-1).
