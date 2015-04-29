@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.4-1] - 2015-05-02 Maintenance
+
+  * Build improvements from [1.1-1](#1.1-1).
+
+## [1.4] - 2000-12-31 Release
+
+Upstream version 1.4.
+
 ## [1.3-1] - 2015-05-02 Maintenance
 
   * Build improvements from [1.1-1](#1.1-1).
