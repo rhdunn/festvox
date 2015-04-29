@@ -1,5 +1,13 @@
 # FestVox: Building Voices in Festival
 
+- [Warning](#warning)
+- [Requirements](#requirements)
+- [Environment Variables](#environment-variables)
+- [Compilation](#compilation)
+- [License](#license)
+
+----------
+
 The included [festvox](http://www.festvox.org) documentation, scripts
 and examples should be sufficient for an interested person to build
 their own synthetic voices in currently supported languages or new
@@ -40,7 +48,7 @@ and further reading.
     Although there is nothing inheritantly Unix about the scripts, no
     attempt has yet been made about porting this to other platforms.
 
-2.  Festival and Speech Tools
+2.  Festival 1.4.1 and Edinburgh Speech Tools 1.2.1
 
     This uses speech tools programs and festival itself at various
     stages in builidng voices as well as (of course) for the final
@@ -55,13 +63,11 @@ and further reading.
     the clunits module which is not compiled in by default in the
     standard distributions.
 
-3.  EMU Labeller
+3.  [EMU Labeller](http://www.shlrc.mq.edu.au/emu/)
 
     The University of Macquarie's Speech Hearing and Language Research
     Centre distribute labelling tools for speech databases.  We use
     it here for viewing speech, as spectrograms, F0s phone labels etc.
-    It is available from 
-    [http://www.shlrc.mq.edu.au/emu/](http://www.shlrc.mq.edu.au/emu/).
     Other waveform labeller/viewers exist and you find them more convinient
     to use but we include support for emulabel as it meets our requirements
     and is freely available.
@@ -76,57 +82,76 @@ and further reading.
     who can improve on this making the processing easier and more reliable
     in the future.
 
-## Installation
-
-You must have the Edinburgh Speech Tools and Festival instllation
-before you can build the tools in the festvox distribution.
-
-Unpack `festvox-1.1-beta.tar.gz`
-
-    tar zxvf festvox-1.1-beta.tar.gz
-    cd festvox/config
-    cat config-dist >config
-
-Edit the file `config`, and set `ESTDIR` to point to your
-locally installed version of the Speech Tools (and if you have the
-festival distribution in an unusual place modify the variable `FESTDIR`
-too.
-
-    cd ..
-    make
-
-This should build the phone aligner, and various festival scripts.  
-
-pre-generated version of the document in `html` and postscript are
-distributed in the `html/` directory
-
 If you need to build the document itself, you will need:
-    
+
   * a working version of TeX
   * [texi2html](http://wwwinfo.cern.ch/dis/texi2html/)
   * dvips
   * makeinfo
 
-Most of these should be installed on you Unix system but maybe not.
+## Environment Variables
 
-To build the documenation
-   
-    cd doc
-    make doc
+The following environment variables are expected in order to build the
+festvox scripts and programs:
 
-Note that even if the documentation build fails you can still use all
-the scripts and programs.  
+  * `ESTDIR` -- The path to the *Edinburgh Speech Tools* build directory.
 
-To use the scripts and programs in the festvox distribution each
-user is expected to have the environment variables `ESTDIR` and
-`FESTVOXDIR` set for example as (if you use `bash`, `zsh`, `ksh` or `sh`):
+The following environment variables are expected in order to run the
+festvox scripts and programs:
+
+  * `ESTDIR` -- The path to the *Edinburgh Speech Tools* build directory.
+
+  * `FESTVOXDIR` -- The top-level directory of this project.
+
+These can be set in `sh`-based shell (e.g. `bash`, `zsh`, `ksh` or `sh`) using:
 
     export ESTDIR=/home/awb/projects/1.4.1/speech_tools
     export FESTVOXDIR=/home/awb/projects/festvox
 
-Or if you use csh or tcsh:
+or a `csh`/`tcsh` shell using:
 
     setenv ESTDIR /home/awb/projects/1.4.1/speech_tools
     setenv FESTVOXDIR /home/awb/projects/festvox
 
 Remember to set these to where *your* installations are, not *ours*.
+
+## Compilation
+
+The `festvox` project uses a standard autogen-based build system. It can
+be build using the following commands:
+
+    ./autogen.sh
+    ./configure --prefix=/usr
+    make
+    sudo make install
+
+This should build the phone aligner, and various festival scripts.  
+
+__NOTE:__ This project was written for an older C++ compiler and as such
+requires the gcc 2.95 compiler to build. It has been successfully built in
+a Debian Woody chroot environment.
+
+Pre-generated versions of the [html](html/index.html) and
+[postscript](html/festvox.ps.gz) documentation are distributed in the
+[html](html) directory.
+
+To build the documenation, run the following commands:
+   
+    cd doc
+    make doc
+
+Note that even if the documentation build fails you can still use all
+the scripts and programs.
+
+## License
+
+The `festvox` project is released under a [4-clause BSD license](COPYING)
+with the following copyright:
+
+    Carnegie Mellon University and
+    Alan W Black and Kevin A. Lenzo
+    Copyright (c) 1998-2000
+    All Rights Reserved.
+
+The changes to the project are described in the [CHANGELOG.md](CHANGELOG.md)
+file in order to comply with clause 2 of the BSD license.
