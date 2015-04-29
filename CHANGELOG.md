@@ -1,12 +1,13 @@
 # Change Log
 
-## [1.1-1]
+## [1.1-1] 2015-05-01 Maintenance
 
 Add and modernize the standard project files:
 
   * Added a CHANGELOG.md file to track the project changes.
-  * Converted the README file to markdown and restructure it to be more
+  * Converted the README file to markdown and restructured it to be more
     readable.
+  * Merged the ANNOUNCE-1.1 text into the README.md and CHANGELOG.md files.
   * Added a .gitignore file to ignore the build output.
   * Support building HTML versions of the markdown files with `kramdown`.
 
@@ -24,11 +25,13 @@ Add autotools support:
   * Use `autoconf` to generate the configure script.
   * Backport the `config/` changes from 2.0 to support more systems.
 
-## [1.1]
+## [1.1] - 2000-02-24 Beta
 
-Upstream version 1.1.
+  * Better support for generating scheme files from skeletons.
+  * Clear walkthroughs for standard tasks.
+  * Improved overall documentation and support.
 
-## [1.0]
+## [1.0] - 1999-02-11 Release
 
 Upstream version 1.0.
 

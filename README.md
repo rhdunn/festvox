@@ -8,16 +8,16 @@
 
 ----------
 
-The included [festvox](http://www.festvox.org) documentation, scripts
-and examples should be sufficient for an interested person to build
-their own synthetic voices in currently supported languages or new
-languages in the University of Edinburgh's Festival Speech Synthesis
-System.  The quality of the result depends much on the time and skill
-of the builder.  For English it may be possible to build a new voice
-in a couple of days work, a new language may take months or years to
-build.  It should be noted that even the best voices in Festival (or
-any other speech synthesis system for that matter) are still nowhere
-near perfect quality.
+The [festvox](http://www.festvox.org) project, based at Carnegie Mellon
+University, distributes documentation, scripts and examples that should
+be sufficient for an interested person to build their own synthetic voices
+in currently supported languages or new languages in the University of
+Edinburgh's Festival Speech Synthesis System.  The quality of the result
+depends much on the time and skill of the builder.  For English it may be
+possible to build a new voice in a couple of days work, a new language may
+take months or years to build.  It should be noted that even the best
+voices in Festival (or any other speech synthesis system for that matter)
+are still nowhere near perfect quality.
 
 This distribution includes:
 
@@ -152,6 +152,10 @@ with the following copyright:
     Alan W Black and Kevin A. Lenzo
     Copyright (c) 1998-2000
     All Rights Reserved.
+
+No claims are made by the authors of this work, Carnegie Mellon University
+(or the University of Edinburgh), on the voices that you generate with the
+scripts and techniques described within this distribution.
 
 The changes to the project are described in the [CHANGELOG.md](CHANGELOG.md)
 file in order to comply with clause 2 of the BSD license.
