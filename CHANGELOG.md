@@ -3,10 +3,18 @@
 ## [2.0-1] - 2015-05-02 Maintenance
 
   * Build improvements from [1.1-1](#1.1-1).
+  * Merged the ANNOUNCE-2.0 text into the CHANGELOG.md file.
 
 ## [2.0] - 2003-01-28 Release
 
-Upstream version 2.0.
+  * General bug fixes and improvements.
+  * Better clunits general voice support.
+  * Using CMU Sphinx and SphinxTrain for building acoustic models
+    for labelling databases.
+  * DOCBOOK version of the documentation, with more general background
+    documentation.
+  * Initial support for Mac OS X.
+  * `configure` support to match Edinburgh Speech Tools.
 
 ## [1.6-1] - 2015-05-02 Maintenance
 
