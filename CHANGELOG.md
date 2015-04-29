@@ -1,6 +1,21 @@
 # Change Log
 
-## [1.1-1] 2015-05-01 Maintenance
+## [1.2-1] - 2015-05-01 Maintenance
+
+  * Build improvements from [1.1-1](#1.1-1).
+  * Merged the ANNOUNCE-1.2 text into the CHANGELOG.md file.
+
+## [1.2] - 2000-07-10 Beta
+
+  * Better support for generating scheme files from skeletons.
+  * Clear walkthroughs for standard tasks.
+  * Improved overall documentation and support.
+  * The limited domain code has substantially improved.
+  * PointyClicky (a GUI interface) has be added.
+  * Prosody modelling has hetter support.
+  * The document has more content (with corrections) though still needs work.
+
+## [1.1-1] - 2015-05-01 Maintenance
 
 Add and modernize the standard project files:
 
