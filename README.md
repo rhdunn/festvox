@@ -32,8 +32,8 @@ This distribution includes:
 
 ## Warning
 
-This is not a pointy/clicky plug and play program to build new voices.
-It is instructions with discussion on the problems and an attempt to
+This is not a plug and play program to build new voices. It is
+instructions with discussion on the problems and an attempt to
 document the expertise we have gained in building other voices.
 Although we have tried to automate the task as much as possible this
 is no substitute for careful correction and understanding of the

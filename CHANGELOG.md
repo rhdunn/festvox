@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.3-1] - 2015-05-02 Maintenance
+
+  * Build improvements from [1.1-1](#1.1-1).
+  * Merged the ANNOUNCE-1.2 text into the CHANGELOG.md file.
+
+## [1.3] - 2000-09-06 Release
+
+Upstream version 1.3.
+
 ## [1.2-1] - 2015-05-01 Maintenance
 
   * Build improvements from [1.1-1](#1.1-1).
@@ -12,7 +21,7 @@
   * Improved overall documentation and support.
   * The limited domain code has substantially improved.
   * PointyClicky (a GUI interface) has be added.
-  * Prosody modelling has hetter support.
+  * Prosody modelling has better support.
   * The document has more content (with corrections) though still needs work.
 
 ## [1.1-1] - 2015-05-01 Maintenance
