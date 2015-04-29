@@ -4,6 +4,8 @@
 
   * Build improvements from [1.1-1](#1.1-1).
   * Merged the ANNOUNCE-2.1 text into the CHANGELOG.md and README.md files.
+  * Include `string.h` for the memory functions to fix building on modern
+    systems, backported from 2.4.
 
 ## [2.1] - 2007-01-21 Release
 

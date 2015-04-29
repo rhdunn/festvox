@@ -42,6 +42,7 @@
  #include "header.h"
 #endif
 
+#include <string.h>
 #include "hmmstate.h"
 #include "hmmword.h"
 

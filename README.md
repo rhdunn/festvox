@@ -129,10 +129,6 @@ compiler type etc.  So you must have that installed.  If configure
 fails try expliciting setting your `ESTDIR` environment variable
 to point ot your compiled version of the Speech Tools.
 
-__NOTE:__ This project was written for an older C++ compiler and as such
-requires the gcc 2.95 compiler to build. It has been successfully built in
-a Debian Woody chroot environment.
-
 A pre-generated version of the document in [html](html/index.html) and
 [postscript](html/festvox.ps.gz) distributed in the [html](html) directory.
 
