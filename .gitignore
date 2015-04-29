@@ -19,7 +19,10 @@ config/config
 
 make.depend
 
+src/general/cmn
 src/general/find_unknowns
 src/general/fix_pm
+src/general/mplpc
 src/general/phonealign
+src/general/powcont_norm
 src/general/smooth_f0
