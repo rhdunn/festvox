@@ -21,7 +21,9 @@ config/config
 make.depend
 
 src/diphones/make_diph_index
+src/ehmm/bin/ConvertFeatsFileToBinaryFormat
 src/ehmm/bin/FeatureExtraction
+src/ehmm/bin/ScaleBinaryFeats
 src/ehmm/bin/check_lab.pl
 src/ehmm/bin/comp_dcep.pl
 src/ehmm/bin/do_ehmm
