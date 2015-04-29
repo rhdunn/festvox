@@ -3,6 +3,9 @@
 ## [2.0-1] - 2015-05-02 Maintenance
 
   * Build improvements from [1.1-1](#1.1-1).
+  * Remove the derivable autoconf and automake files: config.{guess,sub},
+    configure, install-sh, missing and mkinstalldirs.
+  * Remove configure.in as this was added as configure.ac in [1.1-1](#1.1-1).
   * Merged the ANNOUNCE-2.0 text into the CHANGELOG.md file.
 
 ## [2.0] - 2003-01-28 Release
