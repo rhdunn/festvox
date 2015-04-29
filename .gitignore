@@ -19,5 +19,7 @@ config/config
 
 make.depend
 
-src/diphones/make_diph_index
-src/diphones/phonealign
+src/general/find_unknowns
+src/general/fix_pm
+src/general/phonealign
+src/general/smooth_f0
