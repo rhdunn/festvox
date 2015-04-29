@@ -19,6 +19,7 @@ config/config
 
 make.depend
 
+src/diphones/make_diph_index
 src/general/cmn
 src/general/find_unknowns
 src/general/fix_pm
