@@ -1,5 +1,17 @@
 # Change Log
 
+## [2.7-1] - 2015-05-02 Maintenance
+
+  * Build improvements from [1.1-1](#1.1-1).
+  * Merged the ANNOUNCE-2.7.0 text into the CHANGELOG.md file.
+
+## [2.7] - 2014-12-24 Release
+
+  * Many many general bug fixes and improvements.
+  * Better clustergen voices through Random Forests.
+  * Better grapheme-based synthesis support through Sproat's UniTrans.
+  * INDIC language support.
+
 ## [2.6-1] - 2015-05-02 Maintenance
 
   * Build improvements from [1.1-1](#1.1-1).
