@@ -48,20 +48,18 @@ and further reading.
     Although there is nothing inheritantly Unix about the scripts, no
     attempt has yet been made about porting this to other platforms.
 
-2.  Festival 1.4.1 and Edinburgh Speech Tools 1.2.1
+2.  Festival 1.4.3 and Edinburgh Speech Tools 1.2.3
 
     This uses speech tools programs and festival itself at various
     stages in builidng voices as well as (of course) for the final
     voices.  Festival and the Edinburgh Speech Tools are available from
-    [http://www.cstr.ed.ac.uk/projects/festival.html](http://www.cstr.ed.ac.uk/projects/festival.html)
+    [http://www.cstr.ed.ac.uk/projects/festival/](http://www.cstr.ed.ac.uk/projects/festival/)
     or
-    [http://www.speech.cs.cmu.edu/festival](http://www.speech.cs.cmu.edu/festival).
+    [http://www.festival.org/festival](http://www.festival.org/festival).
 
     It is recommended that you compile your own versions of these
     as you will need the libraries and include files to build some
-    programs in this festvox.  Also some parts require support for
-    the clunits module which is not compiled in by default in the
-    standard distributions.
+    programs in this festvox.
 
 3.  [EMU Labeller](http://www.shlrc.mq.edu.au/emu/)
 
@@ -82,12 +80,9 @@ and further reading.
     who can improve on this making the processing easier and more reliable
     in the future.
 
-If you need to build the document itself, you will need:
-
-  * a working version of TeX
-  * [texi2html](http://wwwinfo.cern.ch/dis/texi2html/)
-  * dvips
-  * makeinfo
+If you need to build the document itself, you will need a working
+version of the docbook tools, which may (or may not) already
+be installed on your system
 
 ## Environment Variables
 
@@ -105,12 +100,12 @@ festvox scripts and programs:
 
 These can be set in `sh`-based shell (e.g. `bash`, `zsh`, `ksh` or `sh`) using:
 
-    export ESTDIR=/home/awb/projects/1.4.1/speech_tools
+    export ESTDIR=/home/awb/projects/1.4.3/speech_tools
     export FESTVOXDIR=/home/awb/projects/festvox
 
 or a `csh`/`tcsh` shell using:
 
-    setenv ESTDIR /home/awb/projects/1.4.1/speech_tools
+    setenv ESTDIR /home/awb/projects/1.4.3/speech_tools
     setenv FESTVOXDIR /home/awb/projects/festvox
 
 Remember to set these to where *your* installations are, not *ours*.
@@ -125,19 +120,22 @@ be build using the following commands:
     make
     sudo make install
 
-This should build the phone aligner, and various festival scripts.  
+The configuration basically tries to find your version of 
+the Edinburgh Speech Tools and uses its configuration to set
+compiler type etc.  So you must have that installed.  If configure
+fails try expliciting setting your `ESTDIR` environment variable
+to point ot your compiled version of the Speech Tools.
 
 __NOTE:__ This project was written for an older C++ compiler and as such
 requires the gcc 2.95 compiler to build. It has been successfully built in
 a Debian Woody chroot environment.
 
-Pre-generated versions of the [html](html/index.html) and
-[postscript](html/festvox.ps.gz) documentation are distributed in the
-[html](html) directory.
+A pre-generated version of the document in [html](html/index.html) and
+[postscript](html/festvox.ps.gz) distributed in the [html](html) directory.
 
 To build the documenation, run the following commands:
    
-    cd doc
+    cd docbook
     make doc
 
 Note that even if the documentation build fails you can still use all
@@ -150,7 +148,7 @@ with the following copyright:
 
     Carnegie Mellon University and
     Alan W Black and Kevin A. Lenzo
-    Copyright (c) 1998-2001
+    Copyright (c) 1998-2002
     All Rights Reserved.
 
 No claims are made by the authors of this work, Carnegie Mellon University
