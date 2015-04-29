@@ -1,5 +1,13 @@
 # Change Log
 
+## [2.5.3-1] - 2015-05-02 Maintenance
+
+  * Build improvements from [1.1-1](#1.1-1).
+
+## [2.5.3] - 2012-03-05 Release
+
+Upstream version 2.5.3.
+
 ## [2.4-1] - 2015-05-02 Maintenance
 
   * Build improvements from [1.1-1](#1.1-1).

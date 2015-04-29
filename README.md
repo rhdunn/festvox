@@ -52,7 +52,7 @@ and further reading.
     Either a Unix machine -- although there is nothing inheritantly Unix
     about the scripts -- or a Windows machine running the cygwin environment.
 
-2.  Festival 2.0.95 and Edinburgh Speech Tools 2.0.95
+2.  Festival 2.1.1 and Edinburgh Speech Tools 2.1.1
 
     This uses speech tools programs and festival itself at various
     stages in builidng voices as well as (of course) for the final
@@ -104,12 +104,12 @@ festvox scripts and programs:
 
 These can be set in `sh`-based shell (e.g. `bash`, `zsh`, `ksh` or `sh`) using:
 
-    export ESTDIR=/home/awb/projects/2.0.95/speech_tools
+    export ESTDIR=/home/awb/projects/2.1.1/speech_tools
     export FESTVOXDIR=/home/awb/projects/festvox
 
 or a `csh`/`tcsh` shell using:
 
-    setenv ESTDIR /home/awb/projects/2.0.95/speech_tools
+    setenv ESTDIR /home/awb/projects/2.1.1/speech_tools
     setenv FESTVOXDIR /home/awb/projects/festvox
 
 Remember to set these to where *your* installations are, not *ours*.
@@ -148,7 +148,7 @@ with the following copyright:
 
     Carnegie Mellon University and
     Alan W Black and Kevin A. Lenzo
-    Copyright (c) 1998-2010
+    Copyright (c) 1998-2012
     All Rights Reserved.
 
 No claims are made by the authors of this work, Carnegie Mellon University
