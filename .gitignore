@@ -29,10 +29,10 @@ src/ehmm/bin/comp_dcep.pl
 src/ehmm/bin/do_ehmm
 src/ehmm/bin/edec
 src/ehmm/bin/ehmm
-src/ehmm/bin/getwavlist.pl
 src/ehmm/bin/phfromutt.pl
 src/ehmm/bin/phseq.scm
 src/ehmm/bin/rem_ssil.pl
+src/ehmm/bin/rm_nan_utts
 src/ehmm/bin/scale_feat.pl
 src/ehmm/bin/seqproc.pl
 src/ehmm/bin/sl2nm.pl
