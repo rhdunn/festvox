@@ -23,6 +23,9 @@ This distribution includes:
 
   * Support for designing, recording and autolabelling diphone databases.
   * Support for designing, recording and autolabelling unit selection dbs.
+  * Support for designing, recording and autolabelling clustergen parametric
+    voices.
+  * Support for Nagoya Institute of Technologies HTS synthesis system.
   * Building simple limited domain synthesis engines.
   * Support for building rule driven and data driven prosody models
     (duration, intonation and phrasing).
@@ -43,19 +46,19 @@ and further reading.
 
 ## Requirements
 
-1.  A Unix Machine
+1.  A POSIX-compatible system
 
-    Although there is nothing inheritantly Unix about the scripts, no
-    attempt has yet been made about porting this to other platforms.
+    Either a Unix machine -- although there is nothing inheritantly Unix
+    about the scripts -- or a Windows machine running the cygwin environment.
 
-2.  Festival 1.4.3 and Edinburgh Speech Tools 1.2.3
+2.  Festival 1.96 and Edinburgh Speech Tools 1.2.96
 
     This uses speech tools programs and festival itself at various
     stages in builidng voices as well as (of course) for the final
     voices.  Festival and the Edinburgh Speech Tools are available from
     [http://www.cstr.ed.ac.uk/projects/festival/](http://www.cstr.ed.ac.uk/projects/festival/)
     or
-    [http://www.festival.org/festival](http://www.festival.org/festival).
+    [http://www.festival.org/festival/latest/](http://www.festival.org/festival/latest/).
 
     It is recommended that you compile your own versions of these
     as you will need the libraries and include files to build some
@@ -100,12 +103,12 @@ festvox scripts and programs:
 
 These can be set in `sh`-based shell (e.g. `bash`, `zsh`, `ksh` or `sh`) using:
 
-    export ESTDIR=/home/awb/projects/1.4.3/speech_tools
+    export ESTDIR=/home/awb/projects/1.96/speech_tools
     export FESTVOXDIR=/home/awb/projects/festvox
 
 or a `csh`/`tcsh` shell using:
 
-    setenv ESTDIR /home/awb/projects/1.4.3/speech_tools
+    setenv ESTDIR /home/awb/projects/1.96/speech_tools
     setenv FESTVOXDIR /home/awb/projects/festvox
 
 Remember to set these to where *your* installations are, not *ours*.
@@ -148,7 +151,7 @@ with the following copyright:
 
     Carnegie Mellon University and
     Alan W Black and Kevin A. Lenzo
-    Copyright (c) 1998-2002
+    Copyright (c) 1998-2006
     All Rights Reserved.
 
 No claims are made by the authors of this work, Carnegie Mellon University

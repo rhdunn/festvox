@@ -1,5 +1,23 @@
 # Change Log
 
+## [2.1-1] - 2015-05-02 Maintenance
+
+  * Build improvements from [1.1-1](#1.1-1).
+  * Merged the ANNOUNCE-2.1 text into the CHANGELOG.md and README.md files.
+
+## [2.1] - 2007-01-21 Release
+
+  * General bug fixes and improvements.
+  * Better clunits general voice support.
+  * Clustergen Statistical Parametric Synthesis (HTS like) that is
+    easier to use and relaible on multiple voices and languages.
+  * A new autoamtic phoneme label EHMM, which is easier to use and
+    give better results that our previous methods.
+  * VC voice conversion module (as standalone and integrated into Festival).
+  * Full support under Cygwin under windows for voice building.
+  * Support for finding "nice" prompts in large databases of texts in
+    new languages.
+
 ## [2.0-1] - 2015-05-02 Maintenance
 
   * Build improvements from [1.1-1](#1.1-1).
