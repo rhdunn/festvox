@@ -38,8 +38,9 @@ TOP=../../
 DIRNAME=src/intonation
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-SCMFILES = tree_f0.scm
-FILES = Makefile $(SCMFILES)
+SCMFILES = tree_f0.scm impose.scm 
+SCRIPTS = make_f0_pm f0.feats make_f0_model
+FILES = Makefile $(SCMFILES) $(SCRIPTS)
 
 ALL = 
 

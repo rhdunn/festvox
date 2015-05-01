@@ -7,7 +7,8 @@ a
 <HR>
 <P>
 Full distribution with document sources and related scripts
-<A HREF="http://www.festvox.org/festvox-1.1/festvox-1.1-beta.tar.gz">festvox.-1.1-beta.tar.gz</A>
+<A HREF="http://www.festvox.org/festvox-1.2/festvox-1.2-beta.tar.gz">festvox.-1.2-beta.tar.gz</A><br>
+<A HREF="http://www.festvox.org/festvox-1.2/festopt_clunits.tar.gz">festopt_clunits.tar.gz</A> (updated Festival module for limited domain voices)
 <br>
 Postscript version of this document alone
 <A HREF="festvox.ps.gz">festvox.ps.gz</A>

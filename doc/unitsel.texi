@@ -445,7 +445,7 @@ The next stage is to dump the feature staht will be used to index the
 clusters.  Remember the clusters are defined with respect to the acoustic
 distance between each unit in the cluster, but they are indexed by
 these features.  These features are those which will be available at
-text to speech time when no acoustic information is available.  Thus
+text-to-speech time when no acoustic information is available.  Thus
 they include things like phonetic and prosodic context rather than
 spectral information.  The name features may (and probabaly should)
 be over general alloing the decision tree building program @code{wagon}

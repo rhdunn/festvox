@@ -1,949 +1,1024 @@
 <HTML>
 <HEAD>
 <!-- This HTML file has been created by texi2html 1.52
-     from ../doc/festvox.texi on 24 Febuary 2000 -->
+     from ../doc/festvox.texi on 10 July 2000 -->
 
-<TITLE>Building Voices in the Festival Speech Synthesis System - 6  Unit selection databases</TITLE>
+<TITLE>Building Voices in the Festival Speech Synthesis System - 6  Festival's Scheme Programming Language</TITLE>
 </HEAD>
 <BODY bgcolor="#ffffff">
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_5.html">previous</A>, <A HREF="festvox_7.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_5.html">previous</A>, <A HREF="festvox_7.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 <P><HR><P>
 
 
-<H1><A NAME="SEC34" HREF="festvox_toc.html#TOC34">6  Unit selection databases</A></H1>
+<H1><A NAME="SEC16" HREF="festvox_toc.html#TOC16">6  Festival's Scheme Programming Language</A></H1>
 
 <P>
-<A NAME="IDX156"></A>
-This chapter discussed some of the options for building waveform
-synthesizers using unit selection techniques in Festival.  This is still
-very much an on-going research question and we are still adding new
-techniques as well as improving existing ones often so the techniques
-described here are not as mature as the techniques as described in
-previous diphone chapter.
-
-</P>
-<P>
-By "unit selection" we actually mean the selection of some unit of
-speech which may be anything from whole phrase down to diphone (or even
-smaller).  Technically diphone selection is a simple case of this.
-However typically what we mean is unlike diphone selection, in unit
-selection there is more than one example of the unit and some mechanism
-is used to select between them at run-time.
-
-</P>
-<P>
-<A NAME="IDX157"></A>
-<A NAME="IDX158"></A>
-ATR's CHATR <CITE>hunt96</CITE> system and earlier work at that lab
-<CITE>nuutalk92</CITE> is an excellent example of one particular method for
-selecting between mutiple examples of a phone within a database.  For a
-discussion of why a more generalized inventory of units is desired see
-<CITE>campbell96</CITE> though we will reiterate some of the points here.
-With diphones a fixed view of the possible space of speech units has
-been made which we all know is not ideal.  There are articulatory
-effects which go over more than one phone, e.g. /s/ can take on
-artifacts of the roundness of the following vowel even over an
-itermediate stop, e.g. <SAMP>`spout'</SAMP> vs <SAMP>`spit'</SAMP>.  But its not just
-obvious segmental effects that cause variation in pronunciation,
-syllable position, word/phrase initial and final position have typically
-a different level of articulation from segments taken from word internal
-position.  Stressing and accents also cause differences.  Rather than
-try to explicitly list the desired inventory of all these phenomena and
-then have to record all of them a potential alternative is to take a
-natural distribution of speech and (semi-)automatifcally find the
-distinctions that actually exist rather predefining them.
-
-</P>
-<P>
-The theory is obvious but the design of such systems and finding the
-approrpiate selection criteria, weighting the costs of relative candidates
-is a non-trivial problem.  However tecniques like this often produce
-very high quality, very natural sounding synthesis.  However they also
-can produce some very bad synthesis too, when the database has unexpected
-holes and/or the selection costs fail.
-
-</P>
-<P>
-Two forms of unit selection will discussed here, not because we feel
-they are the best but simply because they are the ones actually
-implemented by us and hence can be distributed.  These should still be
-considered research systems.  Unless you are specifically interested or
-have the expertise in developing new selection techniques it is not
-recommended that you try these, if you need a working voice within a
-month and can't afford to miss that deadline then the diphone option is
-safe, well tried and stable.
-
-</P>
-
-
-<H2><A NAME="SEC35" HREF="festvox_toc.html#TOC35">6.1  Cluster unit selection</A></H2>
-
-<P>
-This is a reimplementation of the techniques as described in
-<CITE>black97c</CITE>.  The idea is to take a database of general speech and
-try to cluster each phone type into groups of acoustically similar units
-based on the (non-acoustic) information available at synthesis time,
-such as phonetic context, prosodic features (F0 and duration) and higher
-level features such as stressing, word position, and accents.  The
-actually features used may easily be changed an experimented with as can
-the definition of the definition of acoustic distance between the units
-in a cluster.  
-
-</P>
-<P>
-In some sense this work builds on the results of both the CHATR
-selection algorithm <CITE>hunt96</CITE> and the work of <CITE>donovan95</CITE>, but
-differs in some important and significant ways.  Specifically in
-contrast to <CITE>hunt96</CITE> this cluster algorithm pre-builds CART trees
-to select the approriate cluster of candidate phones thus avoiding the
-computationally expensive function of calculating target costs (through
-linear regression) at selection time.  Secondly because the clusters are
-built directly from the acoustic scores and target features, a target
-estimation function isn't required removing the need to calculate
-weights for each feature.  This cluster method differs from the
-clustering method in <CITE>donovan95</CITE> in that it can use more
-generalized features in clustering and uses a different acoustic cost
-function (Donovan uses HMMs), also his work is based on sub-phonetic
-units (HMM states).  Also Donovan selects one candidate while here we
-select a group of candidates and finds the best overall selection by
-finding the best path through each set of candidates for each target
-phone, in a manner similar to <CITE>hunt96</CITE> and <CITE>iwahashi93</CITE>
-before.
-
-</P>
-<P>
-The basic processes involved in building a waveform synthesizer for
-the clustering algorithm are as follows.
+This chapter acts as a reference guide for the particular dialect of
+the Scheme programming language used in the Festival Speech Synthesis
+systems.  The Scheme programming language is a dialect of Lisp
+designed to be more consistent.  It was chosen for the basic
+scripting language in Festival because:
 
 <UL>
 <LI>
 
-Collect the database of general speech.
+it is a very easy language for machines to parse and interpret, thus
+the foot print for the interpreter proper is very small
 <LI>
 
-Build utterance structures for your database using the techniques
-discussed in section <A HREF="festvox_4.html#SEC20">4.4  Utterance building</A>
+it offers garbage collection making managing objects safe and easy.
 <LI>
 
-Building coefficients for acostic distances, typically some
-form of cepstrum plus F0, or some pitch synchronous analysis (e.g.
-LPC).
+it offers a general consistent datastructure for representing parameters,
+rules etc.
 <LI>
 
-Build distances tables, precalculating the acoustic distance
-between each unit of the same phone type.
+it was familiar to the authors
 <LI>
 
-Dump selection features (phone context, prosodic, positional and
-whatever) for each unit type.
-<LI>
-
-Build cluster trees using <TT>`wagon'</TT> with the features and acoustic
-distances dumped by the previous two stages
-<LI>
-
-Building the voice description itself
+its is suitable for use as an embedded system
 </UL>
 
-
-
-<H3><A NAME="SEC36" HREF="festvox_toc.html#TOC36">6.1.1  Collecting databases for unit selection</A></H3>
-
 <P>
-Unlike diphone database which are carefully constructed to ensure
-specific coverage one of the advantages of unit selection is that
-a much more general database is desired.  However, although voices
-may be built from existing data not specifically gathered for
-synthesis there are still factors about the data that will help make
-better synthesis.
+Having a scripting language in Festival is actually one of the
+fundamental properties that makes Festival a useful system.  The fact
+that new voices and languages in many cases can be added without
+changing the underlying C++ code makes the system mouch more powerful
+and accessible than a more monolithic system that requires recompilation
+for any parameter changes.  As there is sometimes confusion we
+should make it clear that Festival contains its own Scheme interpreter
+as part of the system.  Festival can be view as a Scheme interpreter
+that has had basic addition to its function to include modules
+that can do speech synthesis, no external Scheme interperter is
+required to use Festival.
 
 </P>
 <P>
-Like diphone databases the more cleanly and carefully the speech is
-recorded the better the synthesized voice will be.  As we are going to
-be selecting units from different parts of the database the more similar
-the recordings are, the less likely bad joins will occur.  However
-unlike diphones database prosodic variation is probably a good thing, as
-it is those variations that can make synthesis from unit selection sound
-more natural.  Good phonetic coverage is also useful, at least phone
-coverage if not complete diphone coverage.  Also synthesis using these
-techniques seem to retain aspects of the original database.  If the
-database is broadcast news stories, the synthesis from it will typically
-sound like read news stories (or more importantly will sound best when
-it is reading news stories).
+The actual interpreter used in Festival is based on George Carret's
+SIOD, "Scheme in one Defun".  But this has been substantially enhanced
+from its small elegant beginnings into something that might be better
+called "Scheme in one directory".  Although there is a standard for
+Scheme the version in Festival does not fully follow it, for both good
+and bad reasons.  Thus finding in order for people to be able to program
+in Festival's Scheme we provide this chapter to list the core type,
+functions, etc and some examples.  We do not pretend to be teaching
+programming here but as we know many people who are interested in
+building voices are not primarily programmers, some guidance on the
+language and its usage will make the simple programming that is
+required in building voices, more accessible.
 
 </P>
 <P>
-<A NAME="IDX159"></A>
-<A NAME="IDX160"></A>
-<A NAME="IDX161"></A>
-Although it is too early to make definitive statements about what size
-and type of data is best for unit selection we do have some rough
-guides.  A Timit like database of 460 phonetically balanced sentences
-(around 14,000 phones) is not an unreasonable first choice.  If the
-text has not been specifically selected for phonetic coverage a larger
-database is probably required, for example the Boston Univeristy Radio
-News Corpus speaker <CODE>f2b</CODE> <CITE>ostendorf95</CITE> has been used
-relatively successfully.  Of course all this depends on what use you
-wish to make of the synthesizer, if its to be used in more restrictive
-environments (as is often the case) tailoring the database for the task
-is a very good idea.  If you are going to be reading a lot of telephone
-numbers, having a significant number of examples of read numbers will
-make synthesis of numbers sound much better.
-
-</P>
-<P>
-The database used as an example here is a TIMIT 460 sentence database
-read by an American male speaker.
-
-</P>
-<P>
-Again the notes about recording the database apply, though it will
-sometimes be the case that the database is already recorded and beyond
-your control, in that case you will always have something legitimate to
-blame for poor quality synthesis.
+For reference the Scheme Revised Revised Revised report describes the
+standard definition <CITE>srrrr90</CITE>.  For a good introduction to
+programming in general that happens to use Scheme as its example
+language we recommend <CITE>abelson85</CITE>.  Also for those who are
+unfamiliar with the use of Lisp-like scripting languages we recommend a
+close look as GNU Emacs which uses Lisp as its underlying scripting
+language, knowledge of the internals of Emacs did to some extent
+influence the scripting language design of Festival.
 
 </P>
 
 
-<H3><A NAME="SEC37" HREF="festvox_toc.html#TOC37">6.1.2  Preliminaries</A></H3>
+<H2><A NAME="SEC17" HREF="festvox_toc.html#TOC17">6.1  Overview</A></H2>
 
 <P>
-<A NAME="IDX162"></A>
-Throughout our dicussion we will assume the following database layout.
-It is highly recommended that you follow this format otherwise scripts,
-and examples will fail.  There are many ways to organize databases and
-many of such choices are arbitrary, here is our "arbitrary" layout.
+"Lots of brackets" is what comes to most people's minds when considering
+Lisp and its various derivatives such as Scheme.  At the start this can
+seem daunting and it is true that parenthesis errors can cuase problems.
+But with an editor that does proper bracket matching, brackets can
+actually be helpful in code structure rather than a hindrance.
 
 </P>
 <P>
-The basic database directory should contain the following directories
+The fundamental structure is the <EM>s-expression</EM>.  It consists of an
+atom, or a list of s-expressions.  This simply defined recursive
+structure allows complex structures to easily be specified.  For
+example
+
+<PRE>
+3
+(1 2 3)
+(a (b c) d)
+((a b) (d e))
+</PRE>
+
+<P>
+Unlike other programming languages Scheme's data and code are
+in the same format, s-expressions.  Thus s-expression
+are evaluated, recursively.
 <DL COMPACT>
 
-<DT><CODE>bin/</CODE>
+<DT><EM>Symbols:</EM>
 <DD>
-Any database specific scripts for processing.  Typically this
-first contains a copy of standard scripts that are then customized
-when necessary to the particulary database
-<DT><CODE>wav/</CODE>
+are treated as variables and evaluated return their currently set value.
+<DT><EM>Strings and numbers:</EM>
 <DD>
-The waveform files.  These should be headered, one utterances per file
-with a standard name convention.  They should have the extention
-<TT>`.wav'</TT> and the fileid consistent with all other files through
-the database (labels, utterances, pitch marks etc).
-<DT><CODE>lab/</CODE>
+evalutate to themselves.
+<DT><EM>Lists:</EM>
 <DD>
-The segmental labels.  This is usually the master label files,
-these may contain more information that the labels used by festival
-which will be in <TT>`festival/relations/Segment/'</TT>.
-<DT><CODE>wrd/</CODE>
-<DD>
-Word label files.
-<DT><CODE>lar/</CODE>
-<DD>
-The EGG files (larynograph files) if collected.
-<DT><CODE>pm/</CODE>
-<DD>
-Pitchmark files as generated from the lar files or from the signal
-directly.
-<DT><CODE>festival/</CODE>
-<DD>
-Festival specific label files.
-<DL COMPACT>
-
-<DT><TT>`festival/relations/'</TT>
-<DD>
-The processed labelled files for building Festival utterances,
-held in directories whose name reflects the relation they represent:
-<TT>`Segment/'</TT>, <TT>`Word/'</TT>, <TT>`Syllable/'</TT> etc.
-<DT><TT>`festival/utts/'</TT>
-<DD>
-The utterances files as generated from the <TT>`festival/relations/'</TT>
-label files.
-</DL>
+The each member of the list is evaluated and the first item in
+the list is treated as a function and applied using the remainer of the
+list as arguments to the function.
 </DL>
 <P>
-Other directories will be created for various processing reasons.
-
-</P>
-
-
-<H3><A NAME="SEC38" HREF="festvox_toc.html#TOC38">6.1.3  Building utterance structures for unit selection</A></H3>
-
-<P>
-<A NAME="IDX163"></A>
-In order to make access well defined you need to construct Festival
-utterance structures for each of the utterances in your database.  This
-(in is basic form) requires labels for: segments, syllables, words,
-phrases, F0 Targets, and intonation events.  Ideally these should all be
-carefully hand labelled but in most cases that's impractical.  There are
-ways to automatically obtain most of these labels but you should be
-aware of the inherit errors in the labelling system you use (including
-labelling systems that involve human labellers).  Note that when a unit
-selection method is to be used that fundamentally uses segment
-boundaries its quality is going to be ultimately determined by the
-quality of the segmental labels in the databases.
-
-</P>
-<P>
-<A NAME="IDX164"></A>
-For the unit selection algorithm described below the segemntal labels
-should be using the same phoneset as used in the actual synthesis voice.
-However a more detailed phonetic labelling may be more useful
-(e.g. marking closures in stops) mapping that information back to the
-phone labels before actual use.  Autoaligned databases typically aren't
-acurate enough for use in unit selection.  Most autoaligners are built
-using speech recognition technology where actual phone boundaries are
-not the primary measure of success.  General speech recognition systems
-primarily measure words correct (or more usefully semantically correct)
-and do not require phone boundaries to be acurate.  If the database is
-to be used for unit selection it is very important that the phone
-boundaries are accurate.  Having said this though, we have successfully
-used the aligner described in the diphone chpater above to label general
-utterance where we knew which phone string we were looking for, using
-such an aligner may be a useful first pass, but the result should always
-be checked by hand.
-
-</P>
-<P>
-<A NAME="IDX165"></A>
-It has been suggested that aligning techniques and unit selection
-training techniques can be used to judge the accuracy of the labels and
-basically exclude any segments that appear to fall outside the typical
-range for the segment type.  Thus it, is believed that unit selection
-algorithms should be able to deal with a certain amount of noise in the
-labelling.  This is the desire for researchers in the field, but we
-are some way from that and the easiest way at present to improve the
-quality of unit selection algorithms at present is to ensure that
-segmental labelling is as accurate as possible.  Once we have a better
-handle on selection techniques themselves it will then be possible to
-start experimenting with noisy labelling.
-
-</P>
-<P>
-<A NAME="IDX166"></A>
-However it should be added that this unit selection technique (and many
-others) support what is termed "optimal coupling" (<CITE>conkie96</CITE>)
-where the acoustically most appropriate join point is found
-automatically at run time when two units are selected for concatenation.
-This technique is inherently robust to at least a few tens of
-millisecond boundary labelling errors.
-
-</P>
-<P>
-For the cluster method defined here it is best to construct more than 
-simply segments, durations and an F0 target.  A whole syllabic structure
-plus word boundaries, intonation events and phrasing allow a much richer
-set of features to be used for clusters.  See section <A HREF="festvox_4.html#SEC20">4.4  Utterance building</A>
-for a more general discussion of how to build utterance structures
-for a database.
-
-</P>
-
-
-<H3><A NAME="SEC39" HREF="festvox_toc.html#TOC39">6.1.4  Making cepstrum parameter files</A></H3>
-
-<P>
-<A NAME="IDX167"></A>
-<A NAME="IDX168"></A>
-In order to cluster similar units in a database we build an
-acoustic representation of them.  This is is also still a research
-issue but in the example here we will use Mel cepsrtum plus
-delta Mel cepstrum plus F0.  Though this is open for change (and
-can easily be done so).
-
-</P>
-<P>
-Here is an example script which will generate these parameters for a
-database, it is included in <TT>`festvox/src/unitsel/make_mcep'</TT> The
-main loop here generates the cepstrum parameters and the F0 and then
-combinsthem into a single file with F0 as parameter 0.  This format is
-assumed for the later acoustic measures though the number
-of cepstrum/delta cepstrum parameters may be changed if
-desired.
+Thus the s-expression 
 
 <PRE>
-ESTDIR=/usr/awb/projects/speech_tools/main
-PDA_PARAMS="-fmax 180 -fmin 80"
-SIG2FV=$ESTDIR/sig2fv
-SIG2FVPARAMS='-coefs melcep -delta melcep -melcep_order 12 \
-          -fbank_order 24 -shift 0.01 -factor 2.5 -preemph 0.97'
-
-for i in $*
-do
-  fname=`basename $i .wav`
-  echo $fname
-  $SIG2FV $SIG2FVPARAMS -otype ascii $i -o /tmp/tmp.$$.ascii
-  if [ ! -f festival/f0/$fname.f0 ]
-  then
-     $ESTDIR/pda -s 0.01 -o festival/f0/$fname.f0 -otype ascii \
-               $PDA_PARAMS wav/$fname.wav
-  fi
-  $ESTDIR/ch_track -pc first -itype ascii -s 0.010 -otype htk \
-     festival/f0/$fname.f0 /tmp/tmp.$$.ascii \
-     -o festival/coeffs/$fname.dcoeffs
-  rm /tmp/tmp.$$.*
-done
+(+ 1 2)
 </PRE>
 
 <P>
-<A NAME="IDX169"></A>
-<A NAME="IDX170"></A>
-The above builds coefficients at fixed frames.  We have also
-experiemented with building parameters pitch synchornously and have
-found a slight improvement in the usefulness of teh emasure based on
-this.  We do not pretend that this part is particularly neat in the
-system but it does work.  When pitch synchornous parameters are
-build the cluints module will automatically put the local
-F0 value in coefficient 0 at load time.  This happens to be
-appropriate from LPC coefficients.  The script in
-<TT>`festvox/src/general/make_lpc'</TT> can be used to
-generate the parameters, assuming you have already 
-generated pitch marks.
+when evaluated will return <CODE>3</CODE> as the symbol <CODE>+</CODE>
+is bound to a function that adds it arguments.
 
 </P>
 <P>
-Note the secondary advantage of using LPC coefficients is that they are
-requied any way for LPC resynthesis thus this allows less information
-about the database to be required at run time.  We have not yet tried
-pitch synchronous MEL frequency cepstrum coefficients but that should be
-tried.  Also a more general duration/number of pitch periods match
-algorithm is worth defining.
-
-</P>
-
-
-<H3><A NAME="SEC40" HREF="festvox_toc.html#TOC40">6.1.5  Building the clusters</A></H3>
-
-<P>
-<A NAME="IDX171"></A>
-Cluster building is mostly automatic.  Of course you need the
-<CODE>clunits</CODE> modules compiled into your version of Festival.  Version
-1.3.1 or later is required, the version of <CODE>clunits</CODE> in 1.3.0 is
-buggy and incomplete and will not work.  To compile in <CODE>clunits</CODE>,
-add
+Variables may be set using the <CODE>set!</CODE> function which takes
+a variable name and a value as arguments
 
 <PRE>
-ALSO_INCLUDE += clunits
+(set! a 3)
 </PRE>
 
 <P>
-to the end of your <TT>`festival/config/config'</TT> file, nad recompile.
-To chaeck if an installation already has support for <CODE>clunits</CODE>
-check the value of the variable <CODE>*modules*</CODE>.
+The <CODE>set!</CODE> function is unusual in that it does not evaluate its
+first argument.  If it did you have to explcitly quote it or set some
+other variable to have a value of <CODE>a</CODE> to get the desired effect.
 
 </P>
 <P>
-<A NAME="IDX172"></A>
-The file <TT>`festival/src/modules/clunits/acost.scm'</TT> contains the
-basic code to build a cluster model for a databases that has utterance
-structures and acoustic parameters.  The function <CODE>do_all</CODE>
-will build the distance tables, dump the features and build
-the cluster trees.  The many parameters are set for the particular database 
-(and instance of cluster building) through the Lisp variable
-<CODE>clunits_params</CODE>.  An example is given in 
-<TT>`festival/src/modules/clunits/ked_params.scm'</TT> for the KED timit
-database.
+quoting, define
 
 </P>
-<P>
-The function <CODE>do_all</CODE> runs through all the steps but as some
-the steps are relatively time consuming there may be times when
-each of the steps needs to be run individually.  We will go through
-each step and at that time explain which parameters affect the
-substep.
 
-</P>
-<P>
-Ther first stage is to load in all the utterances in the
-database, sort them into segment type and name them with individual
-names (as <CODE>&#60;type&#62;_&#60;num&#62;</CODE>).  This first stage is
-required for all other stages so that if you are not running <CODE>do_all</CODE>
-you still need to run this stage first.  This is done by the
-calls
 
-<PRE>
-    (format t "Loading utterances and sorting types\n")
-    (set! utterances (acost:db_utts_load dt_params))
-    (set! unittypes (acost:find_same_types utterances))
-    (acost:name_units unittypes)
-</PRE>
+<H2><A NAME="SEC18" HREF="festvox_toc.html#TOC18">6.2  Data Types</A></H2>
 
 <P>
-Though the function <CODE>do_init</CODE> will do the same thing.
-
-</P>
-<P>
-This uses the following parameters
+There a number of basic data types in this Scheme, new ones may also be
+added but only through C++ functions.  This basic types are
 <DL COMPACT>
 
-<DT><CODE>name</CODE>
+<DT><EM>Symbols:</EM>
 <DD>
-A name for this database.
-<DT><CODE>db_dir</CODE>
-<DD>
-This full pathname of the database
-<DT><CODE>utts_dir</CODE>
-<DD>
-The directory contain the utterances.
-<DT><CODE>utts_ext</CODE>
-<DD>
-The file extention for the utterance files
-<DT><CODE>files</CODE>
-<DD>
-The list of file ids in the database.
-</DL>
-<P>
-For example for the KED example these parameters are
+symbols atoms starting with an alphabetic character.  Unlike
+numbers and strings, they may be used as variables.  Examples
+are 
 
 <PRE>
-       (name 'ked_timit)
-       (db_dir "/usr/awb/data/timit/ked/")
-       (utts_dir "festival/utts/")
-       (utts_ext ".utt")
-       (files ("kdt_001" "kdt_002" "kdt_003" ... ))
+a bcd f6 myfunc 
+plus cond
 </PRE>
 
-<P>
-The next stage is to load the accoustic parameters and build
-the distance tables.  The acoustic distance between each segment
-of the same type is calculated and saved in the distance table.
-Precalculating this saves a lot of time as the cluster will require
-this number many times.
-
-</P>
-<P>
-This is done by the following two function calls
+Symbols may be created from strings by using the function <CODE>intern</CODE>
+<DT><EM>Numbers:</EM>
+<DD>
+In this version of scheme all numbers are doubles, there is no
+distinction between floats, doubles and ints.  Examples are
 
 <PRE>
-    (format t "Loading coefficients\n")
-    (acost:utts_load_coeffs utterances)
-    (format t "Building distance tables\n")
-    (acost:build_disttabs unittypes clunits_params)
+1
+1.4
+3.14
+345
+3456756.4345476
 </PRE>
 
-<P>
-The following parameters influence the behaviour.
-<DL COMPACT>
-
-<DT><CODE>coeffs_dir</CODE>
+Numbers evaluate to themselves, that is the value of the atom 2
+is the number 2.
+<DT><EM>Strings:</EM>
 <DD>
-The directory (from db_dir) that contains the acoustic coefficients
-as generated by the script <TT>`make_mcep'</TT>.
-<DT><CODE>coeffs_ext</CODE>
-<DD>
-The file extention for the coefficient files
-<DT><CODE>get_std_per_unit</CODE>
-<DD>
-Takes the value <CODE>t</CODE> or <CODE>nil</CODE>.  If <CODE>t</CODE> the parameters
-for the type of segment are normalized by finding the menas and
-standard deviations for the class are used.  Thus a mean mahalanobis
-euclidean distance is found between units rather than simply
-a euclidean distance.
-<DT><CODE>ac_left_context &#60;float&#62;</CODE>
-<DD>
-The amount of the previous unit to be included in the the distance.
-1.0 means all, 0.0 means none.  This parameter may be used to make the
-acoustic distance sensitive to the previous acoustic context.
-<DT><CODE>ac_duration_penality &#60;float&#62;</CODE>
-<DD>
-The penalty factor for duration mismatch between units.
-<DT><CODE>ac_weights (&#60;float&#62; &#60;float&#62; ...)</CODE>
-<DD>
-The weights for each parameter in the coefficeint files used
-while finding the acoustic distance between segments.  There must
-be the same number of weights as there are parameters in the
-coefficient files.
-</DL>
-<P>
-An example from KED is
+Strings are bounded by the double quote characters <CODE>"</CODE>.  For
+example
 
 <PRE>
-       (coeffs_dir "festival/coeffs/")
-       (coeffs_ext ".dcoeffs")
-       (dur_pen_weight 0.1)
-       (get_stds_per_unit t)
-       (ac_left_context 0.8)
-       (ac_weights
-         (1.0
-           0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5
-           2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0))
+"a"
+"abc"
+"This is a string"
 </PRE>
 
-<P>
-The next stage is to dump the feature staht will be used to index the
-clusters.  Remember the clusters are defined with respect to the acoustic
-distance between each unit in the cluster, but they are indexed by
-these features.  These features are those which will be available at
-text to speech time when no acoustic information is available.  Thus
-they include things like phonetic and prosodic context rather than
-spectral information.  The name features may (and probabaly should)
-be over general alloing the decision tree building program <CODE>wagon</CODE>
-to decide which of theses feature actual does have an acoustic
-distinction in the units.
-
-</P>
-<P>
-The function to dump the features is
+Strings evaluate to themselves.  They may be converted to symbols
+with the function <CODE>intern</CODE>.  If they are strings of characaters
+that represent numbers you can convert a string to a number with 
+the function <CODE>parse-number</CODE>.  For example
 
 <PRE>
-    (format t "Dumping features for clustering\n")
-    (acost:dump_features unittypes utterances clunits_params)
+(intern "abc") =&#62; abc
+(parse-number "3.14") =&#62; 3.14
 </PRE>
 
-<P>
-The parameters which affect this function are
-<DL COMPACT>
+Although you can make symbols from numbers you should not do that.
 
-<DT><CODE>fests_dir</CODE>
+Double quotes may be specified within a string by escaping it with a
+backslash.  Backslashes therefore also require an escape backslash.
+That is, <CODE>"ab\"c"</CODE> contains four characters, <CODE>a</CODE>, <CODE>b</CODE>,
+<CODE>"</CODE> and <CODE>c</CODE>.  <CODE>"ab\\c"</CODE> also contains four characters,
+<CODE>a</CODE>, <CODE>b</CODE>, <CODE>\</CODE> and <CODE>c</CODE>.  And <CODE>"ab\\\"c"</CODE>
+contains five characters <CODE>a</CODE>, <CODE>b</CODE>, <CODE>\</CODE>, <CODE>"</CODE> and
+<CODE>c</CODE>.
+<DT><EM>Lists or Cons</EM>
 <DD>
-The directory when the features will be saved (by segment type).
-<DT><CODE>feats</CODE>
-<DD>
-The list of features to be dumped. These are standard festival
-feature names with respect to the Segment relation.
-</DL>
-<P>
-For our KED example these values are
+Lists start with a left parenthesis and end with a right parenthesis
+with zero or more s-expression between them.  For example
 
 <PRE>
-       (feats_dir "festival/feats/")
-       (feats 
-             (occurid
-               p.name p.ph_vc p.ph_ctype 
-                   p.ph_vheight p.ph_vlng 
-                   p.ph_vfront  p.ph_vrnd 
-                   p.ph_cplace  p.ph_cvox    
-               n.name n.ph_vc n.ph_ctype 
-                   n.ph_vheight n.ph_vlng 
-                   n.ph_vfront  n.ph_vrnd 
-                   n.ph_cplace  n.ph_cvox
-              segment_duration 
-              seg_pitch p.seg_pitch n.seg_pitch
-              R:SylStructure.parent.stress 
-              seg_onsetcoda n.seg_onsetcoda p.seg_onsetcoda
-              R:SylStructure.parent.accented 
-              pos_in_syl 
-              syl_initial
-              syl_final
-              R:SylStructure.parent.syl_break 
-              R:SylStructure.parent.R:Syllable.p.syl_break
-              pp.name pp.ph_vc pp.ph_ctype 
-                  pp.ph_vheight pp.ph_vlng 
-                  pp.ph_vfront  pp.ph_vrnd 
-                  pp.ph_cplace pp.ph_cvox))
+(a b c)
+()
+(b (b d) e)
+((the boy) saw (the girl (in (the park))))
 </PRE>
 
-<P>
-Now that we have the acoustic distances and the feature descriptions of
-each unit the next stage is to find a relationship between those
-features and the acoustic distances.  This we do using the CART tree
-builder <CODE>wagon</CODE>.  It will find out questions about which features
-best minimize the acoustic distance between the units in that class.
-<CODE>wagon</CODE> has many options many of which are apporiate to this task
-though it is interesting that this learning task is interestingly
-closed.  That is we are trying to classify <EM>all</EM> the units in
-the database, there is no test set as such.  However in synthesis
-there will be desired units whose feature vector didn't exist
-in the training set. 
-
-</P>
-<P>
-The clusters are built by the following function
+Lists can be made by various functions most notably <CODE>cons</CODE> and
+<CODE>list</CODE>.  <CODE>cons</CODE> returns a list whose first item is the first
+item in the list, standardly called its <CODE>car</CODE>, and whose remainder,
+standardly called its <CODE>cdr</CODE>, is the second argument of <CODE>cons</CODE>.
 
 <PRE>
-    (format t "Building cluster trees\n")
-    (acost:find_clusters (mapcar car unittypes) clunits_params)
+(cons 'a '(b c)) =&#62; (a b c)
+(cons '(a b) '(c d)) =&#62; ((a b) c d)
 </PRE>
 
-<P>
-The parameters that affect the tree building process are
-<DL COMPACT>
-
-<DT><CODE>tree_dir</CODE>
+<DT><EM>Functions:</EM>
 <DD>
-the directory where the decision tree for each segment type will
-be saved
-<DT><CODE>wagon_field_desc &#60;file&#62;</CODE>
-<DD>
-A filename of a weagon filed descriptor file.   This is a standard
-field description (field name plus field type) that is require for
-wagon.  This building process doesn't include an explicit building
-of this file and you must create it yourself.  The script
-<TT>`make_wagon_desc'</TT> can aid this given the feature files
-in <TT>`festival/feats'</TT> and a file contains the feature
-names (one per line) as listed in the <CODE>feats</CODE> parameter
-above.
-<DT><CODE>wagon_progname &#60;file&#62;</CODE>
-<DD>
-The pathname for the <TT>`wagon'</TT> CART building program.  This
-is a string and may also include any extra parameters you
-wish to give to <TT>`wagon'</TT> e.g. <CODE>-stepwise</CODE>.
-<DT><CODE>wagon_cluster_size &#60;int&#62;</CODE>
-<DD>
-The minimu cluster size (the wagon <CODE>-stop</CODE> value).
-<DT><CODE>prune_reduce &#60;int&#62;</CODE>
-<DD>
-This number of elements in each cluster to remove in pruning.
-This removes the units in the cluster that are furthest from the centre.
-</DL>
-
-<P>
-<A NAME="IDX173"></A>
-<A NAME="IDX174"></A>
-Note that as the distance tables can be large there is an alternative
-function that does both the ditance table and clustering in one,
-deleting the distance table immediately after use, thus you only need
-enough disk space for the largest number of phones in any type.
-To do this 
+Functions may be applied explicity bu the function <CODE>apply</CODE>
+or more normally as when the appear as the first item in a list
+to be evaluated.  The normal way to define function is using
+the <CODE>define</CODE> function.  For example
 
 <PRE>
-    (acost:disttabs_and_clusters unittypes clunits_params)
+(define (ftoc temp)
+   (/ (* (- temp 32) 5) 9))
 </PRE>
 
-<P>
-Removing the calls to <CODE>acost:build_disttabs</CODE> and 
-<CODE>acost:find_clusters</CODE>.
-
-</P>
-<P>
-In our KED example these have the values
+This binds the function to the variable <CODE>ftoc</CODE>.  Functions
+can also be defined anonymously which sometimes is convinient.
 
 <PRE>
-       (trees_dir "festival/trees/")
-       (wagon_field_desc "festival/clunits/all.desc")
-       (wagon_progname "/usr/awb/projects/speech_tools/bin/wagon")
-       (wagon_cluster_size 10)
-       (prune_reduce 0)
+(lambda (temp)
+   (/ (* (- temp 32) 5) 9))
 </PRE>
 
-<P>
-The final stage in building a cluster model is collect the
-generated trees into a single file and dumping the uniot
-catalogue, i.e. the list of unit names and their files and
-position in them.  This is doen by the lisp function
+returns a function.
+<DT><EM>Others:</EM>
+<DD>
+other internal types are support by Festival's scheme including some
+inportant object types use for synthesis such as utterances, waveforms,
+items etc.  The are normally printed as in the form
 
 <PRE>
-    (acost:collect_trees (mapcar car unittypes) clunits_params)
-    (format t "Saving unit catalogue\n")
-    (acost:save_catalogue utterances clunits_params)
+#&#60;Utterance 6234&#62;
+#&#60;Wave 1294&#62;
 </PRE>
 
-<P>
-The only parameter that affect this is
-<DL COMPACT>
-
-<DT><CODE>catalogue_dir</CODE>
-<DD>
-the directory where the catalogue will be save (the <CODE>name</CODE> 
-parameter is used to name the file).
-</DL>
-<P>
-In the KED example this is
-
-<PRE>
-       (catalogue_dir "festival/clunits/")
-</PRE>
-
-<P>
-There are a number of parameters that are specified with a cluster
-voice.  These are related to the run time aspects of the cluster
-model.  These are
-<DL COMPACT>
-
-<DT><CODE>join_weights</CODE>
-<DD>
-This are a set of weights, in the same format as <CODE>ac_weights</CODE>
-that are used in optimal coupling to find the best join point between two
-candidate units.  This is different from <CODE>ac_weights</CODE> as it
-is likely different values are desried, particularl increasing the 
-F0 value (column 0).
-<DT><CODE>continuity_weight &#60;float&#62;</CODE>
-<DD>
-The factor to multiply the join cost over the target cost.  This
-is probabaly not very relevant given the the target cost is merely
-the position from the cluster center.
-<DT><CODE>optimal_coupling &#60;int&#62;</CODE>
-<DD>
-If <CODE>1</CODE> this uses optimal coupling and searches the cepstrum
-vectors at each join point to find the best possible join point.
-This is computationally expensive (as well as having to load in lots
-of cepstrum files), but does give better results.
-<DT><CODE>extend_selections &#60;int&#62;</CODE>
-<DD>
-If <CODE>1</CODE> then the selected cluster will be extended
-to include any unit from the cluster of the previous segments
-candidate units that has correct phone type.  This is experimental
-but has shown its worth and hence is recommend.  This means
-that instead of selecting just units selection is effectively
-selecting the beginings of multiple segment units.  This option
-encourages far longer units.
-<DT><CODE>pm_coeffs_dir &#60;file&#62;</CODE>
-<DD>
-The directory (from <CODE>db_dir</CODE>) where the pitchmarks are
-<DT><CODE>pm_coeffs_ext &#60;file&#62;</CODE>
-<DD>
-The file extension for the pitchmark files.
-<DT><CODE>sig_dir &#60;file&#62;</CODE>
-<DD>
-Directory containing waveforms of the units (or residuals if
-Residual LPC is being used, PCM waveforms is PSOLA is being used)
-<DT><CODE>sig_ext &#60;file&#62;</CODE>
-<DD>
-File extention for waveforms/residuals
-<DT><CODE>join_method &#60;method&#62;</CODE>
-<DD>
-Specify the method used for joining the selected units. Currently it
-supports <CODE>simple</CODE>, a very naive joining mechanism, and
-<CODE>windowed</CODE>, where the ends of the units are windowed using a
-hamming window then overlapped (no prosodic modification takes place
-though).  The other two possible values for this feature are <CODE>none</CODE>
-which does nothing, and <CODE>modified_lpc</CODE> which uses the standard
-UniSyn module to modify the selected units to match the targets.
+The rpint form is a convinience form only.  Enter that string of
+characters will not allow a reference to that object.  The number is
+unique to that object instance (it is actually the internal address of
+the object), and can be used visually to note if objects are the same or
+not.
 </DL>
 
 
 
-<H3><A NAME="SEC41" HREF="festvox_toc.html#TOC41">6.1.6  Defining a voice</A></H3>
+<H2><A NAME="SEC19" HREF="festvox_toc.html#TOC19">6.3  Functions</A></H2>
 
 <P>
-This cluster method is just a waveform synthesizer it still requires a
-text analysis and prosodic component.  The only restriction is that it
-must generate the same sort of utterance structures as in your database.
-This is because it features from utterances of that type which were used
-to train the selection trees.  That is you can't use a front end that
-uses different relation names and features.
-
-</P>
-<P>
-Here we simply use the same front end as <CODE>ked_diphone</CODE> as it
-is basically the same speaker.
+This section lists the basic functions in Festival's Scheme.  It doesn't
+list them all (see the Festival manual for that) but does highlight the
+key functions that you should normally use.
 
 </P>
 
 
-<H3><A NAME="SEC42" HREF="festvox_toc.html#TOC42">6.1.7  Cluster Example</A></H3>
+<H3><A NAME="SEC20" HREF="festvox_toc.html#TOC20">6.3.1  Core functions</A></H3>
 
 <P>
-<A NAME="IDX175"></A>
-A simple example of building a cluster unit selection synthesizer is
-given in section <A HREF="festvox_7.html#SEC44">7  Limited domain synthesis</A>.  In that example the features
-used in selection have been reduced and a few other simplying
-assumptions have been made but the underlying structure is the same.
-That is a good example to start from, then change the parameters as
-fully described above to improve the selection criertia.
+These functions are the basic functions used in Scheme.  These
+include the structural functions for setting variables, 
+conditionals. loops, etc.
 
 </P>
+<DL COMPACT>
 
-
-<H2><A NAME="SEC43" HREF="festvox_toc.html#TOC43">6.2  Diphones from general databases</A></H2>
-
-<P>
-<A NAME="IDX176"></A>
-<A NAME="IDX177"></A>
-As touched on above the choice of an inventory of units can be viewed as
-a line from a small inventory phones, to diphones, tripohones to
-arbitrary units.  Though the direction you come from influences the
-selection of the units from the database.  CHATR <CITE>campbell96</CITE> lies
-firmly at the "arbitrary units" end of the spectrum.  Although it can
-exclude bad units from its inventory it is very much <SAMP>`everything
-minus some'</SAMP> view of the world.  Microsoft's Whistler <CITE>huang97</CITE> on
-the other hand, starts off with a general database base but selects
-typical units from it.  Thus its inventory is substantially smaller than
-the full general database the units are extracted from.  At the other
-end of the spectrum we have the fixed pre-sepcified inventory like
-diphone synthesis as has bee described in the previous chapter.
-
-</P>
-<P>
-In this section we'll give some examples of moving along the line
-from the fixed pre-specified inventory to the words the more general
-inventories but these techniques still have a strong component
-of prespecification.
-
-</P>
-<P>
-Firstly lets us assume you have a general database that is labelled with
-utterances as described above.  We can extract a standard diphone
-database from this general database, however unless the database was
-specifically desgined, a general database is unlikely to have diphone
-coverage.  Even when phonetically rich databases are used such as Timit
-there is likely to be very few vowel-vowel diphones as they are
-comparatively rare.  But as these diphone are rare we may be able to do
-with out them and hence it is at least an interesting exercise to
-extract an as complete as possible diphone index from a general
-database.  
-
-</P>
-<P>
-The simplest method is to linearly search for all phone-phone pairs in
-the phone set through all utterances simply taking the first example.
-Some same code is given in <TT>`src/diphone/make_diphs_index.scm'</TT>.
-This basic idea is to load in all the utterances in a database, and
-index each segment by is phone name and succeeding phone name.  Then
-various selection techniques can be use to select from the multiple
-candidates of each diphone (or you can split the indexing futher).
-After selection a diphone index file can be saved.
-
-</P>
-<P>
-The utterances to load are identified by a list of fileids.  For
-example if the list of fileids (without parenthesis) is in
-the file <TT>`etc/fileids'</TT>, the following will builds a diphone
-index.
+<DT><CODE>(set! SYMBOL VALUE)</CODE>
+<DD>
+Sets <VAR>SYMBOL</VAR> to <VAR>VALUE</VAR>.  <VAR>SYMBOL</VAR> is not evaluated,
+while <VAR>VALUE</VAR> is.  Example
 
 <PRE>
-festival .../make_diphs_utts.scm
-...
-festival&#62; (set! fileids (load "etc/fileids" t))
-...
-festival&#62; (make_diphone_index fileids "dic/f2bdiph.est")
+(set! a 3)
+(set! pi 3.14)
+(set! fruit '(apples pears bananas))
+(set! fruit2 fruit)
+</PRE>
+
+<DT><CODE>(define (FUNCNAME ARG0 ARG1 ...) . BODY)</CODE>
+<DD>
+define a function called <VAR>FUNCNAME</VAR> with specified arguments and
+body.
+
+<PRE>
+(define (myadd a b) (+ a b))
+(define (factorial a)
+ (cond
+  ((&#60; a 2) 1)
+  (t (* a (factorial (- a 1))))))
+</PRE>
+
+<DT><CODE>(if TEST TRUECASE [FALSECASE] )</CODE>
+<DD>
+If the value of <VAR>TEST</VAR> is non-nil, evaluate <VAR>TRUECASE</VAR> and return
+value else if present evaluate <VAR>FALSECASE</VAR> if present and return value,
+else return <CODE>nil</CODE>.
+
+<PRE>
+(if (string-equal v "apples")
+   (format t "It's an apple\n")
+   (format t "It's not an apple\n"))
+(if (member v '(apples pears bananas))
+   (begin
+       (format t "It's a fruit (%s)\n" v)
+       'fruit)
+   'notfruit)
+</PRE>
+
+<DT><CODE>(cond (TEST0 . BODY) (TEST1 . BODY) ...)</CODE>
+<DD>
+A multiple if statement.  Evaluates each <VAR>TEST</VAR> until a non-nil test
+is found then evalues each of the expressions in that <VAR>BODY</VAR> return
+the value of the last one.
+
+<PRE>
+(cond
+  ((string-equal v "apple")
+   'ringo)
+  ((string-equal v "plum")
+   'ume)
+  ((string-equal v "peach")
+   'momo)
+  (t
+   'kudamono)
+</PRE>
+
+<DT><CODE>(begin . BODY )</CODE>
+<DD>
+This evaluates each s-expression in <VAR>BODY</VAR> and returns the value
+of the last s-expression in the list.  This is useful for case
+where only one s-expression is expected but you need to call a number
+of functions, notably the <CODE>if</CODE> function.
+
+<PRE>
+(if (string-equal v "pear")
+    (begin
+       (format t "assuming it's a asian pear\n")
+       'nashi)
+    'kudamono)
+</PRE>
+
+<DT><CODE>(or . DISJ)</CODE>
+<DD>
+evalutate each disjunct until one is non-nil and return that value.
+
+<PRE>
+(or (string-equal v "tortoise")
+    (string-equal v "turtle"))
+(or (string-equal v "pear")
+    (string-equal v "apple")
+    (&#60; num_fruits 6))
+</PRE>
+
+<DT><CODE>(and . CONJ)</CODE>
+<DD>
+evalutate each conjunct until one is nil and return that value or
+return the value of the last conjunct.
+
+<PRE>
+(and (&#60; num_fruits 10)
+     (&#62; num_fruits 3))
+(and (string-equal v "pear")
+     (&#60; num_fruits 6)
+     (or (string-equal day "Tuesday")
+         (string-equal day "Wednesday")))
+</PRE>
+
+</DL>
+
+
+
+<H3><A NAME="SEC21" HREF="festvox_toc.html#TOC21">6.3.2  List functions</A></H3>
+
+<DL COMPACT>
+
+<DT><CODE>(car EXPR)</CODE>
+<DD>
+returns the "car" of <VAR>EXPR</VAR>, for a list this is the first item,
+for an atom or the empty list this is defined to be <CODE>nil</CODE>.
+
+<PRE>
+(car '(a b)) =&#62; a
+(car '((a b) c d)) =&#62; (a b)
+(car '(a (b c) d)) =&#62; a
+(car nil) =&#62; nil
+(car 'a) =&#62; nil
+</PRE>
+
+<DT><CODE>(cdr EXPR)</CODE>
+<DD>
+returns the "cdr" of <VAR>EXPR</VAR>, for a list this is the rest of the
+list, for an atom or the empty list this is defined to be <CODE>nil</CODE>.
+
+<PRE>
+(cdr '(a b)) =&#62; (b)
+(cdr '((a b) c d)) =&#62; (c d)
+(cdr '(a)) =&#62; nil
+(cdr '(a (b c))) =&#62; ((b c))
+(cdr nil) =&#62; nil
+(cdr 'a) =&#62; nil
+</PRE>
+
+<DT><CODE>(cons EXPR0 EXPR2)</CODE>
+<DD>
+build a new list whose "car" is <VAR>EXPR0</VAR> and whose "cdr" is <VAR>EXPR1</VAR>.
+
+<PRE>
+(cons 'a '(b c)) =&#62; (a b c)
+(cons 'a ()) =&#62; (a)
+(cons '(a b) '(c d) =&#62; '((a b) c d))
+(cons () '(a) =&#62; '(nil a))
+(cons 'a 'b =&#62; (a . b))
+(cons nil nil) =&#62; (nil)
+</PRE>
+
+<DT><CODE>(list . BODY)</CODE>
+<DD>
+Form a list from each of the arguments
+
+<PRE>
+(list 'a 'b 'c) =&#62; (a b c)
+(list '(a b) 'c 'd) =&#62; ((a b) c d)
+(list nil '(a b) '(a b)) =&#62; (nil (a b) (a b))
+</PRE>
+
+<DT><CODE>(append . BODY)</CODE>
+<DD>
+Join each of the arguments (lists) into a single list
+
+<PRE>
+(append '(a b) '(c d)) =&#62; (a b c d)
+(append '(a b) '((c d)) '(e f)) =&#62; (a b (c d) e f)
+(append nil nil) =&#62; nil
+(append '(a b)) =&#62; (a b))
+(append 'a 'b) =&#62; error
+</PRE>
+
+<DT><CODE>(nth N LIST)</CODE>
+<DD>
+Return Nth member of list, the first item is the 0th member.
+
+<PRE>
+(nth 0 '(a b c)) =&#62; a
+(nth 2 '(a b c)) =&#62; c
+(nth 3 '(a b c)) =&#62; nil
+</PRE>
+
+<DT><CODE>(nth_cdr N LIST)</CODE>
+<DD>
+Return Nth cdr list, the first cdr is the 0th member, which is
+the list itself.
+
+<PRE>
+(nth 0 '(a b c)) =&#62; (a b c)
+(nth 2 '(a b c)) =&#62; (c)
+(nth 1 '(a b c)) =&#62; (b c)
+(nth 3 '(a b c)) =&#62; nil
+</PRE>
+
+<DT><CODE>(last LIST)</CODE>
+<DD>
+The last cdr of a list, traditionally this function has always been called
+<CODE>last</CODE> rather <CODE>last_cdr</CODE>
+
+<PRE>
+(last '(a b c)) =&#62; (c)
+(last '(a b (c d))) =&#62; ((c d))
+</PRE>
+
+<DT><CODE>(reverse LIST)</CODE>
+<DD>
+Return the list in reverse order
+
+<PRE>
+(reverse '(a b c)) =&#62; (c b a)
+(reverse '(a)) =&#62; (a)
+(reverse '(a b (c d))) =&#62; ((c d) b a)
+</PRE>
+
+<DT><CODE>(member ITEM LIST)</CODE>
+<DD>
+Returns the cdr in LIST whose car is ITEM or nil if it found
+
+<PRE>
+(member 'b '(a b c)) =&#62; (b c)
+(member 'c '(a b c)) =&#62; (c)
+(member 'd '(a b c)) =&#62; nil
+(member 'b '(a b c b)) =&#62; (b c b)
+</PRE>
+
+Note that <CODE>member</CODE> uses <CODE>eq</CODE> to test equality, hence this
+does not work for strings.   You should use <CODE>member_string</CODE>
+if the list contains strings.
+<DT><CODE>(assoc ITEM ALIST)</CODE>
+<DD>
+a-list are a standard list format for representing feature value
+pairs.  An a-list is basically a list of pairs of name and value,
+although the name may be any lisp item it is usually an symbol.  A
+typlical a-list is
+
+<PRE>
+((name AH)
+ (duration 0.095)
+ (vowel +)
+ (occurs ("file01" "file04" "file07" "file24"))
+)
+</PRE>
+
+<CODE>assoc</CODE> is a function that allows you to look up values
+in an a-list
+
+<PRE>
+(assoc 'name '((name AH) (duration 0.95))) =&#62; (name AH)
+(assoc 'duration '((name AH) (duration 0.95))) =&#62; (duration 0.95)
+(assoc 'vowel '((name AH) (duration 0.95))) =&#62; nil
+</PRE>
+
+Note that <CODE>assoc</CODE> uses <CODE>eq</CODE> to test equality, hence this
+does not work names that are strings.   
+You should use <CODE>assoc_string</CODE> if the a-list uses strings for
+names.
+</DL>
+
+
+
+<H3><A NAME="SEC22" HREF="festvox_toc.html#TOC22">6.3.3  Arithmetic functions</A></H3>
+
+<P>
++ - * / exp log sqrt &#60; &#62; &#60;= &#62;= = 
+
+</P>
+
+
+<H3><A NAME="SEC23" HREF="festvox_toc.html#TOC23">6.3.4  I/O functions</A></H3>
+
+<P>
+File names in Festival use the Unix convention of using "/" as the
+directory separator.  However under other operating systems, such as
+Windows, the "/" will be appropriately mapped into backslash as
+required.  For most cases you do not need to worry about this and if you
+use forward slash all the time ti will work.
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>(format FD FORMATSTRING . ARGS)</CODE>
+<DD>
+The <CODE>format</CODE> function is a littel unusually in Lisp.  It basically
+follows the <CODE>printf</CODE> command in C, or more closely follows the
+<CODE>format</CODE> function in Emacs lisp.  It is desgined to print out
+infomation that isn;t necessarily to be read in by Lisp (unlike
+<CODE>pprint</CODE>, <CODE>print</CODE> and <CODE>printfp</CODE>).  <VAR>FD</VAR> is a file
+descriptor as created by <CODE>fopen</CODE>, and the result is printed to
+that.  Also two special values are allows there.  <CODE>t</CODE> causes the
+output to be sent to standard out (which is usually the terminal).
+<CODE>nil</CODE> causes the output to be written to a string and returned by
+the function.  Also the variable <CODE>stderr</CODE> is set to a file
+descriptor for standard error output.
+
+The format string closely follows the format used in C's printf
+functions.  It is actually interpreted by those functions in its
+implementation.  <CODE>format</CODE> supports the following directives
+<DL COMPACT>
+
+<DT><EM>%d</EM>
+<DD>
+Print as integer
+<DT><EM>%d</EM>
+<DD>
+Print as integer in hexadecimal
+<DT><EM>%f</EM>
+<DD>
+Print as float
+<DT><EM>%s</EM>
+<DD>
+Convert item to string
+<DT><EM>%%</EM>
+<DD>
+A percent character
+<DT><EM>%g</EM>
+<DD>
+Print as double
+<DT><EM>%c</EM>
+<DD>
+Print number as character
+<DT><EM>%l</EM>
+<DD>
+Print as Lisp object
+</DL>
+In addition directive sizes are supported, including (zero or space)
+padding, and widths.  Explicitly specified sizes as arguments as in
+<CODE>%*s</CODE> are not supported, nor is <CODE>%p</CODE> for pointers.
+
+The <CODE>%s</CODE> directive will try to convert the corresponding
+lisp argument to a string before passing it to the low level print
+function.  Thus list will be printed to strings, and numbers also
+coverted.  This form will loose the distinction between lisp symbols 
+and lisp strings as the quote will not be present in the <CODE>%s</CODE> 
+form.  In general <CODE>%s</CODE> should be used for getting nice human
+output and not for machine readable output as it is a lossy print
+form.
+
+In contrast <CODE>%l</CODE> is designed to reserve the Lisp forms
+so they can be more easily read, quotes will appear and escapes
+for embedded quote will be treated properly.
+
+<PRE>
+(format t "duration %0.3f\n" 0.12345) =&#62; duration 0.123
+(format t "num %d\n" 23) =&#62; num 23
+(format t "num %04d\n" 23) =&#62; num 0023
+</PRE>
+
+<DT><CODE>(pprintf SEXP [FD])</CODE>
+<DD>
+Pretty print give expression to standard out (or FD if specified).
+Pretty printing is a technique that inserts newlines in the
+printout and indentation to make the lisp expression easier to 
+read.
+
+<DT><CODE>(fopen FILENAME MODE)</CODE>
+<DD>
+This creates a file description, which can be used in the various I/O
+functions.  It closely follows C stdio <CODE>fopen</CODE> function.  The
+mode may be
+<DL COMPACT>
+
+<DT><EM>"r"</EM>
+<DD>
+to open the file for reading
+<DT><EM>"w"</EM>
+<DD>
+to open the file for writing
+<DT><EM>"a"</EM>
+<DD>
+to open the file at the end for writing (so-called, append).
+<DT><EM>"b"</EM>
+<DD>
+File I/O in binary (for OS's that make the distinction),
+</DL>
+Or any combination of these.
+<DT><CODE>(fclose FD)</CODE>
+<DD>
+Close a file descriptor as created by <CODE>fopen</CODE>.
+<DT><CODE>(read)</CODE>
+<DD>
+Read next s-expression from standard in
+<DT><CODE>(readfp FD)</CODE>
+<DD>
+Read next s-expression from given file descriptor FD.  On end of
+file it returns an sexpression eq to the value returned by the
+function <CODE>(eof_val)</CODE>.  A typical example use of these
+functions is
+
+<PRE>
+(let ((ifd (fopen infile "r"))
+      (ofd (fopen outfile "w"))
+      (word))
+   (while (not (equal? (set! word (readfp ifd)) (eof-val)))
+      (format ofd "%l\n" (lex.lookup word nil)))
+   (fclose ifd)
+   (fclose ofd)))
+</PRE>
+
+<DT><CODE>(load FILENAME [NOEVAL])</CODE>
+<DD>
+Load in the s-expressions in <CODE>FILENAME</CODE>.  If <CODE>NOEVAL</CODE> is
+unspecified the s-expressions are evaluated as they are read.  If 
+<CODE>NOEVAL</CODE> is specified and non-nil, <CODE>load</CODE> will return all
+s-expressions in the file un-evaluated in a single list.
+</DL>
+
+
+
+<H3><A NAME="SEC24" HREF="festvox_toc.html#TOC24">6.3.5  String functions</A></H3>
+
+<P>
+As in many other languages, Scheme has a distinction between
+<CODE>strings</CODE> and <CODE>symbols</CODE>.  String evaluate to themselves and
+cannot be assigned other values, symbols of the print name are
+<CODE>equal?</CODE> while strings of teh same name aren't necessarily.
+
+</P>
+<P>
+In Festival's Scheme, strings are eight bit clean and designed to hold
+strings of text and characters in what ever language is being
+synthesized.  Strings are always treats as string of 8 bit characters
+even though some language may interpret these are 16-bit characters.
+Symbols, in general, should not contain 8bit characters.
+<DL COMPACT>
+
+<DT><CODE>(string-equal STR1 STR2)</CODE>
+<DD>
+Finds the string of <CODE>STR1</CODE> and <CODE>STR2</CODE> and returns <CODE>t</CODE> if
+these are equal, and <CODE>nil</CODE> otherwise.  Symbol names and numbers are
+mapped to string, though you should be aware that the mapping of a
+number to a string may not always produce what you hope for.  A number
+<CODE>0</CODE> may or may not be mapped to <CODE>"0"</CODE> or maybe to <CODE>"0.0"</CODE>
+such that you should not dependent on the mapping.  You can use
+<CODE>format</CODE> to map a number ot a string in an explicit manner.  It is
+however safe to pass symbol names to <CODE>string-equal</CODE>.  In most cases
+<CODE>string-equal</CODE> is the right function to use rather than
+<CODE>equal?</CODE> which is must stricter about its definition of equality.
+
+<PRE>
+(string-equal "hello" "hello") =&#62; t
+(string-equal "hello" "Hello") =&#62; false
+(string-equal "hello" 'hello) =&#62; t
+</PRE>
+
+<DT><CODE>(string-append . ARGS)</CODE>
+<DD>
+For each argument coerce it to a string, and return the concatenation of
+all arguments.
+
+<PRE>
+(string-append "abc" "def") =&#62; "abcdef"
+(string-append "/usr/local/" "bin/" "festival") =&#62; "/usr/local/bin/festival"
+(string-append "/usr/local/" t 'hello) =&#62; "/usr/local/thello"
+(string-append "abc") =&#62; "abc"
+(string-append ) =&#62; ""
+</PRE>
+
+<DT><CODE>(member_string STR LIST)</CODE>
+<DD>
+returns <CODE>nil</CODE> if no member of <CODE>LIST</CODE> is <CODE>string-equal</CODE> to
+<CODE>STR</CODE>, otherwise it returns <CODE>t</CODE>.  Again, this is often the
+safe way to check membership of a list as this will work properly if
+<CODE>STR</CODE> or the members of <CODE>LIST</CODE> are symbols or strings.
+
+<PRE>
+(member_string "a" '("b" "a" "c")) =&#62; t
+(member_string "d" '("b" "a" "c")) =&#62; nil
+(member_string "d" '(a b c d)) =&#62; t
+(member_string 'a '("b" "a" "c")) =&#62; t
+</PRE>
+
+<DT><CODE>(string-before STR SUBSTR)</CODE>
+<DD>
+Returns the initial prefix of <CODE>STR</CODE> up to the first occurrence
+of <CODE>SUBSTR</CODE> in <CODE>STR</CODE>.  If <CODE>SUBSTR</CODE> doesn't
+exist within <CODE>STR</CODE> the empty string is returned.
+
+<PRE>
+(string-before "abcd" "c") =&#62; "ab"
+(string-before "bin/make_labs" "/") =&#62; "bin"
+(string-before "usr/local/bin/make_labs" "/") =&#62; "usr"
+(string-before "make_labs" "/") =&#62; ""
+</PRE>
+
+<DT><CODE>(string-after STR SUBSTR)</CODE>
+<DD>
+Returns the longest suffix of <CODE>STR</CODE> after the first occurrence
+of <CODE>SUBSTR</CODE> in <CODE>STR</CODE>.  If <CODE>SUBSTR</CODE> doesn't
+exist within <CODE>STR</CODE> the empty string is returned.
+
+<PRE>
+(string-after "abcd" "c") =&#62; "d"
+(string-after "bin/make_labs" "/") =&#62; "make_labs"
+(string-after "usr/bin/make_labs" "/") =&#62; "bin/make_labs"
+(string-after "make_labs" "/") =&#62; ""
+</PRE>
+
+<DT><CODE>(length STR)</CODE>
+<DD>
+Returns the lengh of given string (or list).  Length does not coerce its
+argument into a string, hence given a symbol as argument is an error.
+
+<PRE>
+(length "") =&#62; 0
+(length "abc") =&#62; 3
+(length 'abc) -&#62; SIOD ERROR
+(length '(a b c)) -&#62; 3
+</PRE>
+
+<DT><CODE>(symbolexplode SYMBOL)</CODE>
+<DD>
+returns a list of single character strings for each character in
+<CODE>SYMBOL</CODE>'s print name.  This will also work on strings.
+
+<PRE>
+(symbolexplode 'abc) =&#62; ("a" "b" "c")
+(symbolexplode 'hello) =&#62; ("h" "e" "l" "l" "o")
+</PRE>
+
+<DT><CODE>(intern STR)</CODE>
+<DD>
+Convert a string into a symbol with the same print name.
+<DT><CODE>(string-matches STR REGEX)</CODE>
+<DD>
+Returns <CODE>t</CODE> if <CODE>STR</CODE> matches <CODE>REGEX</CODE> regular expression.
+Regular expressions are described more fully below.
+
+<PRE>
+(string-matches "abc" "a.*") =&#62; t
+(string-matches "hello" "[Hh]ello") =&#62; t
+</PRE>
+
+</DL>
+
+
+
+<H3><A NAME="SEC25" HREF="festvox_toc.html#TOC25">6.3.6  System functions</A></H3>
+
+<P>
+In order to interact more easily with the underlying operating system,
+Festival Scheme includes a number of basic function that allow Scheme
+programs to make use of the operating system functions.
+<DL COMPACT>
+
+<DT><CODE>(system COMMAND)</CODE>
+<DD>
+Evaluates the command with the Unix shell (or equivalent).  Its
+not clear how this should (or does0 work on other operating systems
+so it should be used sparingly if the code is to be portable.
+
+<PRE>
+(system "ls") =&#62; lists files in current directory.
+(system (format nil "cat %s" filename))
+</PRE>
+
+<DT><CODE>(get_url URL OFILE)</CODE>
+<DD>
+Copies contents of <CODE>URL</CODE> into <CODE>OFILE</CODE>.  It support
+<TT>`file:'</TT> and <TT>`http:'</TT> prefixes, but current does not support the
+<CODE>ftp:</CODE> protocol.  
+
+<PRE>
+(get_url "http://www.cstr.ed.ac.uk/projects/festival.html" "festival.html")
+</PRE>
+
+<DT><CODE>(setenv NAME VALUE)</CODE>
+<DD>
+Set environment variable <CODE>NAME</CODE> to <CODE>VALUE</CODE> which should 
+be strings
+
+<PRE>
+(setenv "DISPLAY" "nara.mt.cs.cmu.edu:0.0")
+</PRE>
+
+<DT><CODE>(getenv NAME)</CODE>
+<DD>
+Get value of environment variable <CODE>NAME</CODE>.
+
+<PRE>
+(getenv "DISPLAY")
+</PRE>
+
+<DT><CODE>(getpid)</CODE>
+<DD>
+The process id, as a number.  This is useful when creating
+files that need to be unique for the festival instance.
+
+<PRE>
+(set! bbbfile (format nil "/tmp/stuff.%05d" (getpid)))
+</PRE>
+
+<DT><CODE>(cd DIRECTORY)</CODE>
+<DD>
+Change directory.
+
+<PRE>
+(cd "/tmp")
+</PRE>
+
+<DT><CODE>(pwd)</CODE>
+<DD>
+return a string which is a pathname to the current working directory.
+</DL>
+
+
+
+<H3><A NAME="SEC26" HREF="festvox_toc.html#TOC26">6.3.7  Utterance Functions</A></H3>
+
+
+
+<H3><A NAME="SEC27" HREF="festvox_toc.html#TOC27">6.3.8  Synthesis Functions</A></H3>
+
+
+
+<H2><A NAME="SEC28" HREF="festvox_toc.html#TOC28">6.4  Debugging and Help</A></H2>
+
+
+
+<H2><A NAME="SEC29" HREF="festvox_toc.html#TOC29">6.5  Adding new C++ functions to Scheme</A></H2>
+
+
+
+<H2><A NAME="SEC30" HREF="festvox_toc.html#TOC30">6.6  Regular Expressions</A></H2>
+
+<P>
+Regular expressions are fundamentally useful in any text processing
+language.  This is also true in Festival's Scheme.  The function
+<CODE>string-matches</CODE> and a number of other places (notably CART trees)
+allow th eunse of regular expressions to matche strings.
+
+</P>
+<P>
+We will not go into the formal aspects of regular expressions
+but just give enough discussion to help you use them here.  See
+<CITE>regexbook</CITE> for probablay more information than you'll ever
+need.
+
+</P>
+<P>
+Each implementation of regex's may be slightly different hence here we
+will lay out the full syntaxt and semantics of the our regex patterns.
+This is not an arbitrary selection, when Festival was first developed we
+use the GNU libg++ <CODE>Regex</CODE> class but for portability to non-GNU
+systems we had replace that with our own impelementation based on Henry
+Spencer regex code (which is at the core of many regex libraries).
+
+</P>
+<P>
+In general all character match themselves except for the following
+which (can) have special interpretations
+
+<PRE>
+. * + ? [ ] - ( ) | ^ $ \
 </PRE>
 
 <P>
-Note that as this diphone index will contain a number of holes
-you will need to either augment it with <SAMP>`similar'</SAMP> diphones
-or process your diphone selections through <CODE>UniSyn_module_hooks</CODE>
-as described in the previous chapter.
+If these are preceded by a backslash then they no longer will have
+special interpretation.
+<DL COMPACT>
 
-</P>
-<P>
-As you complicate the selection, and the number of diphones you used
-from the database you will need to complicate the names used to
-identify the diphones themselves.  The convention of using underscores
-for syllable internal consonant clusters and dollars for syllable
-initial consonants can be followed, but you will need to go further if
-you wish to start introducing new feature such as phrase finality and
-stress.  Eventually going to a generized naming scheme (type and number)
-as used by the cluster selection technique described above, will prove
-worth while.  Also using CART trees, through hand written and fully
-deterministic (one candidate at the leaves), will be a reasonable
-algorithm to select between hand stipulated alternatives with
-reasonable backoff strategies.
+<DT><CODE>.</CODE>
+<DD>
+Matches any character.
 
-</P>
-<P>
-Another potential direction is to use the acoustic costs used in the
-clustering methods described in the previous section.  These can be used
-to identify what the most typical unit in a cluster are (the mean
-distances from all other units are given in the leafs).  Pruning these
-trees until the cluster only contain a single example should help to
-improve synthesis, in that variation in the feature in the "diphone"
-index will then be determined by the features specified in the cluster
-train algorithm.  Of course though as you limit the number of distinct
-units types the more prosodic modification will be required by your
-signal processing algorithm, which requires that you have good pitch
-marks.
+<PRE>
+(string-matches "abc" "a.c") =&#62; t
+(string-matches "acc" "a.c") =&#62; t
+</PRE>
 
-</P>
-<P>
-If you already have an existing database but don't wish to go to full
-unit selection, such techniques are probably quite feasible and worth
-further investigation.
+<DT><CODE>*</CODE>
+<DD>
+Matches zero or more occurrences of the preceding item in the regex
 
-</P>
+<PRE>
+(string-matches "aaaac" "a*c") =&#62; t
+(string-matches "c" "a*c") =&#62; t
+(string-matches "anythingc" ".*c") =&#62; t
+(string-matches "canythingatallc" "c.*c") =&#62; t
+</PRE>
+
+<DT><CODE>+</CODE>
+<DD>
+Matches one or more occurrences of the preceding item in the regex
+
+<PRE>
+(string-matches "aaaac" "a+c") =&#62; t
+(string-matches "c" "a*c") =&#62; nil
+(string-matches "anythingc" ".+c") =&#62; t
+(string-matches "c" ".+c") =&#62; nil
+(string-matches "canythingatallc" "c.+c") =&#62; t
+(string-matches "cc" "c.+c") =&#62; nil
+</PRE>
+
+<DT><CODE>?</CODE>
+<DD>
+Matches zero or one occurrences of the preceding item.  This
+is it makes the preceding item optional.
+
+<PRE>
+(string-matches "abc" "ab?c") =&#62; t
+(string-matches "ac" "ab?c") =&#62; t
+</PRE>
+
+<DT><CODE>[ ]</CODE>
+<DD>
+can defined a set of characters.  This can also be used to defined
+a range.  For example <CODE>[aeiou]</CODE> is and lower case vowel, <CODE>[a-z]</CODE>
+is an lower case letter from a thru z.  <CODE>[a-zA-Z]</CODE> is any character
+upper or lower case.
+
+If the <CODE>^</CODE> is specifed first it negates the class, thus
+<CODE>[^a-z]</CODE> matches anything but a lower case character.
+</DL>
+
+
+
+<H2><A NAME="SEC31" HREF="festvox_toc.html#TOC31">6.7  Some Examples</A></H2>
 
 <P><HR><P>
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_5.html">previous</A>, <A HREF="festvox_7.html">next</A>, <A HREF="festvox_17.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_5.html">previous</A>, <A HREF="festvox_7.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 </BODY>
 </HTML>

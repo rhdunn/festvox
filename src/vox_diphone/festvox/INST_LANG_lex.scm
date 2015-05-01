@@ -39,7 +39,22 @@
   "(INST_LANG_lts_function WORD FEATURES)
 Return pronunciation of word not in lexicon."
   (format stderr "failed to find pronunciation for %s\n" word)
-  (lex.lookup 'unkown nil)
+  (let ((dword (downcase word)))
+    ;; Not you may need to use a letter to sound rule set to do
+    ;; casing if the language has non-ascii characters in it.
+    (if (lts.in.alphabet word 'INST_LANG)
+	(list
+	 word
+	 features
+	 ;; This syllabification is almocst certainly wrong for
+	 ;; this language (its not even very good for English)
+	 ;; but it will give you something to start off with
+	 (lex.syllabify.phstress
+	   (lts.apply word 'INST_LANG)))
+	(begin
+	  (format stderr "unpronouncable word %s\n" word)
+	  ;; Put in a word that means "unknown" with its pronunciation
+	  '("nepoznat" nil (((N EH P) 0) ((AO Z) 0) ((N AA T) 0))))))
 )
 
 (define (INST_LANG_addenda)
@@ -73,6 +88,16 @@ Basic lexicon should (must ?) basic letters and punctuation."
 (lex.add.entry '("?" punc nil))
 (lex.add.entry '("!" punc nil))
 )
+
+;; You may or may not be able to write a letter to sound rule set for
+;; your language.  If its largely lexicon based learning a rule
+;; set will be better and easier that writing one (probably).
+(lts.ruleset
+ INST_LANG
+ (  (Vowel WHATEVER) )
+ (
+  ;; LTS rules 
+  ))
 
 ;;; Lexicon definition
 

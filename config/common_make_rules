@@ -75,7 +75,7 @@ clean:
 	@ echo make clean in $(DIRNAME) ...
 	@rm -f *.o *.a *~ $(LOCAL_CLEAN)
 ifdef BUILD_DIRS
-	@ for i in $(ALL_DIRS) ; \
+	@ for i in $(BUILD_DIRS) ; \
 	do \
 	   $(MAKE) -C $$i --no-print-directory clean; \
 	done
@@ -155,6 +155,17 @@ ifdef ALL_DIRS
 	   $(MAKE) -C $$i --no-print-directory file-list; \
 	done
 endif
+
+info:
+	@echo Project Name = $(PROJECT_NAME)
+	@echo Project Prefix = $(PROJECT_PREFIX)
+	@echo Project Version = $(PROJECT_VERSION)
+	@echo Project Date = $(PROJECT_DATE)
+	@echo Project State = $(PROJECT_STATE)
+	@echo
+	@echo Configuration Variables
+	@echo ESTDIR = $(ESTDIR)
+	@echo FESTDIR = $(FESTDIR)
 
 # If there are sources in this directory, load in the dependencies
 ifdef SRCS

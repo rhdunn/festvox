@@ -34,7 +34,7 @@
 ;;;  Language and voice specific durations
 ;;;
 
-(set! INST_LANG_dur_tree
+(set! INST_LANG_VOX::zdur_tree 
  '
    ((R:SylStructure.parent.R:Syllable.p.syl_break > 1 ) ;; clause initial
     ((1.5))
@@ -42,7 +42,7 @@
      ((1.5))
      ((1.0)))))
 
-(set! INST_LANG_VOX_phone_data
+(set! INST_LANG_VOX::phone_data
 '(
   ;;; PHONE DATA  
   ;; name zero mean in seconds e.g.

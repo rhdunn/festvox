@@ -57,7 +57,7 @@ be associated with a number of words.
 @cindex Word relation
 @cindex words
 The words in the utterance.  By @emph{word} we typically mean something
-that can be given a pronunciation from a lexicon (or letter to sound
+that can be given a pronunciation from a lexicon (or letter-to-sound
 rules).  However in most of our voices we distinguish pronunciation by
 the words and a part of speech feature.  Words with also be leaves of the
 @code{Token} relation, leaves of the @code{Phrase} relation and roots of
@@ -125,7 +125,7 @@ ultimately the waveform is generated.
 @cindex utterance types
 Modules may be written in C++ or Scheme.  Which modules are executed are
 defined in terms of the utterance @code{type}, a simple feature on the
-utterance itself.  For most text to speech cases this is defined to be
+utterance itself.  For most text-to-speech cases this is defined to be
 of type @code{Tokens}.  The function @code{utt.synth} simply looks up an
 utterance's type and then looks up the definition of the defined
 synthesis process for that type and applies the named modules.
@@ -172,7 +172,7 @@ definitions in a later chapter.
 
 There are many modules in the system, some simply wraparounds
 to choose between other modules.  However the basic modules
-used for text to speech have the basic following function
+used for text-to-speech have the basic following function
 @table @code
 @item Token_POS
 @cindex Token_POS module
@@ -433,7 +433,7 @@ for this illustrative example.
 @cindex utterance building
 @cindex database as utterances
 As well as using Utterance structures in the actual runtime
-process of converting text to speech we also use them in 
+process of converting text-to-speech we also use them in 
 database representation.  Basically we wish to build utterance
 structures for each utterance in a speech database.  Once they
 are in that structure, as if they had been (correctly) synthesized,
@@ -559,7 +559,7 @@ with autolabelling these and have had some success but that's still a
 research issue.  Because there is a well defined and fully automatic
 method of going from a/b labelled waveforms to a parameterization of the
 F0 contour we've found Tilt the most useful Intonation labelling.  Tilt
-is described in @cite{taylor99}.
+is described in @cite{taylor00a}.
 
 ToBI accent/tone labelling @cite{silverman92} is useful too but time
 consuming to label.  If it exists for the database then its usually
@@ -599,7 +599,7 @@ For example suppose for all utterances we want the segment
 duration, its name, the name of the segment preceding it
 and the segment following it.
 @example
-dumpfeats -feats "(segment_duration name p.name n.name)" \
+dumpfeats -feats '(segment_duration name p.name n.name)' \
     -relation Segment -output dur.feats festival/utts/*.utt
 @end example
 If you wish to save the features in separate files one

@@ -20,10 +20,10 @@ labfile Phonetic :format ESPS :type SEGMENT :mark END :extension lab :time-facto
 ! location of files, here we just look in the current directory, 
 ! modify this if you install this template file somewhere other than
 ! in the database directory
-!path lab lab
-path f0 .
+path lab lab
+path f0 f0
 path hlb /tmp
-path wav .
+path wav wav
 
 ! definition of associations between tracks and file extensions
 track samples	wav
@@ -33,6 +33,6 @@ track prob_voice f0
 set HierarchyViewLevels Phonetic
 set SignalDisplayLevels Phonetic
 
-set PrimaryExtension wav
+set PrimaryExtension lab
 set LabelTracks F0 {spectrogram w 0 5000}
 

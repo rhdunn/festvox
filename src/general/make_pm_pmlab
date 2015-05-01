@@ -31,23 +31,45 @@
 ##  THIS SOFTWARE.                                                       ##
 ##                                                                       ##
 ###########################################################################
-###                                                                       ##
-###  Generate xlabel format representation of EST pm files suitable       ##
-###  for view in University of Macquarie's emulabel or Entropic's Xwaves  ##
-###                                                                       ##
-############################################################################
+###                                                                      ##
+###  Generate EST pm label format from xlabel format                     ##
+###  used for putting back edited pm files                               ##
+###                                                                      ##
+###########################################################################
 
-for i in $* 
+if [ $# = 0 ]
+then
+   echo "Make pm from pm labels (after editing)"
+   echo "Usage:  bin/make_pm_pmlab pm_lab/*.lab"
+   echo "Will overwrite pm/*.pm"
+   exit 1
+fi
+
+if [ `dirname $1` = "pm" ]
+then
+   echo 
+   echo "ERROR"
+   echo "This function generates pm from pmlab files.  "
+   echo "you probably wanted to type "
+   echo "      bin/make_pm_pmlab pm_lab/*.lab"
+   echo "not"
+   echo "      bin/make_pm_pmlab pm/*.pm"
+   echo
+   exit
+fi
+
+for i in $*
 do
-   echo $i
-   fname=`basename $i .pm`
-   awk '{if ($1 == "EST_Header_End")
-         {
-            post_header = 1;
-            printf("#\n");
-         }
-         else if (post_header == 1)
-         {
-	     printf("%f 125 %f\n",$1,$2);
-         }}' $i >pm_lab/$fname.lab
+   fname=`basename $i .lab`
+   echo $fname
+   echo "EST_File Track" >pm/$fname.pm
+   echo "DataType ascii" >>pm/$fname.pm
+   echo "NumFrames" `awk '{if ($1 == "#") t=NR} END {print NR-t}' $i` >>pm/$fname.pm
+   echo "NumChannels 0" >>pm/$fname.pm
+   echo "NumAuxChannels 0" >>pm/$fname.pm
+   echo "EqualSpace 0" >>pm/$fname.pm
+   echo "BreaksPresent true" >>pm/$fname.pm
+   echo "file_type 13" >>pm/$fname.pm
+   echo "EST_Header_End" >>pm/$fname.pm
+   awk '{if (NF == 3) printf("%f 1\n",$1)}' <$i >>pm/$fname.pm
 done

@@ -21,7 +21,7 @@ labfile Phonetic :format ESPS :type SEGMENT :mark END :extension lab :time-facto
 ! modify this if you install this template file somewhere other than
 ! in the database directory
 path lab pm_lab
-path hlb hlb
+path hlb /tmp
 path wav wav
 path f0  f0
 path sfb  sfb

@@ -40,34 +40,44 @@
 (if (null (member 'clunits provided))
     (load (path-append libdir "../src/modules/clunits/acost.scm")))
 
-(if (assoc 'LDOM_ldom voice-locations)
-    (defvar LDOM_ldom_dir (cdr (assoc 'LDOM_ldom voice-locations)))
-    (defvar LDOM_ldom_dir (pwd)))
+(if (assoc 'INST_LDOM_VOX_ldom voice-locations)
+    (defvar INST_LDOM_VOX::ldom_dir 
+      (cdr (assoc 'INST_LDOM_VOX_ldom voice-locations)))
+    (defvar INST_LDOM_VOX::ldom_dir (string-append (pwd) "/")))
 
-(if (not (probe_file (path-append LDOM_ldom_dir "festvox/")))
+(if (not (probe_file (path-append INST_LDOM_VOX::ldom_dir "festvox/")))
     (begin
-     (format stderr "LDOM_ldom: Can't find voice scm files they are not in\n")
-     (format stderr "   %s\n" (path-append  LDOM_ldom_dir "festvox/"))
+     (format stderr "INST_LDOM_VOX::ldom: Can't find voice scm files they are not in\n")
+     (format stderr "   %s\n" (path-append  INST_LDOM_VOX::ldom_dir "festvox/"))
      (format stderr "   Either the voice isn't linked in Festival library\n")
      (format stderr "   or you are starting festival in the wrong directory\n")
      (error)))
 
 ;;;  Add the directory contains general voice stuff to load-path
-(set! load-path (cons (path-append LDOM_ldom_dir "festvox/") load-path))
+(set! load-path (cons (path-append INST_LDOM_VOX::ldom_dir "festvox/") 
+		      load-path))
+
+;;; Flag to save multiple loading of db
+(defvar INST_LDOM_VOX::ldom_loaded nil)
+;;; When set to non-nil ldom voices *always* use their closest voice
+;;; this is used when generating the prompts
+(defvar INST_LDOM_VOX::ldom_prompting_stage nil)
+;;; Flag to allow new lexical items to be added only once
+(defvar INST_LDOM_VOX::added_extra_lex_items nil)
 
 ;;; The front end to the limited domain
-(require 'LDOM)
+(require 'INST_LDOM_VOX)
 
-;;;
-(set! closest_voice 'voice_kal_diphone)
+;;; You may wish to change this 
+(set! INST_LDOM_VOX::closest_voice 'voice_kal_diphone)
 
 ;;;  These are the parameters which are needed at run time
-;;;  build time parameters are added to his list in LDOM_build.scm
-(set! LDOM_dt_params
+;;;  build time parameters are added to his list in INST_LDOM_VOX_build.scm
+(set! INST_LDOM_VOX::dt_params
       (list
-       (list 'db_dir LDOM_ldom_dir)
-       '(name LDOM)
-       '(index_name LDOM)
+       (list 'db_dir INST_LDOM_VOX::ldom_dir)
+       '(name INST_LDOM_VOX)
+       '(index_name INST_LDOM_VOX)
        '(join_weights
          (10.0
 	   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5
@@ -76,35 +86,192 @@
        '(catalogue_dir "festival/clunits/")
        '(coeffs_dir "mcep/")
        '(coeffs_ext ".mcep")
+       '(clunit_name_feat lisp_INST_LDOM_VOX::clunit_name)
        ;;  Run time parameters 
-       '(join_method windowed)
+;       '(join_method windowed)
+       ;; if pitch mark extraction is bad this is better than the above
+       '(join_method smoothedjoin)
        '(continuity_weight 100)
-       '(optimal_coupling 1)
+       '(optimal_coupling 2)
+       '(extend_selections 10)
        '(pm_coeffs_dir "pm/")
        '(pm_coeffs_ext ".pm")
        '(sig_dir "wav/")
        '(sig_ext ".wav")
 ))
 
-(define (voice_LDOM_ldom)
-  "(voice_LDOM_ldom)
-Define voice for limited domain: LDOM."
-  ;; Blindly use basic parameters of closest voice
-  (eval (list closest_voice))
-  (set! dt_params LDOM_dt_params)
-  (set! clunits_params LDOM_dt_params)
-  (clunits:load_db clunits_params)
-  (if (not (boundp 'clunit_selection_trees))
-      (load (string-append
-	     (string-append 
-	      LDOM_ldom_dir "/"
-	      (get_param 'trees_dir dt_params "trees/")
-	      (get_param 'index_name dt_params "all")
-	      ".tree"))))
-  (Parameter.set 'Synth_Method 'Cluster)
+(define (INST_LDOM_VOX::clunit_name i)
+  "(INST_LDOM_VOX::clunit_name i)
+Defines the unit name for unit selection for LDOM.  The can be modified
+changes the basic claissifncation of unit for the clustering.  By default
+this does segment plus word, which is reasonable for many ldom domains."
+  (let ((name (item.name i)))
+    (if (string-equal 
+	 name (car (cadr (car (PhoneSet.description '(silences))))))
+	;; Do something simpler around pauses
+	(string-append
+	 name
+	 "_"
+	 (item.feat i "p.name"))
+	;; For all other phones do phone plus word
+	;; You could add other things here (like word position)
+	(let ((downcasedword 
+	       (downcase 
+		(item.feat i "R:SylStructure.parent.parent.name"))))
+	  (string-append
+	   name   ;; segment name
+	   "_"
+	   (if (string-matches downcasedword ".*'.*")
+	       (format nil "%s%s" (string-before downcasedword "'")
+		       (string-after downcasedword "'"))
+	       (format nil "%s" downcasedword)))))))
 
-  (set! current-voice 'LDOM_ldom)
+(define (INST_LDOM_VOX::ldom_load)
+  "(INST_LDOM_VOX::ldom_load)
+Function that actual loads in the databases and selection trees.
+SHould only be called once per session."
+  (set! dt_params INST_LDOM_VOX::dt_params)
+  (set! clunits_params INST_LDOM_VOX::dt_params)
+  (clunits:load_db clunits_params)
+  (set! INST_LDOM_VOX::ldom_clunit_selection_trees
+	(load (string-append
+	       (string-append 
+		INST_LDOM_VOX::ldom_dir "/"
+		(get_param 'trees_dir dt_params "trees/")
+		(get_param 'index_name dt_params "all")
+		".tree"))))
+  (set! INST_LDOM_VOX::ldom_loaded t))
+
+(set! INST_LDOM_VOX::phrase_cart_tree
+'
+((lisp_token_end_punc in ("'" "\"" "?" "." "," ":" ";"))
+  ((B))
+  ((n.name is 0)
+   ((B))
+   ((n.name in ("." "..." "...."))
+    ((name is ".")
+     ((NB))
+     ((B)))
+    ((NB))))))
+
+(define (INST_LDOM_VOX::token_to_words token name)
+  (cond
+   ;; Domain specific token to word rules
+   (t
+    (INST_LDOM_VOX::old_token_to_words token name))))
+
+(define (INST_LDOM_VOX::domain_specific_voice_setup)
+  "(INST_LDOM_VOX::domain_specific_voice_setup)
+Setups an token to word rules, lexical entries, prosody mopdels specific
+to this domain.  This function is also called at prompt generation time
+to ensure the prompts follow the same rules."
+  ;; Let the cluster stuff decide about vowel reduction
+  (set! INST_LDOM_VOX::old_postlex_vowel_reduce_table 
+	           postlex_vowel_reduce_table)
+  (set! postlex_vowel_reduce_table nil)
+
+  ;; Seems things work better with explicit punctuation phrase breaks
+  ;; in limited domain (as things will be more consistent
+  (set! phrase_cart_tree INST_LDOM_VOX::phrase_cart_tree)
+  (Parameter.set 'Phrase_Method 'cart_tree)
+
+  ;; If you want to have domain specific text processing this will
+  ;; cause INST_LDOM_VOX::token_to_word to be called
+  (set! INST_LDOM_VOX::old_token_to_words english_token_to_words)
+
+  (set! english_token_to_words INST_LDOM_VOX::token_to_words)
+  (set! token_to_words INST_LDOM_VOX::token_to_words)
+
+  (if (not INST_LDOM_VOX::added_extra_lex_items)
+      (begin
+	;; (lex.add.entry '("dadada" nn (((d aa) 1) (( d aa) 1) ((d aa) 1))))
+	(set! INST_LDOM_VOX::added_extra_lex_items t)
+	))
 )
 
-(provide 'LDOM_ldom)
+(define (INST_LDOM_VOX::voice_reset)
+  "(INST_LDOM_VOX::voice_reset)
+Reset global variables back to previous voice."
+  (set! english_token_to_words INST_LDOM_VOX::old_token_to_words)
+  (set! token_to_words INST_LDOM_VOX::old_token_to_words)
+  (set! utt.synth INST_LDOM_VOX::real_utt.synth)
+  (set! tts_hooks (delq INST_LDOM_VOX::utt.synth tts_hooks))
+  (set! tts_hooks (cons utt.synth tts_hooks))
+  (set! postlex_vowel_reduce_table 
+	INST_LDOM_VOX::old_postlex_vowel_reduce_table)
+  (set! cluster_synth_pre_hooks nil)
+  (set! cluster_synth_post_hooks nil)
+  t
+)
+
+(define (INST_LDOM_VOX::utt.synth utt)
+  "(INST_LDOM_VOX::utt.synth utt)
+Uses the LDOM voice to synthesize utt, but if that fails 
+back off to the defined closest voice (probably a diphone synthesizer)."
+  (unwind-protect 
+   (begin
+     (INST_LDOM_VOX::real_utt.synth utt)
+     ;; Successful synthesis
+     )
+   (begin
+     ;; The above failed, so resynthesize with the backup voice
+;     (format stderr "ldom/clunits failed\n")
+     (eval (list INST_LDOM_VOX::closest_voice))  ;; call backup voice
+     (set! utt2 (INST_LDOM_VOX::copy_tokens utt))
+     (set! utt (INST_LDOM_VOX::real_utt.synth utt2))
+     (voice_INST_LDOM_VOX_ldom)                 ;; return to ldom voice
+     ))
+  utt
+)
+
+(define (INST_LDOM_VOX::copy_tokens utt)
+  "(INST_LDOM_VOX::copy_tokens utt)
+This should be standard library, of in fact not even needed.  It constructs
+a new utterance from the tokens in utt so it may be safely resynthesized."
+  (let ((utt2 (Utterance Tokens nil))
+	(oldtok (utt.relation.first utt 'Token)))
+    (utt.relation.create utt2 'Token)
+    (while oldtok
+      (let ((ntok (utt.relation.append utt2 'Token)))
+	(mapcar
+	 (lambda (fp)
+	   (item.set_feat ntok (car fp) (car (cdr fp))))
+	 (cdr (item.features oldtok)))
+	(set! oldtok (item.next oldtok))))
+    utt2))
+
+(define (voice_INST_LDOM_VOX_ldom)
+  "(voice_INST_LDOM_VOX_ldom)
+Define voice for limited domain: LDOM."
+  ;; Blindly use basic parameters of closest voice
+  (eval (list INST_LDOM_VOX::closest_voice))
+
+  (INST_LDOM_VOX::domain_specific_voice_setup)
+
+  ;; When using a backup voice for out of domain utts
+  ;; we redefine utt.synth to our own (if we haven't already)
+  (if (not (equal? utt.synth INST_LDOM_VOX::utt.synth))
+      (begin
+	;; This actually isn't general enough, but twill do.
+	(set! tts_hooks (delq utt.synth tts_hooks))
+	(set! tts_hooks (cons INST_LDOM_VOX::utt.synth tts_hooks))
+	(set! INST_LDOM_VOX::real_utt.synth utt.synth)
+	(set! utt.synth INST_LDOM_VOX::utt.synth)))
+
+  ;; Load in the clunits databases (or select it if its already loaded)
+  (if (not INST_LDOM_VOX::ldom_prompting_stage)
+      (begin
+	(if (not INST_LDOM_VOX::ldom_loaded)
+	    (INST_LDOM_VOX::ldom_load)
+	    (clunits:select 'INST_LDOM_VOX))
+	(set! clunit_selection_trees 
+	      INST_LDOM_VOX::ldom_clunit_selection_trees)
+	(Parameter.set 'Synth_Method 'Cluster)))
+
+  (set! current_voice_reset INST_LDOM_VOX::voice_reset)
+
+  (set! current-voice 'INST_LDOM_VOX_ldom)
+)
+
+(provide 'INST_LDOM_VOX_ldom)
 

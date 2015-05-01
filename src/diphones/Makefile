@@ -36,36 +36,16 @@
 ###########################################################################
 TOP=../..
 DIRNAME=src/diphones
-SRCS = phonealign_main.cc 
 SCMFILES = diphlist.scm make_diphs_utts.scm  darpaasmrpa.scm \
            darpaaswb.scm 
-SCHEMAFILES = us_schema.scm uk_schema.scm ja_schema.scm
-SCRIPTS = play_them align_phones \
-          make_diph_index.sh make_labs setup_diphone \
-          prompt_them phonealign_test 
-FILES = Makefile $(SCRIPTS) $(SRCS) $(SCMFILES) $(SCHEMAFILES)
+SCHEMAFILES = us_schema.scm uk_schema.scm ja_schema.scm \
+              cmusphinx2_schema.scm
+SCRIPTS = make_diph_index.sh setup_diphone
+FILES = Makefile $(SCRIPTS) $(SCMFILES) $(SCHEMAFILES)
 
-ALL = phonealign make_diph_index
+ALL = make_diph_index
 
 include $(TOP)/config/common_make_rules
-
-# GCC and systems settings got from EST's config
-EST=$(ESTDIR)
-include $(ESTDIR)/config/config
-include $(ESTDIR)/config/rules/defaults.mak
-include $(ESTDIR)/config/rules/compile_options.mak
-
-ESTINC=-I$(ESTDIR)/include
-ESTLIBS=-L$(ESTDIR)/lib -lestools -lestbase -leststring $(COMPILERLIBS) -lm $(OS_LIBS)
-
-CXXFLAGS += $(ESTINC) 
-
-LOCAL_CLEAN = phonealign
-
-phonealign: phonealign_main.o $(LIBDEPS)
-	$(strip $(LINK_COMMAND)) -o phonealign phonealign_main.o $(ESTLIBS)
-phonealign_main.o: phonealign_main.cc 
-	$(strip $(CXX_COMMAND)) -c -o phonealign_main.o phonealign_main.cc
 
 make_diph_index: make_diph_index.sh
 	@echo making make_diph_index script

@@ -105,7 +105,7 @@ The network is a vast resource of information but it is
 not always easy to find what you are looking for.  
 
 @cindex comp.speech
-Indexes to speech related information are available.  The comp.speech
+Indexes to speech related information are available.  The @file{comp.speech}
 frequently asked questions maintain by Andrew Hunt, is an excellent
 constantly updated list of information and resrouces available for
 speech recognition and synthesis.  It is available in html format from
@@ -124,7 +124,7 @@ USA: @url{http://www.speech.cs.cmu.edu/comp.speech/}
 @cindex Oregon Graduate Institute
 The Linguistics Data Consortium (LDC), although expensive, offers many
 speech resources including lexicons and databases suitable for
-synthesis work.  There web page is @url{www.ldc.upenn.edu}.
+synthesis work.  There web page is @url{http://www.ldc.upenn.edu}.
 A similar organization is the European Language Resources
 Association @url{http://www.icp.grenet.fr/ELRA/home.html} which
 is based in Europe.  Both these home pages have

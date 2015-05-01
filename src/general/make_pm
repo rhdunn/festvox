@@ -36,6 +36,15 @@
 ###                                                                       ##
 ############################################################################
 
+if [ $# = 0 ]
+then
+   echo "Extract pitchmarks from EGG signals"
+   echo "Usage:  bin/make_pm lar/*.lar"
+   echo "Will create pm/*.pm"
+   echo "pitchmark parameters are set for male speaker, edit for female."
+   exit 1
+fi
+
 if [ ! "$ESTDIR" ]
 then
    echo "environment variable ESTDIR is unset"

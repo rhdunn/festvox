@@ -3,7 +3,7 @@
 This document was originally written while AWB was a visiting scholar at
 the Robotics Institute, Carnegie Mellon University.  This document
 and its related scripts are free, and may be used for any purpose
-subject to the minimal restrictions specificed in the lience below
+subject to the minimal restrictions specified in the license below
 @example
                    Carnegie Mellon University and                      
                    Alan W Black and Kevin A. Lenzo                     
@@ -44,7 +44,7 @@ consequence of the actual resources that go in them.
 
 As Festival and the documentation and scripts that are part of festvox
 are free to be used for commercial and non-commercial projects alike.
-We believe we have delivered sufficent instructions and tools for you to
+We believe we have delivered sufficient instructions and tools for you to
 build your voices free from any restriction imposed by us (CMU or
 Edinburgh).  Thus if you wish to create a proprietary voice Festival and
 Festvox tools will not inhibit that, but of course you must ensure you
@@ -60,7 +60,7 @@ have a different copyright from the above
 @item src/vox_diphone/festvox/INST_uk_VOX_dur.scm
 these are derived from code in the Festival distribution and hence
 are copyright, University of Edinburgh, but under a similarly free
-licence as above
+license as above
 @item doc/texinfo.tex
 Is Copyright Free Software Foundation and is distributed under
 the GPL.  This file does not affect the copyright of any other
@@ -75,7 +75,7 @@ version around.
 @cindex thanks
 This document was originally written while AWB was a visiting researcher
 at the Robotics Institute, at Carnegie Mellon University in Fall 98.
-AWB later returned to Language Technologies Insititue at CMU, as
+AWB later returned to Language Technologies Institute at CMU, as
 research faculty in Summer 99 and since then he and KAL have added
 substantially to the documentation and related scripts.
 
