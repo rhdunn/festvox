@@ -24,7 +24,7 @@ An example entry is
 @lisp
 ("photography"
  n
- (((f @ ) 0) ((t o g) 1) ((r @ f) 0) ((ii) 0)))
+ (((f @@ ) 0) ((t o g) 1) ((r @@ f) 0) ((ii) 0)))
 @end lisp
 Not that in addition to explicit marking of syllables a stress 
 value is also given (0 or 1).  In some languages lexical is

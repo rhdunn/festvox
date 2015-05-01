@@ -1,943 +1,951 @@
 <HTML>
 <HEAD>
 <!-- This HTML file has been created by texi2html 1.52
-     from ../doc/festvox.texi on 10 July 2000 -->
+     from ../doc/festvox.texi on 2 August 2000 -->
 
-<TITLE>Building Voices in the Festival Speech Synthesis System - 10  Limited domain synthesis</TITLE>
+<TITLE>Building Voices in the Festival Speech Synthesis System - 10  Unit selection databases</TITLE>
 </HEAD>
 <BODY bgcolor="#ffffff">
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_9.html">previous</A>, <A HREF="festvox_11.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_9.html">previous</A>, <A HREF="festvox_11.html">next</A>, <A HREF="festvox_21.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 <P><HR><P>
 
 
-<H1><A NAME="SEC62" HREF="festvox_toc.html#TOC62">10  Limited domain synthesis</A></H1>
+<H1><A NAME="SEC53" HREF="festvox_toc.html#TOC53">10  Unit selection databases</A></H1>
 
 <P>
-<A NAME="IDX178"></A>
-<A NAME="IDX179"></A>
-This chapter discusses and gives examples of building synthesis systems
-for limited domains.  By limited domain, we mean applications where the
-speech output is constrained.  Such domains may still be infinite but
-they may be target to specific vocabulary and phrases.  In fact with
-today's current speech system such limited domain applications are in
-fact the most common.  Some typical examples are telling the time,
-reading telephone numbers.  However from experience we can see that this
-technique can be extended to include more general information giving
-systems and dialog systems, such as reading the weather, or even the
-DARPA Communicator domain (flight information dialog system).
+<A NAME="IDX156"></A>
+This chapter discusses some of the options for building waveform
+synthesizers using unit selection techniques in Festival.  This is still
+very much an on-going research question and we are still adding new
+techniques as well as improving existing ones often so the techniques
+described here are not as mature as the techniques as described in
+previous diphone chapter.
 
 </P>
 <P>
-Limited domains are discussed here as it is felt that it should be easier
-to build unit selection type synthesizers for domains where there are a
-much smaller and controlled number of units.  The second reason is that
-general TTS systems (e.g. diphone systems) still sound synthetic.
-General unit selection when its good, offers near human
-quality, but when its bad it is usually much worse than a diphone
-synthesizer.  Hybrid systems look interesting but as we cannot yet
-automatically detect when general unit selection systems go bad, its not
-clear when a diphone system should be swapped in.  But as unit selection
-offers so much promise, it is hoped that in a limited domain we can get
-the unit selection good quality, and avoid the bad quality.  Finally,
-although full TTS systems may be our ultimate goal actually for many
-existing systems a limited domain synthesizer is adequate.
+By "unit selection" we actually mean the selection of some unit of
+speech which may be anything from whole phrase down to diphone (or even
+smaller).  Technically diphone selection is a simple case of this.
+However typically what we mean is unlike diphone selection, in unit
+selection there is more than one example of the unit and some mechanism
+is used to select between them at run-time.
 
 </P>
 <P>
-There is a stage beyond limited domain, but falling short of general
-one synthesis, where the most common phrases are the best synthesized
-and the quality gracefully degrades as the phrases become less common.
-Some hybrid recorded prompts/unit selection/diphone systems have been
-proposed and should be able to deliver and answer but we will not deal
-directly with those here.
+<A NAME="IDX157"></A>
+<A NAME="IDX158"></A>
+ATR's CHATR <CITE>hunt96</CITE> system and earlier work at that lab
+<CITE>nuutalk92</CITE> is an excellent example of one particular method for
+selecting between mutiple examples of a phone within a database.  For a
+discussion of why a more generalized inventory of units is desired see
+<CITE>campbell96</CITE> though we will reiterate some of the points here.
+With diphones a fixed view of the possible space of speech units has
+been made which we all know is not ideal.  There are articulatory
+effects which go over more than one phone, e.g. /s/ can take on
+artifacts of the roundness of the following vowel even over an
+itermediate stop, e.g. <SAMP>`spout'</SAMP> vs <SAMP>`spit'</SAMP>.  But its not just
+obvious segmental effects that cause variation in pronunciation,
+syllable position, word/phrase initial and final position have typically
+a different level of articulation from segments taken from word internal
+position.  Stressing and accents also cause differences.  Rather than
+try to explicitly list the desired inventory of all these phenomena and
+then have to record all of them a potential alternative is to take a
+natural distribution of speech and (semi-)automatically find the
+distinctions that actually exist rather predefining them.
 
 </P>
 <P>
-However one point you quickly find is that although most speech dialog
-systems are very constrained in their vocabulary many require the
-hardest class of words: proper names.
+The theory is obvious but the design of such systems and finding the
+appropriate selection criteria, weighting the costs of relative candidates
+is a non-trivial problem.  However tecniques like this often produce
+very high quality, very natural sounding synthesis.  However they also
+can produce some very bad synthesis too, when the database has unexpected
+holes and/or the selection costs fail.
 
 </P>
 <P>
-In continuing in mode of tutorial this chapter first gives a complete
-walkthrough of a talking clock.  This is a small example which will
-probably work.  Following through this example will give you a good idea
-of what is involved in building a limited domain synthesizer.  Also
-in the following section problems and modifications can be better 
-discussed with respect to this complete example.
-
-</P>
-
-
-<H2><A NAME="SEC63" HREF="festvox_toc.html#TOC63">10.1  designing the prompts</A></H2>
-
-<P>
-To get a good limited domain synthesizer, it is important to understand
-what is going on so you can properly tailor your application to take
-proper advantage of what can be good, and to avoid the limitations these
-methods impose.
-
-</P>
-<P>
-Note that you may wish to change your application to take better
-advantage of this by making its output forms more regular, or at least
-use a smaller vocabulary.  As a first basic approximation the techniques
-here require that the training contain all words which are to be
-actually synthesized.  Therefore if a word does not appear in the
-training data it <EM>cannot</EM> be synthesized.  We do provide fall back
-positions, using a diphone voice, but that will always be worse than the
-more natural unit selection synthesis.  Often this isn't much of a
-restriction, or you can tailor your application to avoid having a large
-vocabulary.  For example if you are going to build a system for reading
-weather reports you can make the weather reports not actually name the
-city/town they refer to and just use phrases like "This city ..." and
-depend of context for the user to know which actually city is being
-talked about.  
-
-</P>
-<P>
-Of course many speech applications have limited vocabularies in all but
-a very few places.  Proper names such as places, people, movie names,
-etc are in general complete open classes.  Building a speech application
-around those aspects isn't easy and may make a limit domain synthesizer
-just impractical.  But it should be noted that those open classes are
-also the classes that more general synthesizers will often fail on too.
-Some hybrid system may better solve that, which we will not really deal
-with here.
-
-</P>
-<P>
-For almost closed class, recording and modify the data may be a solution
-but we have not yet got enough experience to comment on this yet but we
-feel that may be a reasonable compromise.  
-
-</P>
-<P>
-The most difficult part of building a limited domain synthesizer is
-designed the database to record that best covers what you wish the
-synthesizer to say.  Sometimes this is fairly easy in that you
-wish the synthesizer to simple read utterances in a very standard
-form where slot will be filled with varying values (such as, dates
-numbers etc.)  Such as
-
-<PRE>
-The area code you require is NUMBER NUMBER NUMBER.
-</PRE>
-
-<P>
-The prompts can be devised to fill in values for each of the NUMBER
-variables.  
-
-</P>
-<P>
-More complex utterance can still be viewed in this way
-
-<PRE>
-The weather at TIME on DATE: outlook OUTLOOK, NUMBER degrees.
-</PRE>
-
-<P>
-But once we move into more general dialog its appears initially harder to
-properly find the utterances that cover the domain.
-
-</P>
-<P>
-The first important observation to make is that in such systems where
-limited domain synthesis is practical the phrases to be spoken are
-almost certainly generated by a computer.  That is there exists an
-explicit function which the language generated by the applications.  In
-some case this will take the form of an explicit grammar.  In this case
-we can use that grammar to generate phrase language and then select from
-them utterance that adequately cover the domain.  However even when
-there is an explicit grammar it usually will not allow explicitly encode
-the frequency of each generated utterance.  As we wish to ensure that
-the most common phrases are synthesized best we ideally need to know
-which utterances are to be synthesized most often to properly select
-which utterance to record.
-
-</P>
-<P>
-Where a system is already running with a standard synthesizer it is
-possible to record what is currently being said and how often.  We can
-then use such logs of current system usage to select which utterance
-should be in our set of prompts to record.
-
-</P>
-<P>
-In practice you will be design the system's output at the same time as
-the limited domain synthesizer so some combination, and guessing of the
-frequency and cover will be necessary.
-
-</P>
-<P>
-In general you should design your databases to have at least 2 (and
-probably 5) examples of each word in you vocabulary.  Secondly you
-should select utterances that maximise bi-gram coverage.  That is try to
-ensure as many different word-word pairings over your corpus.  We have
-used techniques based on these recommendations to greedily select
-utterances from larger corpora to record.
+Two forms of unit selection will discussed here, not because we feel
+they are the best but simply because they are the ones actually
+implemented by us and hence can be distributed.  These should still be
+considered research systems.  Unless you are specifically interested or
+have the expertise in developing new selection techniques it is not
+recommended that you try these, if you need a working voice within a
+month and can't afford to miss that deadline then the diphone option is
+safe, well tried and stable.  In you need higher quality and know
+something about what you need to say, then we recommend the limited
+domain techniques discussed in the following chapter.  The limited
+domain synthesis offers the high quality of unit selection but 
+avoids much (all ?) of the bad selections.
 
 </P>
 
 
-<H2><A NAME="SEC64" HREF="festvox_toc.html#TOC64">10.2  customizing the synthesizer front end</A></H2>
+<H2><A NAME="SEC54" HREF="festvox_toc.html#TOC54">10.1  Cluster unit selection</A></H2>
 
 <P>
-Once you decided on a set of utterances that appropriately cover the
-domain you also need to consider how those particular text strings are
-synthesized.  For example if the data contains flight numbers, dates,
-times etc, you must ensure that festival properly renders those.  As we
-are discussing a limited domain the distribution of token types will be
-different from standard text but also more constrained so simple changes
-to the lexicon, token to word rules, etc. will allow properly synthesis
-of these utterances.
+This is a reimplementation of the techniques as described in
+<CITE>black97c</CITE>.  The idea is to take a database of general speech and
+try to cluster each phone type into groups of acoustically similar units
+based on the (non-acoustic) information available at synthesis time,
+such as phonetic context, prosodic features (F0 and duration) and higher
+level features such as stressing, word position, and accents.  The
+actually features used may easily be changed and experimented with as can
+the definition of the definition of acoustic distance between the units
+in a cluster.  
 
 </P>
 <P>
-One particular area of customization we have noted is worthwhile is that
-of phrasing.  It seems important to explicitly mark phrasing in the
-prompts, and have the speaker follow such phrasing as it allows for much
-better joins in unit selection, as well as consist prosody from the
-speaker.  Thus in the default code provided below the normal phrasing
-module in festival is replaced with one that treat punctuation as phrasal
-markers.
-
-</P>
-
-
-<H2><A NAME="SEC65" HREF="festvox_toc.html#TOC65">10.3  autolabelling issues</A></H2>
-
-<P>
-We currently use autolabel the recorded prompts using the alignment
-technique based on <CITE>malfrere97</CITE> that we discussed above for diphone
-labelling.  Although this technique works its is not as robust for
-general speech as it is for carefully articulated nonsense words.
-Specifically this technique does not allow for alternative pronunciations
-which are common.
-
-</P>
-<P>
-Ideally we should use a more generally speech recognition systems.  In
-fact for labelling of unit selection database the bets results would be
-to train a recognition using Baum-Welch on the database until
-convergence.  This would give the most consistent labelling.  We have
-started initial experiments with using the open source CMU Sphinx
-recognition system are are likely to provide scripts to do this in later
-releases.
+In some sense this work builds on the results of both the CHATR
+selection algorithm <CITE>hunt96</CITE> and the work of <CITE>donovan95</CITE>, but
+differs in some important and significant ways.  Specifically in
+contrast to <CITE>hunt96</CITE> this cluster algorithm pre-builds CART trees
+to select the approriate cluster of candidate phones thus avoiding the
+computationally expensive function of calculating target costs (through
+linear regression) at selection time.  Secondly because the clusters are
+built directly from the acoustic scores and target features, a target
+estimation function isn't required removing the need to calculate
+weights for each feature.  This cluster method differs from the
+clustering method in <CITE>donovan95</CITE> in that it can use more
+generalized features in clustering and uses a different acoustic cost
+function (Donovan uses HMMs), also his work is based on sub-phonetic
+units (HMM states).  Also Donovan selects one candidate while here we
+select a group of candidates and finds the best overall selection by
+finding the best path through each set of candidates for each target
+phone, in a manner similar to <CITE>hunt96</CITE> and <CITE>iwahashi93</CITE>
+before.
 
 </P>
 <P>
-In the mean time the greatest problem in predict phone list must be the
-same (or very similar) to what was actually spoken.  This can be
-achieved by a knowledge speaker, and by customizing the front end of the
-synthesizer so it produces more natural segments.
-
-</P>
-<P>
-Two observations are worth mentioning here.  First if the synthesizer
-makes a mistake in pronunciation and the human speaker does not we
-have found the things may work out anyway.  For example we found
-the word "hwy" appeared in the prompts, which the synthesizer
-pronounced as "H W Y" while the speaker said "highway".  The forced
-alignment however cause the phones in the pronunciation of the letters
-"H W Y" to be aligned with the phones in "highway" thus on selection 
-appropriate, though misnamed, phones were selected.  However you should
-<EM>depend</EM> on such compound errors.
-
-</P>
-<P>
-The second observation is that festival includes prediction of vowel
-reduction.  We are beginning to feel that such prediction is unnecessary
-in limited domain synthesizer or in unit selection in general.  This
-vowel variation can itself be achieve but the clustering technique
-themselves and hence allows a reasonable back-off selection strategy
-than making firm type decisions.
-
-</P>
-
-
-<H2><A NAME="SEC66" HREF="festvox_toc.html#TOC66">10.4  unit size and type</A></H2>
-
-<P>
-The basic cluster unit selection code available in festival uses
-segments as the size of unit.  However the acoustic distance measure
-used in cluster uses significant portions of the previous segment.  Thus
-the cluster unit selection effectively selects diphones from the
-database.  
-
-</P>
-<P>
-The type of units the cluster selection code uses is based on the
-segment name, by default.  In the case of limited domain synthesis we
-have found that constraining this further gives both better, and faster
-synthesis.  Thus we allow for the unit type to be defined by an
-arbitrary feature.  In the default limited domain set up
-we use 
-
-<PRE>
-SEGMENT_WORD
-</PRE>
-
-<P>
-That is, the segment plus the word the segment comes from.  Note
-this doesn't mean we are doing <EM>word</EM> concatenation in our
-synthesizer.  We are still selecting phone units but that the
-these phone are differentiated depending on the word they come from
-thus a /t/ from the word "unit" cannot be used to synthesis a /t/ in 
-"table".  The primary reason for us doing this was to cut down
-the search, though it notable improves synthesis quality to.  As we
-have constructed the database to have good coverage this is a practical
-thing to do.
-
-</P>
-<P>
-The feature function <CODE>clunit_name</CODE> constructs the unit type for a
-particular segment item.  We have provided the above default (segment
-name plus (downcased) word name), but it is easy to extend this.
-
-</P>
-<P>
-In one domain we have worked in we wish to differentiate between words
-in different prosody contexts.  Particularly we wished to mark words us
-"questionable" so we can ask users for confirmation.  To do this we
-marked the "questionable" words in the prompts with a question mark
-prefix.  We then recorded them with appropriate intonation and then
-defined our <CODE>clunit_name</CODE> function in include "C_" is the word was
-prefixed by a question mark.  For example the following two prompts
-will be read in a different manner
-
-<PRE>
-theater is Squirrel Hill Theater
-theater is ?Squirrel ?Hill ?Theater
-</PRE>
-
-<P>
-Likewise in unit selection the units in the word "Squirrel" will not be
-used to synthesize the word "?Squirrel" and vice versa.  Although crude,
-this does give simple control over prosody variation though this technique
-can require the vocabulary of the units to increase to where this
-technique ceases to be practical.
-
-</P>
-<P>
-It would be good if this technique had a back-off strategy where if no
-unit can be found for a particular word it would allow other words to
-contribute candidates.  This is ultimately what general unit selection
-is.  We do consider this our goal in unit type but in the interest of
-building quick and reliable limited domain synthesizers we do not yet do
-this but consider it an area we will experiment with.  One specific area
-that only partially cross this line is in the synthesis of numbers.  It
-seem very reasonable to allow selection of units from simple numbers
-(e.g. "seven" and "seventy") but we have not experimented on that yet.
-
-</P>
-<P>
-One further important point should be highlights about this method
-for defining unit types.  Although including the word name in the unit
-name does greatly encourage whole words to be selected it does not
-mean that joins in the synthesize utterances only occur at word 
-boundaries.  It is common that contiguous units are selection from
-different occurrences of the same word.  Mid-word (e.g. within
-vowels, or at stops) joins at stable places are common.  The optimal
-coupling technique selects the best place within a word for the cross
-over between two different parts of the database.
-
-</P>
-
-
-<H2><A NAME="SEC67" HREF="festvox_toc.html#TOC67">10.5  using limited domain synthesizers</A></H2>
-
-<P>
-The goal of building such limited domain synthesizer is not just
-to show off good synthesis.  We followed this route as we see this
-as a very practical method for building speech output systems.
-
-</P>
-<P>
-For practical reasons, the default configures includes the possibility of
-a back-up voice that will be called to do synthesis if the limited
-domain synthesizer fails, which for this default setup means the phrase
-includes a out of vocabulary word.  It would perhaps be more useful if
-the fall position just required synthesis of the out of vocabulary word
-itself rather than the whole phrase, but that isn't as trivial as it
-might be.  The limit domain synthesis does not prosody modification of
-the selections, except for pitch smooth at joins, thus slotting in a
-diphone one word would sound very bad.  At present each limited domain
-synthesizer has an explicitly defined <CODE>closest_voice</CODE>.  This voice
-is used when the limited domain synthesis fails and also when generating
-the prompts, which can be looked upon as absolute minimal case when the
-synthesizer has no data to synthesize from.
-
-</P>
-<P>
-There are also issues in speed here, which we are still trying to
-improve.  This technique should in fact be fast but it is still slower
-than our diphone synthesizer.  One significant reason is the cost if
-finding the optimal join put in selected units.  Also this synthesizer
-technique require more memory that diphones as the cepstrum parameters
-for the whole database are required at run time, in addition to the full
-waveforms.  These issues we feel can and should be addressed as these
-techniques are not fundamentally computationally expensive so we intend
-to work on these aspect in later releases.
-
-</P>
-
-
-<H2><A NAME="SEC68" HREF="festvox_toc.html#TOC68">10.6  Telling the time</A></H2>
-
-<P>
-<A NAME="IDX180"></A>
-Festival includes a very simple little script that speaks the current
-time (<TT>`festival/examples/saytime'</TT>).  This section explains how to
-replace the synthesizer used from this script with one that talks with
-your own voice.  This is an extreme example of a limited domain
-synthesizer but it is a good example as it allows us to give
-a walkthrough of the stages involved in building a limited domain
-synthesizer.  This example is also small enough that it can
-be done in well under an hour.
-
-</P>
-<P>
-Following through this example will give a reasonable understanding
-of the relative importance of many important steps in the voice
-building process.
-
-</P>
-<P>
-The following tasks are required:
+The basic processes involved in building a waveform synthesizer for
+the clustering algorithm are as follows.
 
 <UL>
-<LI>Designing the prompts
+<LI>
 
-<LI>Customized the synthesizer front end
+Collect the database of general speech.
+<LI>
 
-<LI>Recording the prompts
+Build utterance structures for your database using the techniques
+discussed in section <A HREF="festvox_7.html#SEC38">7.4  Utterance building</A>
+<LI>
 
-<LI>Autolabelling the prompts
+Building coefficients for acostic distances, typically some
+form of cepstrum plus F0, or some pitch synchronous analysis (e.g.
+LPC).
+<LI>
 
-<LI>Building utterance structures for recorded utterances
+Build distances tables, precalculating the acoustic distance
+between each unit of the same phone type.
+<LI>
 
-<LI>Extracting pitchmark and building LPC coefficients
+Dump selection features (phone context, prosodic, positional and
+whatever) for each unit type.
+<LI>
 
-<LI>Building a clunit based synthesizer from the utterances
+Build cluster trees using <TT>`wagon'</TT> with the features and acoustic
+distances dumped by the previous two stages
+<LI>
 
-<LI>Testing and tuning
-
+Building the voice description itself
 </UL>
 
-<P>
-Before starting set the environment variables <TT>`FESTVOXDIR'</TT> and
-<TT>`ESTDIR'</TT> to the directories which contain the festvox distribution
-and the Edinburgh Speech Tools respectively.  Under bash and other good
-shells this may be done by commands like
 
-<PRE>
-export FESTVOXDIR=/home/awb/projects/festvox
-export ESTDIR=/home/awb/projects/1.4.1/speech_tools
-</PRE>
+
+<H3><A NAME="SEC55" HREF="festvox_toc.html#TOC55">10.1.1  Collecting databases for unit selection</A></H3>
 
 <P>
-In earlier releases we only offered a command line based method for
-building voices and limited domain synthesizers.  In order to make the
-process easier and less prone to error we have introduced and graphical
-front end to these scripts.  This front end is called
-<CODE>pointyclicky</CODE> (as it offers a pointy-clicky interface).  It is
-particularly useful in the actual prompting and recording.  Although
-<CODE>pointyclicky</CODE> is the recommend route in the section we go through the
-process step by step to give a better understanding of what is required
-and where problems may lie that require attention.
+Unlike diphone database which are carefully constructed to ensure
+specific coverage, one of the advantages of unit selection is that
+a much more general database is desired.  However, although voices
+may be built from existing data not specifically gathered for
+synthesis there are still factors about the data that will help make
+better synthesis.
 
 </P>
 <P>
-A simple script is provided setting up the basic directory structure
-and copying in some default parameter files.  The festvox distribution
-includes all the setup for the time domain.  When building
-for your domain, you will need to provide the file <TT>`etc/DOMAIN.data'</TT>
-contains your prompts (as described below).
-
-<PRE>
-mkdir ~/data/time
-cd ~/data/time
-$FESTVOXDIR/src/ldom/setup_ldom cmu time awb
-</PRE>
-
-<P>
-As in the definition of diphone databases we require three identifiers
-for the voice.  These are (loosely) institution, domain and speaker.
-Use <TT>`net'</TT> if you feel there isn't an appropriate institution for
-you, though we have also use the project name that the voice is being
-build for here.  The domain name seems well defined.  For speaker name
-we have also used style as opposed to speaker name.  The primary reason
-for these to so that people do not all build limited domain synthesizer
-with the same thus making it not possible to load them into the same
-instance of festival.
+Like diphone databases the more cleanly and carefully the speech is
+recorded the better the synthesized voice will be.  As we are going to
+be selecting units from different parts of the database the more similar
+the recordings are, the less likely bad joins will occur.  However
+unlike diphones database, prosodic variation is probably a good thing,
+as it is those variations that can make synthesis from unit selection
+sound more natural.  Good phonetic coverage is also useful, at least
+phone coverage if not complete diphone coverage.  Also synthesis using
+these techniques seems to retain aspects of the original database.  If
+the database is broadcast news stories, the synthesis from it will
+typically sound like read news stories (or more importantly will sound
+best when it is reading news stories).
 
 </P>
 <P>
-This setup script makes the directories and copies basic scheme 
-files into the <TT>`festvox/'</TT> directory.  You may need to
-edit these files later.
-
-</P>
-
-
-<H3><A NAME="SEC69" HREF="festvox_toc.html#TOC69">10.6.1  Designing the prompts</A></H3>
-
-<P>
-In this <CODE>saytime</CODE> example the basic format of the utterance is
-
-<PRE>
-The time is now, &#60;exactness&#62; &#60;minute info&#62; &#60;hour info&#62;, in the &#60;day info&#62;.
-</PRE>
-
-<P>
-For example
-
-<PRE>
-The time is now, a little after five to ten, in the morning.
-</PRE>
-
-<P>
-In all there are 1152 (4x12x12x2) utterances (although there are
-three possible day info parts (morning, afternoon and evening) they
-only get 12 hours, 6 hours and 6 hours respectively).  Although it
-would technically be possible to record all of these we wish to reduce
-the amount of recording to a minimum.  Thus what we actually do is 
-ensure there is at least one example of each value in each slot.
+<A NAME="IDX159"></A>
+<A NAME="IDX160"></A>
+<A NAME="IDX161"></A>
+Although it is too early to make definitive statements about what size
+and type of data is best for unit selection we do have some rough
+guides.  A Timit like database of 460 phonetically balanced sentences
+(around 14,000 phones) is not an unreasonable first choice.  If the
+text has not been specifically selected for phonetic coverage a larger
+database is probably required, for example the Boston Univeristy Radio
+News Corpus speaker <CODE>f2b</CODE> <CITE>ostendorf95</CITE> has been used
+relatively successfully.  Of course all this depends on what use you
+wish to make of the synthesizer, if its to be used in more restrictive
+environments (as is often the case) tailoring the database for the task
+is a very good idea.  If you are going to be reading a lot of telephone
+numbers, having a significant number of examples of read numbers will
+make synthesis of numbers sound much better (see the following
+chapter on makign such design more explicit).
 
 </P>
 <P>
-Here is a list of 24 utterances that should cover the main
-variations.
+The database used as an example here is a TIMIT 460 sentence database
+read by an American male speaker.
 
-<PRE>
-The time is now, exactly five past one, in the morning
-The time is now, just after ten past two, in the morning
-The time is now, a little after quarter past three, in the morning
-The time is now, almost twenty past four, in the morning
-The time is now, exactly twenty-five past five, in the morning
-The time is now, just after half past six, in the morning
-The time is now, a little after twenty-five to seven, in the morning
-The time is now, almost twenty to eight, in the morning
-The time is now, exactly quarter to nine, in the morning
-The time is now, just after ten to ten, in the morning
-The time is now, a little after five to eleven, in the morning
-The time is now, almost twelve.
-The time is now, just after five to one, in the afternoon
-The time is now, a little after ten to two, in the afternoon
-The time is now, exactly quarter to three, in the afternoon
-The time is now, almost twenty to four, in the afternoon
-The time is now, just after twenty-five to five, in the afternoon
-The time is now, a little after half past six, in the evening
-The time is now, exactly twenty-five past seven, in the evening
-The time is now, almost twenty past eight, in the evening
-The time is now, just after quarter past nine, in the evening
-The time is now, almost ten past ten, in the evening
-The time is now, exactly five past eleven, in the evening
-The time is now, a little after quarter to midnight.
-</PRE>
-
+</P>
 <P>
-These examples are first put in the prompt file with an utterance
-number and the prompt in double quotes like this.
-
-<PRE>
-(time0001 "The time is now ...")
-(time0002 "The time is now ...")
-(time0003 "The time is now ...")
-...
-</PRE>
-
-<P>
-These prompt should be put into <TT>`etc/DOMAIN.data'</TT>.  This file is
-used by many of the following sub-processes.
+Again the notes about recording the database apply, though it will
+sometimes be the case that the database is already recorded and beyond
+your control, in that case you will always have something legitimate to
+blame for poor quality synthesis.
 
 </P>
 
 
-<H3><A NAME="SEC70" HREF="festvox_toc.html#TOC70">10.6.2  Recording the prompts</A></H3>
+<H3><A NAME="SEC56" HREF="festvox_toc.html#TOC56">10.1.2  Preliminaries</A></H3>
 
 <P>
-<A NAME="IDX181"></A>
-The best way to record the prompts is to use a professional speaker in a
-professional recording studio (anechoic chamber) using dual channel (one
-for audio and the other for the electroglottograph signal) direct to
-digital media using a high quality head mounted microphone.
+<A NAME="IDX162"></A>
+Throughout our dicussion we will assume the following database layout.
+It is highly recommended that you follow this format otherwise scripts,
+and examples will fail.  There are many ways to organize databases and
+many of such choices are arbitrary, here is our "arbitrary" layout.
 
 </P>
 <P>
-However most of us don't have such equipment (or voice talent) so
-readily available so whatever you do will probably have to be a
-compromise.  The head mounted mike requirement is the cheapest to meet
-and it is pretty important so you should at least meet that requirement.
-Anechoic chambers are expensive, and even professional recording studios
-aren't easy to access (though most Universities will have some such
-facilities).  It is possible to do away with the EGG reading if
-a little care is taken to ensure pitchmarks are properly extracted 
-from the waveform signal alone.
+The basic database directory should contain the following directories
+<DL COMPACT>
 
-</P>
+<DT><CODE>bin/</CODE>
+<DD>
+Any database specific scripts for processing.  Typically this
+first contains a copy of standard scripts that are then customized
+when necessary to the particulary database
+<DT><CODE>wav/</CODE>
+<DD>
+The waveform files.  These should be headered, one utterances per file
+with a standard name convention.  They should have the extention
+<TT>`.wav'</TT> and the fileid consistent with all other files through
+the database (labels, utterances, pitch marks etc).
+<DT><CODE>lab/</CODE>
+<DD>
+The segmental labels.  This is usually the master label files,
+these may contain more information that the labels used by festival
+which will be in <TT>`festival/relations/Segment/'</TT>.
+<DT><CODE>lar/</CODE>
+<DD>
+The EGG files (larynograph files) if collected.
+<DT><CODE>pm/</CODE>
+<DD>
+Pitchmark files as generated from the lar files or from the signal
+directly.
+<DT><CODE>festival/</CODE>
+<DD>
+Festival specific label files.
+<DL COMPACT>
+
+<DT><TT>`festival/relations/'</TT>
+<DD>
+The processed labelled files for building Festival utterances,
+held in directories whose name reflects the relation they represent:
+<TT>`Segment/'</TT>, <TT>`Word/'</TT>, <TT>`Syllable/'</TT> etc.
+<DT><TT>`festival/utts/'</TT>
+<DD>
+The utterances files as generated from the <TT>`festival/relations/'</TT>
+label files.
+</DL>
+</DL>
 <P>
-We have been successful in recording with a standard PC using a standard
-soundblaster type 16bit audio card though results do vary from machine
-to machine.  Before attempting this you should record a few examples on
-the PC to see how much noise is being picked up by the mike.  For example
-try the following
-
-<PRE>
-$ESTDIR/bin/na_record -f 16000 -time 5 -o test.wav -otype riff
-</PRE>
-
-<P>
-<A NAME="IDX182"></A>
-<A NAME="IDX183"></A>
-<A NAME="IDX184"></A>
-This will record 5 seconds from the microphone in the machine you run
-the command on.  You should also do this to test that the microphone
-is plugged in (and switched on).  Play back the recorded wave with
-<TT>`na_play'</TT> and perhaps play with the mixer levels until you get
-the least background noise with the strongest spoken signal.  Now
-you should display the waveform to see (as well as hear) how much
-noise is there.
-
-<PRE>
-$FESTVOXDIR/src/general/display_sg test.wav
-</PRE>
-
-<P>
-This will display the waveform and its spectrogram.  Noise will show up
-in the silence (and other) parts.
-
-</P>
-<P>
-<A NAME="IDX185"></A>
-There a few ways to reduce noise.  Ensure the microphone cable isn't
-wrapped around other cables (especially power cables).  Turning the
-computer 90 degrees may help and repositioning things can help too.
-Moving the sound board to some other slot in the machine can also help
-as well as getting a different microphone (even the same make).
-
-</P>
-<P>
-There is a large advantage in recording straight to disk as it allows
-the recording to go directly into right files.  Doing off-line recording
-(onto DAT) is better in reducing noise but transferring it to disk and
-segmenting it is a long and tedious process.
-
-</P>
-<P>
-Once you have checked your recording environment you can proceed with
-the build process.
-
-</P>
-<P>
-First generate the prompts with the command
-
-<PRE>
-festival -b festvox/build_ldom.scm '(build_prompts "etc/time.data")'
-</PRE>
-
-<P>
-and prompt and record them with the command
-
-<PRE>
-bin/prompt_them etc/time.data
-</PRE>
-
-<P>
-You may or may not find listening to the prompts before speaking
-useful.  Simply displaying them may be adequate for you (if so 
-comment out the <TT>`na_play'</TT> line in <TT>`bin/prompt_them'</TT>).
+Other directories will be created for various processing reasons.
 
 </P>
 
 
-<H3><A NAME="SEC71" HREF="festvox_toc.html#TOC71">10.6.3  Autolabelling the prompts</A></H3>
+<H3><A NAME="SEC57" HREF="festvox_toc.html#TOC57">10.1.3  Building utterance structures for unit selection</A></H3>
 
 <P>
-The recorded prompt can be labelled by aligning them against
-the synthesize prompts.  This is done by the command
-
-<PRE>
-bin/make_labs prompt-wav/*.wav
-</PRE>
-
-<P>
-If the utterances are long (&#62; 10 seconds of speech) you may require lots
-of swap space to do this stage (this could be fixed).
+<A NAME="IDX163"></A>
+In order to make access well defined you need to construct Festival
+utterance structures for each of the utterances in your database.  This
+(in is basic form) requires labels for: segments, syllables, words,
+phrases, F0 Targets, and intonation events.  Ideally these should all be
+carefully hand labelled but in most cases that's impractical.  There are
+ways to automatically obtain most of these labels but you should be
+aware of the inherit errors in the labelling system you use (including
+labelling systems that involve human labellers).  Note that when a unit
+selection method is to be used that fundamentally uses segment
+boundaries its quality is going to be ultimately determined by the
+quality of the segmental labels in the databases.
 
 </P>
 <P>
-<A NAME="IDX186"></A>
-<A NAME="IDX187"></A>
-Once labelled you should check that they are labelled
-reasonable.  The labeller typically gets it pretty much correct,
-or very wrong, so a quick check can often save time later.  You 
-can check the database using the command
-
-<PRE>
-emulabel etc/emu_lab
-</PRE>
-
-<P>
-Once you are happy with the labelling you can construct the
-whole utterance structure for the spoken utterances.  This is done
-by combining the basic structure from the synthesized prompts and
-the actual times from the automatically labelled ones.  This
-can be done with the command
-
-<PRE>
-festival -b festvox/build_ldom.scm '(build_utts "etc/time.data")'
-</PRE>
-
-
-
-<H3><A NAME="SEC72" HREF="festvox_toc.html#TOC72">10.6.4  Extracting pitchmarks and building LPC coefficients</A></H3>
-
-<P>
-<A NAME="IDX188"></A>
-Getting good pitchmarks is important to the quality of the synthesis,
-see section <A HREF="festvox_14.html#SEC113">14.4  Extracting pitchmarks from waveforms</A> for more detailed
-discussion on this issue.  For the limited domain synthesizers the
-pitch extract is a little less crucial that for diphone collection.
-Though spending a little time on this does help.
+<A NAME="IDX164"></A>
+For the unit selection algorithm described below the segemntal labels
+should be using the same phoneset as used in the actual synthesis voice.
+However a more detailed phonetic labelling may be more useful
+(e.g. marking closures in stops) mapping that information back to the
+phone labels before actual use.  Autoaligned databases typically aren't
+acurate enough for use in unit selection.  Most autoaligners are built
+using speech recognition technology where actual phone boundaries are
+not the primary measure of success.  General speech recognition systems
+primarily measure words correct (or more usefully semantically correct)
+and do not require phone boundaries to be acurate.  If the database is
+to be used for unit selection it is very important that the phone
+boundaries are accurate.  Having said this though, we have successfully
+used the aligner described in the diphone chpater above to label general
+utterance where we knew which phone string we were looking for, using
+such an aligner may be a useful first pass, but the result should always
+be checked by hand.
 
 </P>
 <P>
-If you have recorded EGG signals the you can use <TT>`bin/make_pm'</TT>
-from the <TT>`.lar'</TT> files.  Note that you may need to add (or remove)
-the option <TT>`-inv'</TT> depending on the updownness of your EGG signal.
-However so far only the CSTR larygnograph seems to produce inverted
-signals so the default should be adequate.  Also note the
-parameters that specify the pitch period range, <TT>`-min'</TT> and <TT>`max'</TT>
-the default setting are suitable for a male speaker, for a female you
-should modify these to something like
-
-<PRE>
--min 0.0033 -max 0.0875 -def 0.005
-</PRE>
-
-<P>
-The changing from a range of (male) 200Hz-80Hz with a default of
-100Hz, to a female range of 300Hz-120Hz and default of 200Hz.
+<A NAME="IDX165"></A>
+It has been suggested that aligning techniques and unit selection
+training techniques can be used to judge the accuracy of the labels and
+basically exclude any segments that appear to fall outside the typical
+range for the segment type.  Thus it, is believed that unit selection
+algorithms should be able to deal with a certain amount of noise in the
+labelling.  This is the desire for researchers in the field, but we
+are some way from that and the easiest way at present to improve the
+quality of unit selection algorithms at present is to ensure that
+segmental labelling is as accurate as possible.  Once we have a better
+handle on selection techniques themselves it will then be possible to
+start experimenting with noisy labelling.
 
 </P>
 <P>
-<A NAME="IDX189"></A>
-If you don't have an EGG signal you must extract the pitch from the
-waveform itself.  This works though may require a little modification of
-parameters, and it is computationally more expensive (and wont be as
-exact as from an EGG signal).  There are two methods, one
-using Entropic's <TT>`epoch'</TT> program which work pretty well
-without tuning parameters.  The second is to use the free Speech
-Tools program <TT>`pitchmark'</TT>.  The first is very computationally
-expensive, and as Entropic is no longer in existence, the program
-is no longer available (though rumours circulate that it may
-appear again for free).  To use <TT>`epoch'</TT> use the program
-
-<PRE>
-bin/make_pm_epoch wav/*.wav
-</PRE>
-
-<P>
-To use <TT>`pitchmark'</TT> use the command
-
-<PRE>
-bin/make_pm_wave wav/*.wav
-</PRE>
-
-<P>
-As with the EGG extraction <TT>`pitchmark'</TT> uses parameters to specify
-the range of the pitch periods, you should modify the parameters to best
-match your speakers range.  The other filter parameters also 
-can make a different to the success.   Rather than try to explain
-what changing the figures mean (I admit I don't fully know), the
-best solution is to explain what you need to obtain as a result.
+<A NAME="IDX166"></A>
+However it should be added that this unit selection technique (and many
+others) support what is termed "optimal coupling" (<CITE>conkie96</CITE>)
+where the acoustically most appropriate join point is found
+automatically at run time when two units are selected for concatenation.
+This technique is inherently robust to at least a few tens of
+millisecond boundary labelling errors.
 
 </P>
 <P>
-Irrespective of how you extract the pitchmarks we have found that
-a post-processing stage that moves the pitchmarks to the nearest
-peak is worthwhile.  You can achieve this by
+For the cluster method defined here it is best to construct more than 
+simply segments, durations and an F0 target.  A whole syllabic structure
+plus word boundaries, intonation events and phrasing allow a much richer
+set of features to be used for clusters.  See section <A HREF="festvox_7.html#SEC38">7.4  Utterance building</A>
+for a more general discussion of how to build utterance structures
+for a database.
 
-<PRE>
-bin/make_pm_fix pm/*.pm
-</PRE>
+</P>
+
+
+<H3><A NAME="SEC58" HREF="festvox_toc.html#TOC58">10.1.4  Making cepstrum parameter files</A></H3>
 
 <P>
-<A NAME="IDX190"></A>
-<A NAME="IDX191"></A>
-<A NAME="IDX192"></A>
-At this point you may find that your waveform file is upside down.
-Normally this wouldn't matter but due to the basic signal processing
-techniques we used to find the pitch periods upside down signals confuse
-things.  People tell me that it shouldn't happen but some recording
-devices return an inverted signal.  From the cases we've seen the same
-device always returns the same form so if one of your recordings is
-upside down all of them probably are (though there are some published
-speech databases e.g. BU Radio data, where a random half are upside
-down).  
+<A NAME="IDX167"></A>
+<A NAME="IDX168"></A>
+In order to cluster similar units in a database we build an
+acoustic representation of them.  This is is also still a research
+issue but in the example here we will use Mel cepsrtum plus
+delta Mel cepstrum plus F0.  Though this is open for change (and
+can easily be done so).
 
 </P>
 <P>
-In general the higher peaks should be positive rather than negative.
-If not you can invert the signals with the command
+Here is an example script which will generate these parameters for a
+database, it is included in <TT>`festvox/src/unitsel/make_mcep'</TT> The
+main loop here generates the cepstrum parameters and the F0 and then
+combinsthem into a single file with F0 as parameter 0.  This format is
+assumed for the later acoustic measures though the number
+of cepstrum/delta cepstrum parameters may be changed if
+desired.
 
 <PRE>
-for i in wav/*.wav
+ESTDIR=/usr/awb/projects/speech_tools/main
+PDA_PARAMS="-fmax 180 -fmin 80"
+SIG2FV=$ESTDIR/sig2fv
+SIG2FVPARAMS='-coefs melcep -delta melcep -melcep_order 12 \
+          -fbank_order 24 -shift 0.01 -factor 2.5 -preemph 0.97'
+
+for i in $*
 do
-   ch_wave -scale -1.0 $i -o $i
+  fname=`basename $i .wav`
+  echo $fname
+  $SIG2FV $SIG2FVPARAMS -otype ascii $i -o /tmp/tmp.$$.ascii
+  if [ ! -f festival/f0/$fname.f0 ]
+  then
+     $ESTDIR/pda -s 0.01 -o festival/f0/$fname.f0 -otype ascii \
+               $PDA_PARAMS wav/$fname.wav
+  fi
+  $ESTDIR/ch_track -pc first -itype ascii -s 0.010 -otype htk \
+     festival/f0/$fname.f0 /tmp/tmp.$$.ascii \
+     -o festival/coeffs/$fname.dcoeffs
+  rm /tmp/tmp.$$.*
 done
 </PRE>
 
 <P>
-If they are upside, invert them and re-run the pitch marking.  (If
-you do invert them it is not necessary to re-run the segment labelling.)
+<A NAME="IDX169"></A>
+<A NAME="IDX170"></A>
+The above builds coefficients at fixed frames.  We have also
+experiemented with building parameters pitch synchornously and have
+found a slight improvement in the usefulness of teh emasure based on
+this.  We do not pretend that this part is particularly neat in the
+system but it does work.  When pitch synchornous parameters are
+build the cluints module will automatically put the local
+F0 value in coefficient 0 at load time.  This happens to be
+appropriate from LPC coefficients.  The script in
+<TT>`festvox/src/general/make_lpc'</TT> can be used to
+generate the parameters, assuming you have already 
+generated pitch marks.
 
 </P>
 <P>
-Power normalization can help too.  This can be done globally by the
-function
+Note the secondary advantage of using LPC coefficients is that they are
+requied any way for LPC resynthesis thus this allows less information
+about the database to be required at run time.  We have not yet tried
+pitch synchronous MEL frequency cepstrum coefficients but that should be
+tried.  Also a more general duration/number of pitch periods match
+algorithm is worth defining.
+
+</P>
+
+
+<H3><A NAME="SEC59" HREF="festvox_toc.html#TOC59">10.1.5  Building the clusters</A></H3>
+
+<P>
+<A NAME="IDX171"></A>
+Cluster building is mostly automatic.  Of course you need the
+<CODE>clunits</CODE> modules compiled into your version of Festival.  Version
+1.3.1 or later is required, the version of <CODE>clunits</CODE> in 1.3.0 is
+buggy and incomplete and will not work.  To compile in <CODE>clunits</CODE>,
+add
 
 <PRE>
-bin/simple_powernormalize wav/*.wav
+ALSO_INCLUDE += clunits
 </PRE>
 
 <P>
-This should be sufficient for full sentence examples.  In the diphone
-collection we take greater care in power normalization but that vowel
-based technique will be too confused by the longer more varied examples.
+to the end of your <TT>`festival/config/config'</TT> file, nad recompile.
+To chaeck if an installation already has support for <CODE>clunits</CODE>
+check the value of the variable <CODE>*modules*</CODE>.
 
 </P>
 <P>
-<A NAME="IDX193"></A>
-<A NAME="IDX194"></A>
-Once you have pitchmarks, next you need to generate the pitch
-synchronous MELCEP parameterization of the speech used in building the
-cluster synthesizer.
-
-<PRE>
-bin/make_mcep wav/*.wav
-</PRE>
-
-
-
-<H3><A NAME="SEC73" HREF="festvox_toc.html#TOC73">10.6.5  Building a clunit based synthesizer from the utterances</A></H3>
-
-<P>
-Building a full clunit synthesizer is probably a little bit of over kill
-but the technique basically works.  See section <A HREF="festvox_9.html#SEC52">9  Unit selection databases</A>
-for a more detailed discussion of this technique.  The basic
-parameter file <TT>`festvox/time_build.scm'</TT>, is reasonable as
-a start.
-
-<PRE>
-festival -b festvox/build_ldom.scm '(build_clunits "etc/time.data")'
-</PRE>
-
-<P>
-If all goes well this should create a file
-<TT>`festival/clunits/cmu_time_awb.catalogue'</TT> and set of index trees in
-<TT>`festival/trees/cmu_time_awb_time.tree'</TT>.
+<A NAME="IDX172"></A>
+The file <TT>`festival/src/modules/clunits/acost.scm'</TT> contains the
+basic code to build a cluster model for a databases that has utterance
+structures and acoustic parameters.  The function <CODE>do_all</CODE>
+will build the distance tables, dump the features and build
+the cluster trees.  The many parameters are set for the particular database 
+(and instance of cluster building) through the Lisp variable
+<CODE>clunits_params</CODE>.  An example is given in 
+<TT>`festival/src/modules/clunits/ked_params.scm'</TT> for the KED timit
+database.
 
 </P>
-
-
-<H3><A NAME="SEC74" HREF="festvox_toc.html#TOC74">10.6.6  Testing and tuning</A></H3>
-
 <P>
-To test the new voice start Festival as
+The function <CODE>do_all</CODE> runs through all the steps but as some
+the steps are relatively time consuming there may be times when
+each of the steps needs to be run individually.  We will go through
+each step and at that time explain which parameters affect the
+substep.
+
+</P>
+<P>
+Ther first stage is to load in all the utterances in the
+database, sort them into segment type and name them with individual
+names (as <CODE>&#60;type&#62;_&#60;num&#62;</CODE>).  This first stage is
+required for all other stages so that if you are not running <CODE>do_all</CODE>
+you still need to run this stage first.  This is done by the
+calls
 
 <PRE>
-festival festvox/cmu_time_awb_ldom.scm '(voice_cmu_time_awb_ldom)'
+    (format t "Loading utterances and sorting types\n")
+    (set! utterances (acost:db_utts_load dt_params))
+    (set! unittypes (acost:find_same_types utterances))
+    (acost:name_units unittypes)
 </PRE>
 
 <P>
-The function <TT>`(saytime)'</TT> can now be called and it should
-say the current time.
+Though the function <CODE>do_init</CODE> will do the same thing.
 
 </P>
 <P>
-Note this synthesizer can <EM>only</EM> say the phrases that it has phones
-for which basically means it can only say the time in the format given
-at the start of this chapter.  Thus although you can
-use <TT>`SayText'</TT> you can only five it text in the write form
-if you expect it to works.  That's what limited domain synthesis
-is.
+This uses the following parameters
+<DL COMPACT>
+
+<DT><CODE>name</CODE>
+<DD>
+A name for this database.
+<DT><CODE>db_dir</CODE>
+<DD>
+This full pathname of the database
+<DT><CODE>utts_dir</CODE>
+<DD>
+The directory contain the utterances.
+<DT><CODE>utts_ext</CODE>
+<DD>
+The file extention for the utterance files
+<DT><CODE>files</CODE>
+<DD>
+The list of file ids in the database.
+</DL>
+<P>
+For example for the KED example these parameters are
+
+<PRE>
+       (name 'ked_timit)
+       (db_dir "/usr/awb/data/timit/ked/")
+       (utts_dir "festival/utts/")
+       (utts_ext ".utt")
+       (files ("kdt_001" "kdt_002" "kdt_003" ... ))
+</PRE>
+
+<P>
+The next stage is to load the accoustic parameters and build
+the distance tables.  The acoustic distance between each segment
+of the same type is calculated and saved in the distance table.
+Precalculating this saves a lot of time as the cluster will require
+this number many times.
 
 </P>
 <P>
-A full directory structure of this example with the recordings and
-parameters files is available at <A HREF="http://www.festvox.org/examples/cmu_time_awb_ldom/">http://www.festvox.org/examples/cmu_time_awb_ldom/</A>.  And an on-line demo of this voice in that directory is
-available at <A HREF="http://www.festvox.org/ldom/index.html">http://www.festvox.org/ldom/index.html</A>.
+This is done by the following two function calls
+
+<PRE>
+    (format t "Loading coefficients\n")
+    (acost:utts_load_coeffs utterances)
+    (format t "Building distance tables\n")
+    (acost:build_disttabs unittypes clunits_params)
+</PRE>
+
+<P>
+The following parameters influence the behaviour.
+<DL COMPACT>
+
+<DT><CODE>coeffs_dir</CODE>
+<DD>
+The directory (from db_dir) that contains the acoustic coefficients
+as generated by the script <TT>`make_mcep'</TT>.
+<DT><CODE>coeffs_ext</CODE>
+<DD>
+The file extention for the coefficient files
+<DT><CODE>get_std_per_unit</CODE>
+<DD>
+Takes the value <CODE>t</CODE> or <CODE>nil</CODE>.  If <CODE>t</CODE> the parameters
+for the type of segment are normalized by finding the menas and
+standard deviations for the class are used.  Thus a mean mahalanobis
+euclidean distance is found between units rather than simply
+a euclidean distance.
+<DT><CODE>ac_left_context &#60;float&#62;</CODE>
+<DD>
+The amount of the previous unit to be included in the the distance.
+1.0 means all, 0.0 means none.  This parameter may be used to make the
+acoustic distance sensitive to the previous acoustic context.
+<DT><CODE>ac_duration_penality &#60;float&#62;</CODE>
+<DD>
+The penalty factor for duration mismatch between units.
+<DT><CODE>ac_weights (&#60;float&#62; &#60;float&#62; ...)</CODE>
+<DD>
+The weights for each parameter in the coefficeint files used
+while finding the acoustic distance between segments.  There must
+be the same number of weights as there are parameters in the
+coefficient files.
+</DL>
+<P>
+An example from KED is
+
+<PRE>
+       (coeffs_dir "festival/coeffs/")
+       (coeffs_ext ".dcoeffs")
+       (dur_pen_weight 0.1)
+       (get_stds_per_unit t)
+       (ac_left_context 0.8)
+       (ac_weights
+         (1.0
+           0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5
+           2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0))
+</PRE>
+
+<P>
+The next stage is to dump the feature staht will be used to index the
+clusters.  Remember the clusters are defined with respect to the acoustic
+distance between each unit in the cluster, but they are indexed by
+these features.  These features are those which will be available at
+text-to-speech time when no acoustic information is available.  Thus
+they include things like phonetic and prosodic context rather than
+spectral information.  The name features may (and probabaly should)
+be over general alloing the decision tree building program <CODE>wagon</CODE>
+to decide which of theses feature actual does have an acoustic
+distinction in the units.
+
+</P>
+<P>
+The function to dump the features is
+
+<PRE>
+    (format t "Dumping features for clustering\n")
+    (acost:dump_features unittypes utterances clunits_params)
+</PRE>
+
+<P>
+The parameters which affect this function are
+<DL COMPACT>
+
+<DT><CODE>fests_dir</CODE>
+<DD>
+The directory when the features will be saved (by segment type).
+<DT><CODE>feats</CODE>
+<DD>
+The list of features to be dumped. These are standard festival
+feature names with respect to the Segment relation.
+</DL>
+<P>
+For our KED example these values are
+
+<PRE>
+       (feats_dir "festival/feats/")
+       (feats 
+             (occurid
+               p.name p.ph_vc p.ph_ctype 
+                   p.ph_vheight p.ph_vlng 
+                   p.ph_vfront  p.ph_vrnd 
+                   p.ph_cplace  p.ph_cvox    
+               n.name n.ph_vc n.ph_ctype 
+                   n.ph_vheight n.ph_vlng 
+                   n.ph_vfront  n.ph_vrnd 
+                   n.ph_cplace  n.ph_cvox
+              segment_duration 
+              seg_pitch p.seg_pitch n.seg_pitch
+              R:SylStructure.parent.stress 
+              seg_onsetcoda n.seg_onsetcoda p.seg_onsetcoda
+              R:SylStructure.parent.accented 
+              pos_in_syl 
+              syl_initial
+              syl_final
+              R:SylStructure.parent.syl_break 
+              R:SylStructure.parent.R:Syllable.p.syl_break
+              pp.name pp.ph_vc pp.ph_ctype 
+                  pp.ph_vheight pp.ph_vlng 
+                  pp.ph_vfront  pp.ph_vrnd 
+                  pp.ph_cplace pp.ph_cvox))
+</PRE>
+
+<P>
+Now that we have the acoustic distances and the feature descriptions of
+each unit the next stage is to find a relationship between those
+features and the acoustic distances.  This we do using the CART tree
+builder <CODE>wagon</CODE>.  It will find out questions about which features
+best minimize the acoustic distance between the units in that class.
+<CODE>wagon</CODE> has many options many of which are apporiate to this task
+though it is interesting that this learning task is interestingly
+closed.  That is we are trying to classify <EM>all</EM> the units in
+the database, there is no test set as such.  However in synthesis
+there will be desired units whose feature vector didn't exist
+in the training set. 
+
+</P>
+<P>
+The clusters are built by the following function
+
+<PRE>
+    (format t "Building cluster trees\n")
+    (acost:find_clusters (mapcar car unittypes) clunits_params)
+</PRE>
+
+<P>
+The parameters that affect the tree building process are
+<DL COMPACT>
+
+<DT><CODE>tree_dir</CODE>
+<DD>
+the directory where the decision tree for each segment type will
+be saved
+<DT><CODE>wagon_field_desc &#60;file&#62;</CODE>
+<DD>
+A filename of a weagon filed descriptor file.   This is a standard
+field description (field name plus field type) that is require for
+wagon.  This building process doesn't include an explicit building
+of this file and you must create it yourself.  The script
+<TT>`make_wagon_desc'</TT> can aid this given the feature files
+in <TT>`festival/feats'</TT> and a file contains the feature
+names (one per line) as listed in the <CODE>feats</CODE> parameter
+above.
+<DT><CODE>wagon_progname &#60;file&#62;</CODE>
+<DD>
+The pathname for the <TT>`wagon'</TT> CART building program.  This
+is a string and may also include any extra parameters you
+wish to give to <TT>`wagon'</TT> e.g. <CODE>-stepwise</CODE>.
+<DT><CODE>wagon_cluster_size &#60;int&#62;</CODE>
+<DD>
+The minimu cluster size (the wagon <CODE>-stop</CODE> value).
+<DT><CODE>prune_reduce &#60;int&#62;</CODE>
+<DD>
+This number of elements in each cluster to remove in pruning.
+This removes the units in the cluster that are furthest from the centre.
+</DL>
+
+<P>
+<A NAME="IDX173"></A>
+<A NAME="IDX174"></A>
+Note that as the distance tables can be large there is an alternative
+function that does both the ditance table and clustering in one,
+deleting the distance table immediately after use, thus you only need
+enough disk space for the largest number of phones in any type.
+To do this 
+
+<PRE>
+    (acost:disttabs_and_clusters unittypes clunits_params)
+</PRE>
+
+<P>
+Removing the calls to <CODE>acost:build_disttabs</CODE> and 
+<CODE>acost:find_clusters</CODE>.
+
+</P>
+<P>
+In our KED example these have the values
+
+<PRE>
+       (trees_dir "festival/trees/")
+       (wagon_field_desc "festival/clunits/all.desc")
+       (wagon_progname "/usr/awb/projects/speech_tools/bin/wagon")
+       (wagon_cluster_size 10)
+       (prune_reduce 0)
+</PRE>
+
+<P>
+The final stage in building a cluster model is collect the
+generated trees into a single file and dumping the uniot
+catalogue, i.e. the list of unit names and their files and
+position in them.  This is doen by the lisp function
+
+<PRE>
+    (acost:collect_trees (mapcar car unittypes) clunits_params)
+    (format t "Saving unit catalogue\n")
+    (acost:save_catalogue utterances clunits_params)
+</PRE>
+
+<P>
+The only parameter that affect this is
+<DL COMPACT>
+
+<DT><CODE>catalogue_dir</CODE>
+<DD>
+the directory where the catalogue will be save (the <CODE>name</CODE> 
+parameter is used to name the file).
+</DL>
+<P>
+In the KED example this is
+
+<PRE>
+       (catalogue_dir "festival/clunits/")
+</PRE>
+
+<P>
+There are a number of parameters that are specified with a cluster
+voice.  These are related to the run time aspects of the cluster
+model.  These are
+<DL COMPACT>
+
+<DT><CODE>join_weights</CODE>
+<DD>
+This are a set of weights, in the same format as <CODE>ac_weights</CODE>
+that are used in optimal coupling to find the best join point between two
+candidate units.  This is different from <CODE>ac_weights</CODE> as it
+is likely different values are desried, particularl increasing the 
+F0 value (column 0).
+<DT><CODE>continuity_weight &#60;float&#62;</CODE>
+<DD>
+The factor to multiply the join cost over the target cost.  This
+is probabaly not very relevant given the the target cost is merely
+the position from the cluster center.
+<DT><CODE>optimal_coupling &#60;int&#62;</CODE>
+<DD>
+If <CODE>1</CODE> this uses optimal coupling and searches the cepstrum
+vectors at each join point to find the best possible join point.
+This is computationally expensive (as well as having to load in lots
+of cepstrum files), but does give better results.
+<DT><CODE>extend_selections &#60;int&#62;</CODE>
+<DD>
+If <CODE>1</CODE> then the selected cluster will be extended
+to include any unit from the cluster of the previous segments
+candidate units that has correct phone type.  This is experimental
+but has shown its worth and hence is recommend.  This means
+that instead of selecting just units selection is effectively
+selecting the beginings of multiple segment units.  This option
+encourages far longer units.
+<DT><CODE>pm_coeffs_dir &#60;file&#62;</CODE>
+<DD>
+The directory (from <CODE>db_dir</CODE>) where the pitchmarks are
+<DT><CODE>pm_coeffs_ext &#60;file&#62;</CODE>
+<DD>
+The file extension for the pitchmark files.
+<DT><CODE>sig_dir &#60;file&#62;</CODE>
+<DD>
+Directory containing waveforms of the units (or residuals if
+Residual LPC is being used, PCM waveforms is PSOLA is being used)
+<DT><CODE>sig_ext &#60;file&#62;</CODE>
+<DD>
+File extention for waveforms/residuals
+<DT><CODE>join_method &#60;method&#62;</CODE>
+<DD>
+Specify the method used for joining the selected units. Currently it
+supports <CODE>simple</CODE>, a very naive joining mechanism, and
+<CODE>windowed</CODE>, where the ends of the units are windowed using a
+hamming window then overlapped (no prosodic modification takes place
+though).  The other two possible values for this feature are <CODE>none</CODE>
+which does nothing, and <CODE>modified_lpc</CODE> which uses the standard
+UniSyn module to modify the selected units to match the targets.
+</DL>
+
+
+
+<H3><A NAME="SEC60" HREF="festvox_toc.html#TOC60">10.1.6  Defining a voice</A></H3>
+
+<P>
+This cluster method is just a waveform synthesizer it still requires a
+text analysis and prosodic component.  The only restriction is that it
+must generate the same sort of utterance structures as in your database.
+This is because it features from utterances of that type which were used
+to train the selection trees.  That is you can't use a front end that
+uses different relation names and features.
+
+</P>
+<P>
+Here we simply use the same front end as <CODE>ked_diphone</CODE> as it
+is basically the same speaker.
 
 </P>
 
 
-<H2><A NAME="SEC75" HREF="festvox_toc.html#TOC75">10.7  Making it better</A></H2>
+<H3><A NAME="SEC61" HREF="festvox_toc.html#TOC61">10.1.7  Cluster Example</A></H3>
 
 <P>
-The above walkthough is to give you a basic idea of the stages involved in
-building a limited domain synthesizer.  The quality of a limited domain
-synthesizer will most likely be excellent in parts and very bad in
-others which is typical of techniques like this.  Each stage is, of
-course, more complex than this and there are a number of things that can
-be done to improve it.
+<A NAME="IDX175"></A>
+A simple example of building a cluster unit selection synthesizer is
+given in section <A HREF="festvox_11.html#SEC63">11  Limited domain synthesis</A>.  In that example the features
+used in selection have been reduced and a few other simplying
+assumptions have been made but the underlying structure is the same.
+That is a good example to start from, then change the parameters as
+fully described above to improve the selection criertia.
+
+</P>
+
+
+<H2><A NAME="SEC62" HREF="festvox_toc.html#TOC62">10.2  Diphones from general databases</A></H2>
+
+<P>
+<A NAME="IDX176"></A>
+<A NAME="IDX177"></A>
+As touched on above the choice of an inventory of units can be viewed as
+a line from a small inventory phones, to diphones, tripohones to
+arbitrary units.  Though the direction you come from influences the
+selection of the units from the database.  CHATR <CITE>campbell96</CITE> lies
+firmly at the "arbitrary units" end of the spectrum.  Although it can
+exclude bad units from its inventory it is very much <SAMP>`everything
+minus some'</SAMP> view of the world.  Microsoft's Whistler <CITE>huang97</CITE> on
+the other hand, starts off with a general database base but selects
+typical units from it.  Thus its inventory is substantially smaller than
+the full general database the units are extracted from.  At the other
+end of the spectrum we have the fixed pre-sepcified inventory like
+diphone synthesis as has bee described in the previous chapter.
 
 </P>
 <P>
-For limited domain synthesize it should be possible to correct 
-the errors such that it is excellent always.  To do so though requires
-being able to diagnose where the problems are.  The most
-likely problems are listed here
+In this section we'll give some examples of moving along the line
+from the fixed pre-specified inventory to the words the more general
+inventories but these techniques still have a strong component
+of prespecification.
 
-<UL>
-<LI>Mis-labelling
+</P>
+<P>
+Firstly lets us assume you have a general database that is labelled with
+utterances as described above.  We can extract a standard diphone
+database from this general database, however unless the database was
+specifically desgined, a general database is unlikely to have diphone
+coverage.  Even when phonetically rich databases are used such as Timit
+there is likely to be very few vowel-vowel diphones as they are
+comparatively rare.  But as these diphone are rare we may be able to do
+with out them and hence it is at least an interesting exercise to
+extract an as complete as possible diphone index from a general
+database.  
 
-Due to lipsmacks, and other reasons the labelling may not be correct.
-The result may the wrong, extra or missing segments in the synthesized
-utterance.  Using <TT>`emulabel'</TT> you can check and hand correct the
-labels.
-<LI>Mis-spoken data
+</P>
+<P>
+The simplest method is to linearly search for all phone-phone pairs in
+the phone set through all utterances simply taking the first example.
+Some same code is given in <TT>`src/diphone/make_diphs_index.scm'</TT>.
+This basic idea is to load in all the utterances in a database, and
+index each segment by is phone name and succeeding phone name.  Then
+various selection techniques can be use to select from the multiple
+candidates of each diphone (or you can split the indexing futher).
+After selection a diphone index file can be saved.
 
-The speaker may have made a mistake in the content.  This can often
-happen even when the speaker is careful.  Mistakes can be actual
-content (it is easy to read a list of number wrongly), but also
-hesitations and false starts can make the recording bad.  Also note
-that inconsistent prosodic variation can also affect the synthesis
-quality.   Re-recording can be considered for bad examples,
-or you can delete them from the <TT>`etc/LDOM.data'</TT> list, assuming
-there is enough variation in the rest of the examples to ensure
-proper coverage of the domain.
-<LI>Bad pitchmarking
+</P>
+<P>
+The utterances to load are identified by a list of fileids.  For
+example if the list of fileids (without parenthesis) is in
+the file <TT>`etc/fileids'</TT>, the following will builds a diphone
+index.
 
-Automatic pitchmarking is not really automatic.  It is very worthwhile
-checking to see if it is correct and re-running the pitchmarking with
-better parameters until it is better.  (We need better documentation
-here on how to know what "correct" is.)
-<LI>Looking at the data
-
-There is never a substitute for actually looking at the data.  Use
-<TT>`emulabel'</TT> to actually look at the recorded utterances and see what
-the labelling is.  Ensure these match and files haven't got out of
-order.  Look at a random selection not just the first example.
-<LI>Improving the unit clustering
-
-The clustering techniques and the features used here are pretty generic
-and by no means optimal.  Even for the simple example given here it is
-not very good.  See the chapter on section <A HREF="festvox_9.html#SEC52">9  Unit selection databases</A> for
-more discussion on this.  Adding new features for use in cluster may
-help a lot.
-</UL>
+<PRE>
+festival .../make_diphs_utts.scm
+...
+festival&#62; (set! fileids (load "etc/fileids" t))
+...
+festival&#62; (make_diphone_index fileids "dic/f2bdiph.est")
+</PRE>
 
 <P>
-The line between limited domain synthesis and unit selection is fuzzy.
-The more complex and varied the phrases you synthesize are, the more
-difficult it is to produce reliable synthesis.
+Note that as this diphone index will contain a number of holes
+you will need to either augment it with <SAMP>`similar'</SAMP> diphones
+or process your diphone selections through <CODE>UniSyn_module_hooks</CODE>
+as described in the previous chapter.
+
+</P>
+<P>
+As you complicate the selection, and the number of diphones you used
+from the database you will need to complicate the names used to
+identify the diphones themselves.  The convention of using underscores
+for syllable internal consonant clusters and dollars for syllable
+initial consonants can be followed, but you will need to go further if
+you wish to start introducing new feature such as phrase finality and
+stress.  Eventually going to a generized naming scheme (type and number)
+as used by the cluster selection technique described above, will prove
+worth while.  Also using CART trees, through hand written and fully
+deterministic (one candidate at the leaves), will be a reasonable
+algorithm to select between hand stipulated alternatives with
+reasonable backoff strategies.
+
+</P>
+<P>
+Another potential direction is to use the acoustic costs used in the
+clustering methods described in the previous section.  These can be used
+to identify what the most typical unit in a cluster are (the mean
+distances from all other units are given in the leafs).  Pruning these
+trees until the cluster only contain a single example should help to
+improve synthesis, in that variation in the feature in the "diphone"
+index will then be determined by the features specified in the cluster
+train algorithm.  Of course though as you limit the number of distinct
+units types the more prosodic modification will be required by your
+signal processing algorithm, which requires that you have good pitch
+marks.
+
+</P>
+<P>
+If you already have an existing database but don't wish to go to full
+unit selection, such techniques are probably quite feasible and worth
+further investigation.
 
 </P>
 
 <P><HR><P>
-Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_9.html">previous</A>, <A HREF="festvox_11.html">next</A>, <A HREF="festvox_20.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
+Go to the <A HREF="festvox_1.html">first</A>, <A HREF="festvox_9.html">previous</A>, <A HREF="festvox_11.html">next</A>, <A HREF="festvox_21.html">last</A> section, <A HREF="festvox_toc.html">table of contents</A>.
 </BODY>
 </HTML>

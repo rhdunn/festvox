@@ -93,6 +93,9 @@
 	    pp.ph_vheight pp.ph_vlng 
 	    pp.ph_vfront  pp.ph_vrnd 
 	    pp.ph_cplace pp.ph_cvox
+	    R:SylStructure.parent.parent.R:Word.word_out
+	    R:SylStructure.parent.syl_in
+	    R:SylStructure.parent.syl_out
 	    ))
 	 ;; Wagon tree building params
 ;	 (trees_dir "festvox/")  ;; in INST_LDOM_VOX_ldom.scm
@@ -105,20 +108,33 @@
 ;	 (catalogue_dir "festvox/")   ;; in INST_LDOM_VOX_ldom.scm
 	 ;;  Run time parameters 
 	 ;; all in INST_LDOM_VOX_ldom.scm
-	 ;; Files in db
-	 (list
-	  'files
-	  (mapcar car (load (string-append 
-			     INST_LDOM_VOX::ldom_dir
-			     "/etc/LDOM.data") t)))))))
+	 ;; Files in db, filled in at build_clunits time
+	 ;; (files ("time0001" "time0002" ....))
+))))
 
 (define (build_clunits file)
   "(build_clunits file)
 Build cluster synthesizer for the given recorded data and domain."
+  (build_clunits_init file)
+  (do_all)  ;; someday I'll change the name of this function
+)
+
+(define (build_clunits_init file)
+  "(build_clunits_init file)
+Get setup ready for (do_all) (or (do_init))."
   (eval (list INST_LDOM_VOX::closest_voice))
+
+  ;; Add specific fileids to the list for this run
+  (set! INST_LDOM_VOX::dt_params
+	(append
+	 INST_LDOM_VOX::dt_params
+	 (list
+	  (list
+	   'files
+	   (mapcar car (load file t))))))
+  
   (set! dt_params INST_LDOM_VOX::dt_params)
   (set! clunits_params INST_LDOM_VOX::dt_params)
-  (do_all)  ;; someday I'll change the name of this function
 )
 
 (define (do_prompt name text) 
@@ -209,6 +225,34 @@ them into the synthesizer utterance."
 		(item.feat (car actual-segments) "end"))
 	(error)))
       )
+
+    (mapcar
+     (lambda (a)
+      ;; shorten and split sliences
+      (while (and (string-equal (item.name a) silence)
+		  (> (item.feat a "segment_duration") 0.300))
+;              (format t "splitting %s silence of %f at %f\n"
+;		      (item.name a)
+;                      (item.feat a "segment_duration")
+;                      (item.feat a "end"))
+              (cond
+               ((string-equal "h#" (item.feat a "p.name"))
+                (item.set_feat (item.prev a) "end"
+                               (+ 0.150 (item.feat a "p.end"))))
+               ((and (string-equal silence (item.feat a "p.name"))
+                     (string-equal silence (item.feat a "p.p.name")))
+                (item.set_feat (item.prev a) "end"
+                               (+ 0.150 (item.feat a "p.end")))
+                (item.set_feat (item.prev a) "name" silence))
+               (t
+                (item.insert a
+                             (list silence
+                                   (list 
+                                    (list "end" 
+				      (+ 0.150 
+					(item.feat a "p.end")))))
+                             'before)))))
+     (utt.relation.items utt1 'Segment))
 
     (utt.relation.delete utt1 'actual-segment)
     (utt.set_feat utt1 "fileid" name)

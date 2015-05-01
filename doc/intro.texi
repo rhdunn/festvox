@@ -410,10 +410,10 @@ document already.
 @itemize @bullet
 @item Support basic prosodic characteristics of a new (English) speaker.
 Most of the scripts (brazenly) have the pitch range hardwired to a
-default.  It would be fairly easy to record a short section of speech
-from a speaker and set these automatically.  Secondly extracting some
-basic information about speech rate, and pitch mean and range of a
-speaker is well within the current programs.
+default (for male speech).  It would be fairly easy to record a short
+section of speech from a speaker and set these automatically.  Secondly
+extracting some basic information about speech rate, and pitch mean and
+range of a speaker is well within the current programs.
 @item Integrate the NSW (Non-standard word) text analysis system.
 The Johns Hopkins University summer workshop 99, had a project on
 analysis of non-standard words (NSW)
@@ -427,7 +427,7 @@ support to be distribution/used as a distinct module from a voice or
 lexicon and so can be shared between languages.  This has almost
 happened but not quite formalised yet.
 @item Better support for autolabeled segments and prosody.  There
-is now a free speech recognitions system (CMU Sphinx 
+is now a free speech recognition system (CMU Sphinx 
 @url{http://www.speech.cs.cmu.edu/sphinx/}) which should offer
 better segmental labelling for continuous speech (i.e. limited
 domain and unit selection databases).  Some documentation and testing

@@ -65,6 +65,15 @@
 ;;; Flag to allow new lexical items to be added only once
 (defvar INST_LDOM_VOX::added_extra_lex_items nil)
 
+;;; Use backup voice, or use excuse phrase, if this is non-nill
+;;; it will use a backup phrase to speak instead of using the
+;;; backup voice
+(defvar INST_LDOM_VOX::backup_phrase nil)
+;;; Show time to synthesize
+(defvar INST_LDOM_VOX::show_times nil)
+;;; Show unit selection
+(defvar INST_LDOM_VOX::show_unit_selection nil)
+
 ;;; The front end to the limited domain
 (require 'INST_LDOM_VOX)
 
@@ -98,6 +107,7 @@
        '(pm_coeffs_ext ".pm")
        '(sig_dir "wav/")
        '(sig_ext ".wav")
+;       '(clunits_debug 1)
 ))
 
 (define (INST_LDOM_VOX::clunit_name i)
@@ -208,6 +218,10 @@ Reset global variables back to previous voice."
   "(INST_LDOM_VOX::utt.synth utt)
 Uses the LDOM voice to synthesize utt, but if that fails 
 back off to the defined closest voice (probably a diphone synthesizer)."
+  (let ((starttime (clunits::time)))
+  (if INST_LDOM_VOX::show_times
+      (format t "START: %s\n"
+	      (read-from-string (utt.feat utt "iform"))))
   (unwind-protect 
    (begin
      (INST_LDOM_VOX::real_utt.synth utt)
@@ -216,11 +230,51 @@ back off to the defined closest voice (probably a diphone synthesizer)."
    (begin
      ;; The above failed, so resynthesize with the backup voice
 ;     (format stderr "ldom/clunits failed\n")
-     (eval (list INST_LDOM_VOX::closest_voice))  ;; call backup voice
-     (set! utt2 (INST_LDOM_VOX::copy_tokens utt))
-     (set! utt (INST_LDOM_VOX::real_utt.synth utt2))
-     (voice_INST_LDOM_VOX_ldom)                 ;; return to ldom voice
+     (if INST_LDOM_KAL::backup_phrase
+	 (begin
+            (set! utt (INST_LDOM_KAL::real_utt.synth 
+		(eval
+		 (list 'Utterance 'Text
+		       INST_LDOM_KAL::backup_phrase))))
+	   )
+	 (begin  ;; else use the backup voices
+	   (eval (list INST_LDOM_VOX::closest_voice))  ;; call backup voice
+	   (set! utt2 (INST_LDOM_VOX::copy_tokens utt))
+	   (set! utt (INST_LDOM_VOX::real_utt.synth utt2))
+	   (voice_INST_LDOM_VOX_ldom)                 ;; return to ldom voice
+	   ))
      ))
+  (if INST_LDOM_VOX::show_unit_selection
+      (INST_LDOM_VOX::clunits_units_selected utt "-"))
+  (if INST_LDOM_VOX::show_times
+      (let ((synthtime (- (clunits::time) starttime))
+	    (wavelength 
+	     (/ (cadr (assoc 'num_samples (wave.info (utt.wave utt))))
+		(cadr (assoc 'sample_rate (wave.info (utt.wave utt)))))))
+	(format t "END: synthtime %2.3f wavelength %2.3f (%2.3f)\n"
+		synthtime
+		wavelength
+		(/ wavelength synthtime))))
+  utt)
+)
+
+(define (INST_LDOM_VOX::fix_pauses utt)
+  "(INST_LDOM_VOX::fix_pauses utt)
+Remove double pauses at start and end of utterance."
+  (mapcar
+   (lambda (s)
+     (cond
+      ;; remove final pause
+      ((and (not (item.next s))
+	    (string-equal (item.name s)
+		  (car (cadr (car (PhoneSet.description '(silences)))))))
+       (item.delete s))
+      ;; remove inital pause
+      ((and (not (item.prev s))
+	    (string-equal (item.name s)
+	     (car (cadr (car (PhoneSet.description '(silences)))))))
+       (item.delete s))))
+   (utt.relation.items utt 'Segment))
   utt
 )
 
@@ -268,10 +322,58 @@ Define voice for limited domain: LDOM."
 	      INST_LDOM_VOX::ldom_clunit_selection_trees)
 	(Parameter.set 'Synth_Method 'Cluster)))
 
+  (set! cluster_synth_pre_hooks (list INST_LDOM_VOX::fix_pauses))
+
+  ;; This is where you can modify power (and sampling rate) if desired
+  (set! after_synth_hooks nil)
+;  (set! after_synth_hooks
+;      (list
+;        (lambda (utt)
+;          (utt.wave.rescale utt 2.1))))
+
   (set! current_voice_reset INST_LDOM_VOX::voice_reset)
 
   (set! current-voice 'INST_LDOM_VOX_ldom)
 )
+
+(if (not (boundp 'clunits::time))
+    ;;; Its an older version of clunits and doesn't have this so fake it
+    (define (clunits::time)
+      "(clunits::time)
+      An improper version of clunits::time. upgrade your festopt_clunits
+      to get a more accurate one."
+      (let ((tmpfile (make_tmp_filename))
+	    (hms))
+	(system (format nil "date %s >%s" "+%H%t%M%t%S" tmpfile))
+	(set! hms (load tmpfile t))
+	(delete-file tmpfile)
+	(+ (* 12 (car hms))
+	   (* 60 (cadr hms))
+	   (caddr hms)))))
+
+(define (INST_LDOM_VOX::clunits_units_selected utt filename)
+  (let ((fd (if (string-equal filename "-")
+		t
+		(fopen filename "w")))
+	(sample_rate
+	 (cadr (assoc 'sample_rate (wave.info (utt.wave utt))))))
+    (mapcar
+     (lambda (s)
+       (format fd "%s\t%s\t%10s\t%f\t%f\n"
+	       (string-before (item.name s) "_")
+	       (item.name s)
+	       (item.feat s "fileid")
+	       (item.feat s "middle")
+	       (+ 
+		(item.feat s "middle")
+		(/ (- (item.feat s "samp_end")
+		      (item.feat s "samp_start"))
+		   sample_rate)))
+       )
+     (utt.relation.items utt 'Unit))
+    (if (not (string-equal filename "-"))
+	(fclose fd))
+    t))
 
 (provide 'INST_LDOM_VOX_ldom)
 

@@ -232,4 +232,7 @@ v
 -
 0
 )
+( R:SylStructure.parent.parent.R:Word.word_out float )
+( R:SylStructure.parent.syl_in float )
+( R:SylStructure.parent.syl_out float )
 )

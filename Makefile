@@ -48,8 +48,8 @@
 ###########################################################################
 TOP=.
 DIRNAME=.
-BUILD_DIRS = src doc
-ALL_DIRS=config festvox.org $(BUILD_DIRS)
+BUILD_DIRS = src doc docbook
+ALL_DIRS=config festvox.org course $(BUILD_DIRS)
 OTHERS = README ACKNOWLEDGEMENTS ANNOUNCE-1.1 ANNOUNCE-1.2
 FILES = Makefile $(OTHERS)
 
@@ -83,7 +83,7 @@ dist: time-stamp
 	@ $(RM) -f $(TOP)/FileList
 	@ $(MAKE) file-list
 	@ echo .time-stamp >>FileList
-	@ sed 's/^\.\///' <FileList | grep -v "festvox.org" | sed 's/^/festvox\//' >.file-list-all
+	@ sed 's/^\.\///' <FileList | grep -v "festvox.org" | grep -v "^course/" | grep -v "^docbook/" | sed 's/^/festvox\//' >.file-list-all
 	@ ls html/*.html | sed 's/^/festvox\//' >>.file-list-all
 	@ ls html/*.png | sed 's/^/festvox\//' >>.file-list-all
 	@ ls html/festvox.ps.gz | sed 's/^/festvox\//' >>.file-list-all

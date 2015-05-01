@@ -1,7 +1,7 @@
 <HTML>
 <HEAD>
 <!-- This HTML file has been created by texi2html 1.52
-     from ../doc/festvox.texi on 10 July 2000 -->
+     from ../doc/festvox.texi on 2 August 2000 -->
 
 <TITLE>Building Voices in the Festival Speech Synthesis System - Table of Contents</TITLE>
 </HEAD>
@@ -9,8 +9,8 @@
 <H1>Building Voices in </H1>
 <H1>the Festival Speech Synthesis System</H1>
 <H2>Processes and issues in building speech synthesis voices</H2>
-<H2>Edition 1.2:beta, for Festival Version 1.4.1</H2>
-<H2>10th July 2000</H2>
+<H2>Edition 1.3:current, for Festival Version 1.4.1</H2>
+<H2>28th July 2000</H2>
 <P>
 <ADDRESS>by <A HREF="http://www.cs.cmu.edu/~awb/">Alan W Black</A> and <A HREF="http://www.cs.cmu.edu/~lenzo/">Kevin A. Lenzo</A></ADDRESS>
 <ADDRESS><A HREF="http://www.speech.cs.cmu.edu">Speech Group at Carnegie Mellon University</A></ADDRESS>
@@ -86,127 +86,128 @@ NOTE: this document is incomplete
 <LI><A NAME="TOC38" HREF="festvox_7.html#SEC38">7.4  Utterance building</A>
 <LI><A NAME="TOC39" HREF="festvox_7.html#SEC39">7.5  Extracting features from utterances</A>
 </UL>
-<LI><A NAME="TOC40" HREF="festvox_8.html#SEC40">8  Diphone databases</A>
+<LI><A NAME="TOC40" HREF="festvox_8.html#SEC40">8  Waveform Synthesis</A>
+<LI><A NAME="TOC41" HREF="festvox_9.html#SEC41">9  Diphone databases</A>
 <UL>
-<LI><A NAME="TOC41" HREF="festvox_8.html#SEC41">8.1  Diphone introduction</A>
-<LI><A NAME="TOC42" HREF="festvox_8.html#SEC42">8.2  Defining a diphone list</A>
+<LI><A NAME="TOC42" HREF="festvox_9.html#SEC42">9.1  Diphone introduction</A>
+<LI><A NAME="TOC43" HREF="festvox_9.html#SEC43">9.2  Defining a diphone list</A>
 <UL>
-<LI><A NAME="TOC43" HREF="festvox_8.html#SEC43">8.2.1  Synthesizing prompts</A>
+<LI><A NAME="TOC44" HREF="festvox_9.html#SEC44">9.2.1  Synthesizing prompts</A>
 </UL>
-<LI><A NAME="TOC44" HREF="festvox_8.html#SEC44">8.3  Recording the diphones</A>
-<LI><A NAME="TOC45" HREF="festvox_8.html#SEC45">8.4  Labelling the diphones</A>
-<LI><A NAME="TOC46" HREF="festvox_8.html#SEC46">8.5  Extracting the pitchmarks</A>
-<LI><A NAME="TOC47" HREF="festvox_8.html#SEC47">8.6  Building LPC parameters</A>
-<LI><A NAME="TOC48" HREF="festvox_8.html#SEC48">8.7  Defining a diphone voice</A>
-<LI><A NAME="TOC49" HREF="festvox_8.html#SEC49">8.8  Checking and correcting diphones</A>
-<LI><A NAME="TOC50" HREF="festvox_8.html#SEC50">8.9  Diphone check list</A>
-<LI><A NAME="TOC51" HREF="festvox_8.html#SEC51">8.10  US/UK English Walkthrough</A>
+<LI><A NAME="TOC45" HREF="festvox_9.html#SEC45">9.3  Recording the diphones</A>
+<LI><A NAME="TOC46" HREF="festvox_9.html#SEC46">9.4  Labelling the diphones</A>
+<LI><A NAME="TOC47" HREF="festvox_9.html#SEC47">9.5  Extracting the pitchmarks</A>
+<LI><A NAME="TOC48" HREF="festvox_9.html#SEC48">9.6  Building LPC parameters</A>
+<LI><A NAME="TOC49" HREF="festvox_9.html#SEC49">9.7  Defining a diphone voice</A>
+<LI><A NAME="TOC50" HREF="festvox_9.html#SEC50">9.8  Checking and correcting diphones</A>
+<LI><A NAME="TOC51" HREF="festvox_9.html#SEC51">9.9  Diphone check list</A>
+<LI><A NAME="TOC52" HREF="festvox_9.html#SEC52">9.10  US/UK English Walkthrough</A>
 </UL>
-<LI><A NAME="TOC52" HREF="festvox_9.html#SEC52">9  Unit selection databases</A>
+<LI><A NAME="TOC53" HREF="festvox_10.html#SEC53">10  Unit selection databases</A>
 <UL>
-<LI><A NAME="TOC53" HREF="festvox_9.html#SEC53">9.1  Cluster unit selection</A>
+<LI><A NAME="TOC54" HREF="festvox_10.html#SEC54">10.1  Cluster unit selection</A>
 <UL>
-<LI><A NAME="TOC54" HREF="festvox_9.html#SEC54">9.1.1  Collecting databases for unit selection</A>
-<LI><A NAME="TOC55" HREF="festvox_9.html#SEC55">9.1.2  Preliminaries</A>
-<LI><A NAME="TOC56" HREF="festvox_9.html#SEC56">9.1.3  Building utterance structures for unit selection</A>
-<LI><A NAME="TOC57" HREF="festvox_9.html#SEC57">9.1.4  Making cepstrum parameter files</A>
-<LI><A NAME="TOC58" HREF="festvox_9.html#SEC58">9.1.5  Building the clusters</A>
-<LI><A NAME="TOC59" HREF="festvox_9.html#SEC59">9.1.6  Defining a voice</A>
-<LI><A NAME="TOC60" HREF="festvox_9.html#SEC60">9.1.7  Cluster Example</A>
+<LI><A NAME="TOC55" HREF="festvox_10.html#SEC55">10.1.1  Collecting databases for unit selection</A>
+<LI><A NAME="TOC56" HREF="festvox_10.html#SEC56">10.1.2  Preliminaries</A>
+<LI><A NAME="TOC57" HREF="festvox_10.html#SEC57">10.1.3  Building utterance structures for unit selection</A>
+<LI><A NAME="TOC58" HREF="festvox_10.html#SEC58">10.1.4  Making cepstrum parameter files</A>
+<LI><A NAME="TOC59" HREF="festvox_10.html#SEC59">10.1.5  Building the clusters</A>
+<LI><A NAME="TOC60" HREF="festvox_10.html#SEC60">10.1.6  Defining a voice</A>
+<LI><A NAME="TOC61" HREF="festvox_10.html#SEC61">10.1.7  Cluster Example</A>
 </UL>
-<LI><A NAME="TOC61" HREF="festvox_9.html#SEC61">9.2  Diphones from general databases</A>
+<LI><A NAME="TOC62" HREF="festvox_10.html#SEC62">10.2  Diphones from general databases</A>
 </UL>
-<LI><A NAME="TOC62" HREF="festvox_10.html#SEC62">10  Limited domain synthesis</A>
+<LI><A NAME="TOC63" HREF="festvox_11.html#SEC63">11  Limited domain synthesis</A>
 <UL>
-<LI><A NAME="TOC63" HREF="festvox_10.html#SEC63">10.1  designing the prompts</A>
-<LI><A NAME="TOC64" HREF="festvox_10.html#SEC64">10.2  customizing the synthesizer front end</A>
-<LI><A NAME="TOC65" HREF="festvox_10.html#SEC65">10.3  autolabelling issues</A>
-<LI><A NAME="TOC66" HREF="festvox_10.html#SEC66">10.4  unit size and type</A>
-<LI><A NAME="TOC67" HREF="festvox_10.html#SEC67">10.5  using limited domain synthesizers</A>
-<LI><A NAME="TOC68" HREF="festvox_10.html#SEC68">10.6  Telling the time</A>
+<LI><A NAME="TOC64" HREF="festvox_11.html#SEC64">11.1  designing the prompts</A>
+<LI><A NAME="TOC65" HREF="festvox_11.html#SEC65">11.2  customizing the synthesizer front end</A>
+<LI><A NAME="TOC66" HREF="festvox_11.html#SEC66">11.3  autolabelling issues</A>
+<LI><A NAME="TOC67" HREF="festvox_11.html#SEC67">11.4  unit size and type</A>
+<LI><A NAME="TOC68" HREF="festvox_11.html#SEC68">11.5  using limited domain synthesizers</A>
+<LI><A NAME="TOC69" HREF="festvox_11.html#SEC69">11.6  Telling the time</A>
 <UL>
-<LI><A NAME="TOC69" HREF="festvox_10.html#SEC69">10.6.1  Designing the prompts</A>
-<LI><A NAME="TOC70" HREF="festvox_10.html#SEC70">10.6.2  Recording the prompts</A>
-<LI><A NAME="TOC71" HREF="festvox_10.html#SEC71">10.6.3  Autolabelling the prompts</A>
-<LI><A NAME="TOC72" HREF="festvox_10.html#SEC72">10.6.4  Extracting pitchmarks and building LPC coefficients</A>
-<LI><A NAME="TOC73" HREF="festvox_10.html#SEC73">10.6.5  Building a clunit based synthesizer from the utterances</A>
-<LI><A NAME="TOC74" HREF="festvox_10.html#SEC74">10.6.6  Testing and tuning</A>
+<LI><A NAME="TOC70" HREF="festvox_11.html#SEC70">11.6.1  Designing the prompts</A>
+<LI><A NAME="TOC71" HREF="festvox_11.html#SEC71">11.6.2  Recording the prompts</A>
+<LI><A NAME="TOC72" HREF="festvox_11.html#SEC72">11.6.3  Autolabelling the prompts</A>
+<LI><A NAME="TOC73" HREF="festvox_11.html#SEC73">11.6.4  Extracting pitchmarks and building LPC coefficients</A>
+<LI><A NAME="TOC74" HREF="festvox_11.html#SEC74">11.6.5  Building a clunit based synthesizer from the utterances</A>
+<LI><A NAME="TOC75" HREF="festvox_11.html#SEC75">11.6.6  Testing and tuning</A>
 </UL>
-<LI><A NAME="TOC75" HREF="festvox_10.html#SEC75">10.7  Making it better</A>
+<LI><A NAME="TOC76" HREF="festvox_11.html#SEC76">11.7  Making it better</A>
 </UL>
-<LI><A NAME="TOC76" HREF="festvox_11.html#SEC76">11  Building prosodic models</A>
+<LI><A NAME="TOC77" HREF="festvox_12.html#SEC77">12  Building prosodic models</A>
 <UL>
-<LI><A NAME="TOC77" HREF="festvox_11.html#SEC77">11.1  Phrasing</A>
-<LI><A NAME="TOC78" HREF="festvox_11.html#SEC78">11.2  Accent/Boundary Assignment</A>
-<LI><A NAME="TOC79" HREF="festvox_11.html#SEC79">11.3  F0 Generation</A>
+<LI><A NAME="TOC78" HREF="festvox_12.html#SEC78">12.1  Phrasing</A>
+<LI><A NAME="TOC79" HREF="festvox_12.html#SEC79">12.2  Accent/Boundary Assignment</A>
+<LI><A NAME="TOC80" HREF="festvox_12.html#SEC80">12.3  F0 Generation</A>
 <UL>
-<LI><A NAME="TOC80" HREF="festvox_11.html#SEC80">11.3.1  F0 by rule</A>
-<LI><A NAME="TOC81" HREF="festvox_11.html#SEC81">11.3.2  F0 by linear regression</A>
-<LI><A NAME="TOC82" HREF="festvox_11.html#SEC82">11.3.3  Tilt modelling</A>
+<LI><A NAME="TOC81" HREF="festvox_12.html#SEC81">12.3.1  F0 by rule</A>
+<LI><A NAME="TOC82" HREF="festvox_12.html#SEC82">12.3.2  F0 by linear regression</A>
+<LI><A NAME="TOC83" HREF="festvox_12.html#SEC83">12.3.3  Tilt modelling</A>
 </UL>
-<LI><A NAME="TOC83" HREF="festvox_11.html#SEC83">11.4  Duration</A>
-<LI><A NAME="TOC84" HREF="festvox_11.html#SEC84">11.5  Prosody Research</A>
-<LI><A NAME="TOC85" HREF="festvox_11.html#SEC85">11.6  Prosody Walkthrough</A>
+<LI><A NAME="TOC84" HREF="festvox_12.html#SEC84">12.4  Duration</A>
+<LI><A NAME="TOC85" HREF="festvox_12.html#SEC85">12.5  Prosody Research</A>
+<LI><A NAME="TOC86" HREF="festvox_12.html#SEC86">12.6  Prosody Walkthrough</A>
 <UL>
-<LI><A NAME="TOC86" HREF="festvox_11.html#SEC86">11.6.1  Design database</A>
-<LI><A NAME="TOC87" HREF="festvox_11.html#SEC87">11.6.2  Setup directory structure</A>
-<LI><A NAME="TOC88" HREF="festvox_11.html#SEC88">11.6.3  Synthesizing prompts</A>
-<LI><A NAME="TOC89" HREF="festvox_11.html#SEC89">11.6.4  Recording the prompts</A>
-<LI><A NAME="TOC90" HREF="festvox_11.html#SEC90">11.6.5  Phonetically label prompts</A>
-<LI><A NAME="TOC91" HREF="festvox_11.html#SEC91">11.6.6  Extract pitchmarks and F0</A>
-<LI><A NAME="TOC92" HREF="festvox_11.html#SEC92">11.6.7  Build utterance structures</A>
-<LI><A NAME="TOC93" HREF="festvox_11.html#SEC93">11.6.8  Duration models</A>
-<LI><A NAME="TOC94" HREF="festvox_11.html#SEC94">11.6.9  F0 contour models</A>
+<LI><A NAME="TOC87" HREF="festvox_12.html#SEC87">12.6.1  Design database</A>
+<LI><A NAME="TOC88" HREF="festvox_12.html#SEC88">12.6.2  Setup directory structure</A>
+<LI><A NAME="TOC89" HREF="festvox_12.html#SEC89">12.6.3  Synthesizing prompts</A>
+<LI><A NAME="TOC90" HREF="festvox_12.html#SEC90">12.6.4  Recording the prompts</A>
+<LI><A NAME="TOC91" HREF="festvox_12.html#SEC91">12.6.5  Phonetically label prompts</A>
+<LI><A NAME="TOC92" HREF="festvox_12.html#SEC92">12.6.6  Extract pitchmarks and F0</A>
+<LI><A NAME="TOC93" HREF="festvox_12.html#SEC93">12.6.7  Build utterance structures</A>
+<LI><A NAME="TOC94" HREF="festvox_12.html#SEC94">12.6.8  Duration models</A>
+<LI><A NAME="TOC95" HREF="festvox_12.html#SEC95">12.6.9  F0 contour models</A>
 </UL>
 </UL>
-<LI><A NAME="TOC95" HREF="festvox_12.html#SEC95">12  Lexicons</A>
+<LI><A NAME="TOC96" HREF="festvox_13.html#SEC96">13  Lexicons</A>
 <UL>
-<LI><A NAME="TOC96" HREF="festvox_12.html#SEC96">12.1  Word pronunciations</A>
-<LI><A NAME="TOC97" HREF="festvox_12.html#SEC97">12.2  Lexicons and addenda</A>
-<LI><A NAME="TOC98" HREF="festvox_12.html#SEC98">12.3  Out of vocabulary words</A>
-<LI><A NAME="TOC99" HREF="festvox_12.html#SEC99">12.4  Letter-to-sound rules by hand</A>
-<LI><A NAME="TOC100" HREF="festvox_12.html#SEC100">12.5  Building letter-to-sound rules</A>
-<LI><A NAME="TOC101" HREF="festvox_12.html#SEC101">12.6  Post-lexical rules</A>
+<LI><A NAME="TOC97" HREF="festvox_13.html#SEC97">13.1  Word pronunciations</A>
+<LI><A NAME="TOC98" HREF="festvox_13.html#SEC98">13.2  Lexicons and addenda</A>
+<LI><A NAME="TOC99" HREF="festvox_13.html#SEC99">13.3  Out of vocabulary words</A>
+<LI><A NAME="TOC100" HREF="festvox_13.html#SEC100">13.4  Letter-to-sound rules by hand</A>
+<LI><A NAME="TOC101" HREF="festvox_13.html#SEC101">13.5  Building letter-to-sound rules</A>
+<LI><A NAME="TOC102" HREF="festvox_13.html#SEC102">13.6  Post-lexical rules</A>
 </UL>
-<LI><A NAME="TOC102" HREF="festvox_13.html#SEC102">13  Text analysis</A>
+<LI><A NAME="TOC103" HREF="festvox_14.html#SEC103">14  Text analysis</A>
 <UL>
-<LI><A NAME="TOC103" HREF="festvox_13.html#SEC103">13.1  Token to word rules</A>
-<LI><A NAME="TOC104" HREF="festvox_13.html#SEC104">13.2  Number pronunciation</A>
+<LI><A NAME="TOC104" HREF="festvox_14.html#SEC104">14.1  Token to word rules</A>
+<LI><A NAME="TOC105" HREF="festvox_14.html#SEC105">14.2  Number pronunciation</A>
 <UL>
-<LI><A NAME="TOC105" HREF="festvox_13.html#SEC105">13.2.1  Multi-token numbers</A>
-<LI><A NAME="TOC106" HREF="festvox_13.html#SEC106">13.2.2  Declensions</A>
+<LI><A NAME="TOC106" HREF="festvox_14.html#SEC106">14.2.1  Multi-token numbers</A>
+<LI><A NAME="TOC107" HREF="festvox_14.html#SEC107">14.2.2  Declensions</A>
 </UL>
-<LI><A NAME="TOC107" HREF="festvox_13.html#SEC107">13.3  Homograph disambiguation</A>
-<LI><A NAME="TOC108" HREF="festvox_13.html#SEC108">13.4  TTS modes</A>
+<LI><A NAME="TOC108" HREF="festvox_14.html#SEC108">14.3  Homograph disambiguation</A>
+<LI><A NAME="TOC109" HREF="festvox_14.html#SEC109">14.4  TTS modes</A>
 </UL>
-<LI><A NAME="TOC109" HREF="festvox_14.html#SEC109">14  General issues.</A>
+<LI><A NAME="TOC110" HREF="festvox_15.html#SEC110">15  General issues.</A>
 <UL>
-<LI><A NAME="TOC110" HREF="festvox_14.html#SEC110">14.1  Selecting a speaker</A>
-<LI><A NAME="TOC111" HREF="festvox_14.html#SEC111">14.2  Who owns a voice</A>
-<LI><A NAME="TOC112" HREF="festvox_14.html#SEC112">14.3  Recording under Unix</A>
-<LI><A NAME="TOC113" HREF="festvox_14.html#SEC113">14.4  Extracting pitchmarks from waveforms</A>
+<LI><A NAME="TOC111" HREF="festvox_15.html#SEC111">15.1  Selecting a speaker</A>
+<LI><A NAME="TOC112" HREF="festvox_15.html#SEC112">15.2  Who owns a voice</A>
+<LI><A NAME="TOC113" HREF="festvox_15.html#SEC113">15.3  Recording under Unix</A>
+<LI><A NAME="TOC114" HREF="festvox_15.html#SEC114">15.4  Extracting pitchmarks from waveforms</A>
 </UL>
-<LI><A NAME="TOC114" HREF="festvox_15.html#SEC114">15  Full example</A>
-<LI><A NAME="TOC115" HREF="festvox_16.html#SEC115">16  Evaluation</A>
+<LI><A NAME="TOC115" HREF="festvox_16.html#SEC115">16  Full example</A>
+<LI><A NAME="TOC116" HREF="festvox_17.html#SEC116">17  Evaluation</A>
 <UL>
-<LI><A NAME="TOC116" HREF="festvox_16.html#SEC116">16.1  Does it work at all?</A>
-<LI><A NAME="TOC117" HREF="festvox_16.html#SEC117">16.2  Sematically unpredictable sentences</A>
+<LI><A NAME="TOC117" HREF="festvox_17.html#SEC117">17.1  Does it work at all?</A>
+<LI><A NAME="TOC118" HREF="festvox_17.html#SEC118">17.2  Sematically unpredictable sentences</A>
 </UL>
-<LI><A NAME="TOC118" HREF="festvox_17.html#SEC118">17  Resources</A>
+<LI><A NAME="TOC119" HREF="festvox_18.html#SEC119">18  Resources</A>
 <UL>
-<LI><A NAME="TOC119" HREF="festvox_17.html#SEC119">17.1  Festival resources</A>
-<LI><A NAME="TOC120" HREF="festvox_17.html#SEC120">17.2  General speech resources</A>
+<LI><A NAME="TOC120" HREF="festvox_18.html#SEC120">18.1  Festival resources</A>
+<LI><A NAME="TOC121" HREF="festvox_18.html#SEC121">18.2  General speech resources</A>
 </UL>
-<LI><A NAME="TOC121" HREF="festvox_18.html#SEC121">18  English phone lists</A>
+<LI><A NAME="TOC122" HREF="festvox_19.html#SEC122">19  English phone lists</A>
 <UL>
-<LI><A NAME="TOC122" HREF="festvox_18.html#SEC122">18.1  US phoneset</A>
-<LI><A NAME="TOC123" HREF="festvox_18.html#SEC123">18.2  UK phoneset</A>
+<LI><A NAME="TOC123" HREF="festvox_19.html#SEC123">19.1  US phoneset</A>
+<LI><A NAME="TOC124" HREF="festvox_19.html#SEC124">19.2  UK phoneset</A>
 </UL>
-<LI><A NAME="TOC124" HREF="festvox_19.html#SEC124">19  References</A>
-<LI><A NAME="TOC125" HREF="festvox_20.html#SEC125">Index</A>
+<LI><A NAME="TOC125" HREF="festvox_20.html#SEC125">20  References</A>
+<LI><A NAME="TOC126" HREF="festvox_21.html#SEC126">Index</A>
 </UL>
 <P><HR><P>
-This document was generated on 10 July 2000 using the
+This document was generated on 2 August 2000 using the
 <A HREF="http://wwwinfo.cern.ch/dis/texi2html/">texi2html</A>
 translator version 1.52.</P>
 </BODY>
