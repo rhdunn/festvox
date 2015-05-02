@@ -1,5 +1,5 @@
 #!/bin/sh
-#####################################################-*-mode:shell-script-*-
+####################################################-*-mode:shell-script-*-
 ##                                                                       ##
 ##                   Carnegie Mellon University and                      ##
 ##                   Alan W Black and Kevin A. Lenzo                     ##
@@ -31,11 +31,21 @@
 ##  THIS SOFTWARE.                                                       ##
 ##                                                                       ##
 ###########################################################################
-##                                                                       ##
-##  Simple power normalization for files, maximize power and then fix it ##
-##  to 0.65 of the maximum (feel freeto change that number if you want)  ##
-##                                                                       ##
-###########################################################################
+
+if [ $# = 0 ]
+then
+   echo "Make voice distribution"
+   echo "Usage:  bin/make_dist TYPE"
+   echo "Where TYPE is one of"
+   echo "  festvox: runtime voice distribution (README, COPYING, festvox/"
+   echo "           festival/clunits/*.catalog festival/tree/*.tree" 
+   echo "  backup:  backup copy of basic stuff and some derived stuff"
+   echo "           (no prompts, lpc, plm_lab or f0)" 
+   echo "  devlite: Typical files you change in development"
+   echo "           bin/ etc/ lab/ pm/ festival/clunits/" 
+  
+   exit 1
+fi
 
 if [ ! "$ESTDIR" ]
 then
@@ -47,19 +57,80 @@ then
    exit 1
 fi
 
-if [ $# = 0 ]
+if [ ! -f etc/voice.defs ]
 then
-   echo "Normalize power in waveforms"
-   echo "Usage:  bin/simple_powernormalize wav/*.wav"
-   echo "Will overwrite existing waveforms in wav/"
-   exit 1
+   $FESTVOXDIR/src/general/guess_voice_defs
+fi
+source etc/voice.defs
+if [ ! -d versions ]
+then
+   mkdir versions
 fi
 
-for i in $*
-do
-  fname=`basename $i .wav`
-  echo $fname
-  $ESTDIR/bin/ch_wave -scaleN 0.65 -o $i wavn/$fname.wav
-done
+OPTNAME=$2
 
+# Voice distribution has festival/lib/voice/LANG/voicename as prefix
+# for all files
+if [ $1 = "festvox" ]
+then
+    fvdir=festival/lib/voices/$FV_LANG/$FV_FULLVOICENAME
+    if [ ! -f $fvdir ]
+    then
+       mkdir -p `dirname $fvdir`
+       (cd `dirname $fvdir`; ln -s ../../../.. $FV_FULLVOICENAME)
+    fi
+    fvsigdir=$fvdir/lpc
+    tar zcvf versions/festvox_$FV_FULLVOICENAME$OPTNAME.tar.gz \
+         $fvdir/README \
+         $fvdir/COPYING \
+         $fvdir/festvox/*.scm \
+         $fvdir/festival/clunits/$FV_VOICENAME.catalogue \
+         $fvdir/festival/trees/$FV_VOICENAME.tree \
+         $fvdir/mcep/*.mcep \
+         $fvsigdir/* 
+fi        
+
+# For storing forever, or at least a clean copy of the base form of
+# everything.
+if [ $1 = "backup" ]
+then
+    fvdir=.
+    mkdir -p $fvdir
+    touch $fvdir/lpc/.something
+    touch $fvdir/festival/feats/.something
+    touch $fvdir/festival/disttabs/.something
+    tar zcvf versions/festvox_$FV_VOICENAME$OPTNAME"_backup".tar.gz \
+    $fvdir/README \
+    $fvdir/COPYING \
+    $fvdir/festvox/*.scm \
+    $fvdir/festival/clunits/* \
+    $fvdir/festival/trees/$FV_VOICENAME.tree \
+    $fvdir/festival/utts/*.utt \
+    $fvdir/lpc/.something \
+    $fvdir/festival/feats/.something \
+    $fvdir/festival/disttabs/.something \
+    $fvdir/bin/* \
+    $fvdir/etc/* \
+    $fvdir/pm/*.pm \
+    $fvdir/mcep/*.mcep \
+    $fvdir/wav/*.wav \
+    $fvdir/lab/*.lab
+fi        
+
+if [ $1 = "devlite" ]
+then
+    fvdir=.
+    touch $fvdir/lpc/.something
+    touch $fvdir/festival/feats/.something
+    tar zcvf versions/festvox_$FV_VOICENAME$OPTNAME"_devlite".tar.gz \
+    $fvdir/README \
+    $fvdir/COPYING \
+    $fvdir/festvox/*.scm \
+    $fvdir/festival/clunits/* \
+    $fvdir/festival/trees/$FV_VOICENAME.tree \
+    $fvdir/bin/* \
+    $fvdir/etc/* \
+    $fvdir/pm/*.pm \
+    $fvdir/lab/*.lab
+fi        
 

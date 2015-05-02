@@ -103,8 +103,8 @@
        '(continuity_weight 100)
        '(optimal_coupling 2)
        '(extend_selections 10)
-       '(pm_coeffs_dir "pm/")
-       '(pm_coeffs_ext ".pm")
+       '(pm_coeffs_dir "mcep/")
+       '(pm_coeffs_ext ".mcep")
        '(sig_dir "wav/")
        '(sig_ext ".wav")
 ;       '(clunits_debug 1)
@@ -143,13 +143,13 @@ SHould only be called once per session."
   (set! dt_params INST_LDOM_VOX::dt_params)
   (set! clunits_params INST_LDOM_VOX::dt_params)
   (clunits:load_db clunits_params)
-  (set! INST_LDOM_VOX::ldom_clunit_selection_trees
-	(load (string-append
-	       (string-append 
-		INST_LDOM_VOX::ldom_dir "/"
-		(get_param 'trees_dir dt_params "trees/")
-		(get_param 'index_name dt_params "all")
-		".tree"))))
+  (load (string-append
+	 (string-append 
+	  INST_LDOM_VOX::ldom_dir "/"
+	  (get_param 'trees_dir dt_params "trees/")
+	  (get_param 'index_name dt_params "all")
+	  ".tree")))
+  (set! INST_LDOM_VOX::ldom_clunit_selection_trees clunits_selection_trees)
   (set! INST_LDOM_VOX::ldom_loaded t))
 
 (set! INST_LDOM_VOX::phrase_cart_tree
@@ -230,12 +230,12 @@ back off to the defined closest voice (probably a diphone synthesizer)."
    (begin
      ;; The above failed, so resynthesize with the backup voice
 ;     (format stderr "ldom/clunits failed\n")
-     (if INST_LDOM_KAL::backup_phrase
+     (if INST_LDOM_VOX::backup_phrase
 	 (begin
-            (set! utt (INST_LDOM_KAL::real_utt.synth 
+            (set! utt (INST_LDOM_VOX::real_utt.synth 
 		(eval
 		 (list 'Utterance 'Text
-		       INST_LDOM_KAL::backup_phrase))))
+		       INST_LDOM_VOX::backup_phrase))))
 	   )
 	 (begin  ;; else use the backup voices
 	   (eval (list INST_LDOM_VOX::closest_voice))  ;; call backup voice
@@ -318,7 +318,7 @@ Define voice for limited domain: LDOM."
 	(if (not INST_LDOM_VOX::ldom_loaded)
 	    (INST_LDOM_VOX::ldom_load)
 	    (clunits:select 'INST_LDOM_VOX))
-	(set! clunit_selection_trees 
+	(set! clunits_selection_trees 
 	      INST_LDOM_VOX::ldom_clunit_selection_trees)
 	(Parameter.set 'Synth_Method 'Cluster)))
 
@@ -352,6 +352,9 @@ Define voice for limited domain: LDOM."
 	   (caddr hms)))))
 
 (define (INST_LDOM_VOX::clunits_units_selected utt filename)
+  "(INST_LDOM_VOX::clunits_units_selected utt filename)
+Output selected unitsfile indexes for each unit in the given utterance.
+Results saved in given file name, or stdout if filename is \"-\"."
   (let ((fd (if (string-equal filename "-")
 		t
 		(fopen filename "w")))

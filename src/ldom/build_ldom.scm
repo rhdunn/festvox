@@ -159,6 +159,33 @@ labels for prompts and aligning."
      p)
     t))
 
+(define (rebuild_prompts file)
+  "(rebuild_prompt file) 
+For each utterances in prompt file, synth from existing lab/ file
+and save waveform and labels for prompts and aligning."
+  (set! INST_LDOM_VOX::ldom_prompting_stage t)
+  (voice_INST_LDOM_VOX_ldom)
+ (let ((p (load file t)))
+    (mapcar
+     (lambda (l)
+       (format t "%s\n" (car l))
+       (do_reprompt (car l) (cadr l))
+       t)
+     p)
+    t))
+
+(define (do_reprompt name text) 
+  "(do_reprompt name text) 
+Synthesize from lab files."
+  (let ((utt1 (eval (list 'Utterance 'Text text))))
+    (utt.relation.load utt1 'Segment 
+		       (format nil "lab/%s.lab" name))
+    (Int_Targets_Default utt1)
+    (Wave_Synth utt1)
+    (utt.save.segs utt1 (format nil "prompt-lab/%s.lab" name))
+    (utt.save.wave utt1 (format nil "prompt-wav/%s.wav" name))))
+
+
 (define (build_utts file)
   "(build_utts file) 
 For each utterances in prompt file, synthesize and merge aligned labels

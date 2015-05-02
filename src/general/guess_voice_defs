@@ -31,55 +31,31 @@
 ##  THIS SOFTWARE.                                                       ##
 ##                                                                       ##
 ###########################################################################
-###                                                                       ##
-###  Make the directories assumes . is the db directory                   ##
-###                                                                       ##
-############################################################################
+##                                                                       ##
+##  Because of pre-existing voice sthat don't have this file             ##
+##  we guess, but of course they wont be satisfied with this             ##
+##                                                                       ##
+##  The real answer is MAKE THIS YOURSELF, THEN IT'LL BE RIGHT           ##
+##                                                                       ##
+###########################################################################
 
-##
-##  This make more directories than you may need
-##
+echo "Guessing voice definitions ..."
+echo
 
-mkdir bin
-mkdir wav
-mkdir lab
-mkdir lar
-mkdir lpc
-mkdir mcep
-mkdir pm
-mkdir pm_lab
-mkdir wrd
-mkdir f0
-mkdir dic
-mkdir etc
-mkdir group
-mkdir festival
-mkdir festival/relations
-mkdir festival/relations/Segment
-mkdir festival/relations/Phrase
-mkdir festival/relations/Target
-mkdir festival/relations/Syllable
-mkdir festival/relations/Word
-mkdir festival/relations/IntEvent
-mkdir festival/utts
-mkdir festival/coeffs
-mkdir festival/f0
-mkdir festival/disttabs
-mkdir festival/trees
-mkdir festival/feats
-mkdir festival/clunits
-mkdir festival/phrbrk
-mkdir festival/dur
-mkdir festival/accents
-mkdir emu
-mkdir emu/lab_hlb
-mkdir emu/pm_hlb
-mkdir scratch
-mkdir scratch/wav
-mkdir scratch/lab
-mkdir festvox
-mkdir versions
-mkdir prompt-wav
-mkdir prompt-lab
-mkdir prompt-cep
-mkdir cep
+grep "^(define (voice_" festvox/*.scm | head -1 |
+sed 's/.*voice_//' | tr "_" " " | tr -d "()" |
+awk '{printf("FV_INST=%s\n",$1);
+      printf("FV_LANG=%s\n",$2);
+      printf("FV_NAME=%s\n",$3);
+      printf("FV_TYPE=%s\n",$4);
+      printf("FV_VOICENAME=$FV_INST\"_\"$FV_LANG\"_\"$FV_NAME\n");
+      printf("FV_FULLVOICENAME=$FV_VOICENAME\"_\"$FV_TYPE\n");}' >etc/voice.defs
+
+echo Set up the following variables
+grep "^FV_....=" etc/voice.defs
+echo
+
+echo "sourcing etc/voice.defs"
+source etc/voice.defs
+echo "FULLVOICENAME is "$FV_FULLVOICENAME
+

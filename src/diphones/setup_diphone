@@ -96,6 +96,9 @@ cp -p $FESTVOXDIR/src/general/make_pm_fix bin
 cp -p $FESTVOXDIR/src/general/make_f0 bin
 cp -p $FESTVOXDIR/src/general/find_powerfactors bin
 cp -p $FESTVOXDIR/src/general/simple_powernormalize bin
+cp -p $FESTVOXDIR/src/general/find_powercontours bin
+cp -p $FESTVOXDIR/src/general/contour_powernormalize bin
+cp -p $FESTVOXDIR/src/general/make_dist bin
 cp -p $FESTVOXDIR/src/general/traintest bin
 cp -p $FESTVOXDIR/src/general/emu_lab.tpl etc/emu_lab.tpl
 cp -p $FESTVOXDIR/src/general/emu_pm.tpl etc/emu_pm.tpl

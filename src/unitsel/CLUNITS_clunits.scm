@@ -32,7 +32,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                                                                      ;;
 ;;;  A generic voice definition file for a clunits synthesizer           ;;
-;;;  Cutomsized for: INST_LANG_VOX                                       ;;
+;;;  Customized for: INST_LANG_VOX                                       ;;
 ;;;                                                                      ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -107,16 +107,18 @@
 ;       '(join_method smoothedjoin)
        '(join_method modified_lpc)
        '(continuity_weight 5)
+       '(log_scores 1)  ;; good for high variance joins (not so good for ldom)
        '(optimal_coupling 1)
        '(extend_selections 2)
-;       '(pm_coeffs_dir "pm/")
-;       '(pm_coeffs_ext ".pm")
+;       '(pm_coeffs_dir "mcep/")
+;       '(pm_coeffs_ext ".mcep")
 ;       '(sig_dir "wav/")
 ;       '(sig_ext ".wav")
        '(pm_coeffs_dir "lpc/")
        '(pm_coeffs_ext ".lpc")
        '(sig_dir "lpc/")
        '(sig_ext ".res")
+;       '(clunits_debug 1)
 ))
 
 (define (INST_LANG_VOX::clunit_name i)
@@ -136,13 +138,13 @@ SHould only be called once per session."
   (set! dt_params INST_LANG_VOX::dt_params)
   (set! clunits_params INST_LANG_VOX::dt_params)
   (clunits:load_db clunits_params)
-  (set! INST_LANG_VOX::clunits_clunit_selection_trees
-	(load (string-append
-	       (string-append 
-		INST_LANG_VOX::clunits_dir "/"
-		(get_param 'trees_dir dt_params "trees/")
-		(get_param 'index_name dt_params "all")
-		".tree"))))
+  (load (string-append
+	 (string-append 
+	  INST_LANG_VOX::clunits_dir "/"
+	  (get_param 'trees_dir dt_params "trees/")
+	  (get_param 'index_name dt_params "all")
+	  ".tree")))
+  (set! INST_LANG_VOX::clunits_clunit_selection_trees clunits_selection_trees)
   (set! INST_LANG_VOX::clunits_loaded t))
 
 (define (INST_LANG_VOX::voice_reset)
@@ -204,7 +206,7 @@ Define voice for limited domain: LANG."
 	(if (not INST_LANG_VOX::clunits_loaded)
 	    (INST_LANG_VOX::clunits_load)
 	    (clunits:select 'INST_LANG_VOX))
-	(set! clunit_selection_trees 
+	(set! clunits_selection_trees 
 	      INST_LANG_VOX::clunits_clunit_selection_trees)
 	(Parameter.set 'Synth_Method 'Cluster)))
 
@@ -219,6 +221,34 @@ Define voice for limited domain: LANG."
 
   (set! current-voice 'INST_LANG_VOX_clunits)
 )
+
+(define (INST_LDOM_VOX::clunits_units_selected utt filename)
+  "(INST_LDOM_VOX::clunits_units_selected utt filename)
+Output selected unitsfile indexes for each unit in the given utterance.
+Results saved in given file name, or stdout if filename is \"-\"."
+  (let ((fd (if (string-equal filename "-")
+		t
+		(fopen filename "w")))
+	(sample_rate
+	 (cadr (assoc 'sample_rate (wave.info (utt.wave utt))))))
+    (mapcar
+     (lambda (s)
+       (format fd "%s\t%s\t%10s\t%f\t%f\n"
+	       (string-before (item.name s) "_")
+	       (item.name s)
+	       (item.feat s "fileid")
+	       (item.feat s "middle")
+	       (+ 
+		(item.feat s "middle")
+		(/ (- (item.feat s "samp_end")
+		      (item.feat s "samp_start"))
+		   sample_rate)))
+       )
+     (utt.relation.items utt 'Unit))
+    (if (not (string-equal filename "-"))
+	(fclose fd))
+    t))
+
 
 (provide 'INST_LANG_VOX_clunits)
 

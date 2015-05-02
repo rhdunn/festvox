@@ -40,7 +40,7 @@ SCRIPTS = build_ldom setup_ldom data_select
 GENSCMFILES = LDOM_ldom.scm build_ldom.scm LDOM-mode.scm
 # these'll get deleted sometime
 OLDSCMFILES = LDOM-mode.scm
-EXAMPLESCMFILES = time.scm tel.scm
+EXAMPLESCMFILES = time.scm tel.scm jtime.scm
 SCMFILES = $(GENSCMFILES) $(EXAMPLESCMFILES) $(OLDSCMFILES)
 LDOMDATA = $(EXAMPLELDOMDATA)
 DATAFILES = all.desc ldom.desc

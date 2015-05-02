@@ -48,7 +48,7 @@
 ###########################################################################
 TOP=.
 DIRNAME=.
-BUILD_DIRS = src doc docbook
+BUILD_DIRS = src doc
 ALL_DIRS=config festvox.org course $(BUILD_DIRS)
 OTHERS = README ACKNOWLEDGEMENTS ANNOUNCE-1.1 ANNOUNCE-1.2
 FILES = Makefile $(OTHERS)
@@ -95,8 +95,10 @@ time-stamp :
 	@ echo $(PROJECT_NAME) >.time-stamp
 	@ echo $(PROJECT_PREFIX) >>.time-stamp
 	@ echo $(PROJECT_VERSION) >>.time-stamp
-	@ echo $(PROJECT_DATA) >>.time-stamp
+	@ echo $(PROJECT_DATE) >>.time-stamp
 	@ echo $(PROJECT_STATE) >>.time-stamp
+	@ echo $(LOGNAME) >>.time-stamp
+	@ hostname >>.time-stamp
 	@ date >>.time-stamp
 
 %.html: %.md _layouts/webpage.html

@@ -46,6 +46,7 @@ durations here, that are *your* responsibility."
     (set! f0track (track.load 
 		   (format nil "f0/%s.f0" (utt.feat utt "fileid"))))
     (item.set_feat f0item "f0" f0track)
+    (build::add_targets utt)
     utt))
 
 (define (External_Duration utt)
@@ -58,7 +59,7 @@ extra pauses have been inserted by the labelling."
     (set! actual-segs (utt.relation.items utt 'actual-segment))
     (set! synth-segs (utt.relation.items utt 'Segment))
     (while (and actual-segs synth-segs)
-     (if (string-equal (item.name (car actual-segs)) "h#")
+     (if (string-equal (item.name (car actual-segs)) "H#")
 	 (item.set_feat (car actual-segs) "name" "pau"))
      (cond
       ((and (not (string-equal (item.name (car synth-segs))
@@ -90,6 +91,11 @@ extra pauses have been inserted by the labelling."
 	       (item.feat (car actual-segs) "end"))
        (error))))
     (utt.relation.delete utt 'actual-segment)
+    (set! last-seg (car (last (utt.relation.items utt 'Segment))))
+    (item.set_feat
+     last-seg
+     "end"
+     (+ 0.200 (item.feat last-seg "p.end")))
     utt))
 
 ;;;
@@ -97,14 +103,30 @@ extra pauses have been inserted by the labelling."
 ;;;
 
 (define (voice_kal_impose)
-  (voice_kal_diphone)
+  (voice_us1_mbrola)
+  (set! postlex_vowel_reduce_table nil)
+;  (voice_kal_diphone)
+;  (voice_cmu_us_sls_diphone)
   (Parameter.set 'Duration_Method External_Duration)
   (Parameter.set 'Int_Target_Method External_Int_Targets)
 )
 
+(define (impose_all datafile)
+  (mapcar
+   (lambda (a)
+     (let ((fileid (car a))
+	   (text (car (cdr a))))
+     (format t "%s\n" fileid)
+     (utt.save.wave
+      (impose_synth fileid text)
+      (format nil "wav.us1c/%s.wav" fileid)
+      'riff)))
+   (load datafile t))
+  t)
+
 (define (impose_synth fileid text)
   "(impose_synth fileid text)
-A litt example imposition synthesis.  The utterances requires the
+A little example imposition synthesis.  The utterances requires the
 fileid to be set so this is included here in what would otherwise
 be normal synthesis (except duration and F0 come from external sources)."
   (voice_kal_impose) ;; or whatever
