@@ -3,6 +3,8 @@
 ## [2.5.3-1] - 2015-05-02 Maintenance
 
   * Build improvements from [1.1-1](#1.1-1).
+  * Don't hardcode the path to `ScaleBinaryFeats` in `do_ehmm`, backported
+    from 2.6.
 
 ## [2.5.3] - 2012-03-05 Release
 

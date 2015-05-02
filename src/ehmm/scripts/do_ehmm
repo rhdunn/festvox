@@ -145,7 +145,7 @@ then
     rm -rf ehmm/etc/mywavelist.part*
 
     # Normalize and Scale the feats
-    /home/aup/tts/festvox/src/ehmm/bin/ScaleBinaryFeats ehmm/etc/mywavelist 4 $num_cpus
+    $EHMMDIR/bin/ScaleBinaryFeats ehmm/etc/mywavelist 4 $num_cpus
     # 4 => Scaling Factor
     # Last => Number of threads to spawn
 
