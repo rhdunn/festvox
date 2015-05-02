@@ -1,11 +1,11 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >Prosody Walkthrough</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
@@ -16,8 +16,8 @@ REL="PREVIOUS"
 TITLE="Prosody Research"
 HREF="x1973.html"><LINK
 REL="NEXT"
-TITLE="Corpus developement"
-HREF="bsv-corpus-ch.html"></HEAD
+TITLE="Corpus development"
+HREF="c2174.html"></HEAD
 ><BODY
 CLASS="SECT1"
 BGCOLOR="#FFFFFF"
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,19 +46,21 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x1973.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 8. Building prosodic models</TD
+>Building prosodic models</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
-HREF="bsv-corpus-ch.html"
+HREF="c2174.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -71,7 +74,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AEN1991"
->8.6. Prosody Walkthrough</A
+>Prosody Walkthrough</A
 ></H1
 ><P
 >This section gives a walkthrough of a set of basic scripts that can be 
@@ -211,7 +214,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN2035"
->8.6.1. Design database</A
+>Design database</A
 ></H2
 ><P
 >The object here is to cpature enough speech in prosodic style that you 
@@ -256,14 +259,14 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN2042"
->8.6.2. Setup directory structure</A
+>Setup directory structure</A
 ></H2
 ><P
 >As with the rest of the festvox tools, you need to set 
 the following to environment variables to allow them to work 
-properly. In <TT
+properly. In <CODE
 CLASS="VARNAME"
->bash</TT
+>bash</CODE
 > or other Bourne shell compatibles 
 type, with the appropriate pathnames for you installation of 
 the Edinburgh Speech Tools an Festvox itself. 
@@ -278,9 +281,9 @@ CLASS="LITERALLAYOUT"
 export&nbsp;ESTDIR=/home/awb/projects/1.4.1/speech_tools</P
 ></BLOCKQUOTE
 >
-For <TT
+For <CODE
 CLASS="VARNAME"
->csh</TT
+>csh</CODE
 > and its derivative you should type 
 <A
 NAME="AEN2049"
@@ -338,7 +341,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN2058"
->8.6.3. Synthesizing prompts</A
+>Synthesizing prompts</A
 ></H2
 ><P
 >We then synthesizer the prompts. As we are trying to collect natural 
@@ -397,12 +400,16 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN2069"
->8.6.4. Recording the prompts</A
+>Recording the prompts</A
 ></H2
 ><P
 >The usual caveats apply to recording, (<A
-HREF="bsv-recording-sect.html"
->Section 4.6</A
+HREF="x817.html"
+>the Section called <I
+>Recording under Unix</I
+> in the Chapter called <I
+>Basic Requirements</I
+></A
 >) and the issues on selecting a speaker.</P
 ><P
 >As prosody modeling is difficult, and if you are inexperienced in 
@@ -411,16 +418,16 @@ building reliable models for default unmarked intonation is very useful
 if your current models are simply the default fixed intonation. Thus 
 the senetences should be read in a natural but not too varied style. </P
 ><P
->Recording can be done with <TT
+>Recording can be done with <CODE
 CLASS="VARNAME"
->pointyclicky</TT
-> or <TT
+>pointyclicky</CODE
+> or <CODE
 CLASS="VARNAME"
->prompt_them</TT
+>prompt_them</CODE
 >. 
-If you are using <TT
+If you are using <CODE
 CLASS="VARNAME"
->prompt_them</TT
+>prompt_them</CODE
 >, you should modify that script so 
 that it does not play the prompts, as they will confuse the speaker. 
 The speaker should simply read the text (and markup, if present). 
@@ -452,7 +459,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN2082"
->8.6.5. Phonetically label prompts</A
+>Phonetically label prompts</A
 ></H2
 ><P
 >After recording the spoken utterances must be labeled 
@@ -490,7 +497,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN2090"
->8.6.6. Extract pitchmarks and F0</A
+>Extract pitchmarks and F0</A
 ></H2
 ><P
 >At this point we diverge from the process used for building limited 
@@ -504,8 +511,12 @@ then (in the next section) interpolating the F0 through the non-voiced
 (but non-silence) sections. </P
 ><P
 ><A
-HREF="bsv-pitchmarks-sect.html"
->Section 4.7</A
+HREF="x862.html"
+>the Section called <I
+>Extracting pitchmarks from waveforms</I
+> in the Chapter called <I
+>Basic Requirements</I
+></A
 >
 discusses the setting of
 parameters to get <TT
@@ -521,9 +532,9 @@ CLASS="FILENAME"
 CLASS="FILENAME"
 >bin/make_F0_pm</TT
 > in the 
-variable <TT
+variable <CODE
 CLASS="VARNAME"
->PM_ARGS</TT
+>PM_ARGS</CODE
 >. The distribution contains something 
 like 
 <A
@@ -536,13 +547,13 @@ CLASS="LITERALLAYOUT"
 >PM_ARGS='-min&nbsp;0.0057&nbsp;-max&nbsp;0.012&nbsp;-def&nbsp;0.01&nbsp;-wave_end&nbsp;-lx_lf&nbsp;140&nbsp;-lx_lo&nbsp;111&nbsp;-lx_hf&nbsp;80&nbsp;-lx_ho&nbsp;51&nbsp;-med_o&nbsp;0'</P
 ></BLOCKQUOTE
 >
-Importnantly this differs from the parameters in <TT
+Importnantly this differs from the parameters in <CODE
 CLASS="VARNAME"
->bin/make_pm_wave</TT
+>bin/make_pm_wave</CODE
 > 
-as we do not use the <TT
+as we do not use the <CODE
 CLASS="VARNAME"
->-fill</TT
+>-fill</CODE
 > option to fill in
 pitchmarks over the rest of the waveform.</P
 ><P
@@ -552,19 +563,19 @@ are assigned an F0 contour by interpolation from the voiced section
 around it, and the result is smnoothed. The label files are used to 
 define which parts of the signal are silence and which are speech. </P
 ><P
->The variable <TT
+>The variable <CODE
 CLASS="VARNAME"
->SILENCE</TT
-> in <TT
+>SILENCE</CODE
+> in <CODE
 CLASS="VARNAME"
->bin/make_f0_pm</TT
+>bin/make_f0_pm</CODE
 > must be modified to 
 reflect the symbol used for silence in your phoneset. </P
 ><P
 >Once the pitchmark parameters have be determined, and the appropriate 
-<TT
+<CODE
 CLASS="VARNAME"
->SILENCE</TT
+>SILENCE</CODE
 > value set you can extract the smoothed F0 by the command 
 <A
 NAME="AEN2109"
@@ -595,7 +606,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN2114"
->8.6.7. Build utterance structures</A
+>Build utterance structures</A
 ></H2
 ><P
 >With the labels and F0 created we can now rebuild the utterance 
@@ -618,12 +629,12 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN2119"
->8.6.8. Duration models</A
+>Duration models</A
 ></H2
 ><P
->The script <TT
+>The script <CODE
 CLASS="VARNAME"
->bin/make_dur_model</TT
+>bin/make_dur_model</CODE
 > contains all of 
 the following commands but it is wise to understand the stages as 
 due to errors in labeling it may not all run completely smoothly 
@@ -634,9 +645,9 @@ values for phones. Zscores (number of standard deviations from the
 mean) have often been used in duration modeling as they allow a certain 
 amount of normalization over different phones. </P
 ><P
->You shold first look at the script <TT
+>You shold first look at the script <CODE
 CLASS="VARNAME"
->bin/make_dur_model</TT
+>bin/make_dur_model</CODE
 > and 
 edit the following three variable values 
 <A
@@ -654,9 +665,9 @@ MODELNAME=cmu_us_kal</P
 these should contain the name for silence in your phoneset, the call for 
 the voice you are building the model for (or at least one that uses the 
 same phoneset), and finally the name for the model, which can be the 
-same <TT
+same <CODE
 CLASS="VARNAME"
->INST_LANG_VOX</TT
+>INST_LANG_VOX</CODE
 > part of the voice you call. </P
 ><P
 >The first stage is to find the means and standard deviations for 
@@ -679,9 +690,9 @@ CLASS="FILENAME"
 >, the generated 
 file to ensure that the numbers look raosnable. If there is only one 
 example of a particular phone, the standard deviation cannot be 
-calculated and the value is given as <TT
+calculated and the value is given as <CODE
 CLASS="VARNAME"
->nan</TT
+>nan</CODE
 > (not-a-number). Thus 
 must be changed to a standard numeric value (say one-third or the mean). 
 Also some of the values in this table maybe adversely affected by bad 
@@ -698,9 +709,9 @@ syllable, word position etc. These may or may not be appropriate for
 your new language or domain and you you may wish to add to these before 
 doing the extraction. The extraction process takes each phoneme and 
 dumps the named feature values for that phone into a file. This uses 
-the standard festival script <TT
+the standard festival script <CODE
 CLASS="VARNAME"
->dumpfeats</TT
+>dumpfeats</CODE
 > to do this. The command 
 looks like 
 <A
@@ -742,9 +753,9 @@ bin/traintest&nbsp;festival/dur/data/dur.data.train</P
 ></BLOCKQUOTE
 ></P
 ><P
->For <TT
+>For <CODE
 CLASS="VARNAME"
->wagon</TT
+>wagon</CODE
 > the CART tree builder to work it needs to know what 
 possible values each feature can take. This can mostly be determined 
 automatically but some features may have values that could be either 
@@ -771,9 +782,9 @@ this number the longer the search will be, though up to a certasin point
 the more accurate the model will be. But at some level this will over 
 train. The default in the distribution is 50 which may or may not be 
 appropriate. Not for large databases and for smaller values of 
-<TT
+<CODE
 CLASS="VARNAME"
->STOP</TT
+>STOP</CODE
 > the training may take days even on a fast processor. </P
 ><P
 >Although we have guessed a reasonable value for this for databases of 
@@ -782,15 +793,15 @@ around 50-1000 utterances it may not be appropriate for you. </P
 >The learning technique used is basic CART tree growing but with an 
 important extention which makes the process much more robust on unseen 
 data but unfortunately much more computationally expensive. The 
-<TT
+<CODE
 CLASS="VARNAME"
->-stepwise</TT
+>-stepwise</CODE
 > option on wagon incrementally searches for the best 
 features to use in building three, in addition to at each iteration 
 finding the best questions about each feature that best model data. 
-If you want a quicker result removing the <TT
+If you want a quicker result removing the <CODE
 CLASS="VARNAME"
->-stepwise</TT
+>-stepwise</CODE
 > option 
 will give you that. </P
 ><P
@@ -863,12 +874,12 @@ CLASS="FILENAME"
 your diphone voice and it will automatically work. But it is worth 
 explaining what this install process really is. The duration model 
 scheme file contains two lisp expression setting the the variables 
-<TT
+<CODE
 CLASS="VARNAME"
->MODELNAME::phone_durs</TT
-> and <TT
+>MODELNAME::phone_durs</CODE
+> and <CODE
 CLASS="VARNAME"
->MODELNAME::zdurtree</TT
+>MODELNAME::zdurtree</CODE
 >. To 
 uses these in a voice you must load this file, typically by 
 adding 
@@ -909,7 +920,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN2170"
->8.6.9. F0 contour models</A
+>F0 contour models</A
 ></H2
 ><P
 >(what about accents ?) </P
@@ -925,6 +936,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -936,6 +948,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x1973.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -944,6 +957,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -951,7 +965,8 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="bsv-corpus-ch.html"
+HREF="c2174.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -967,13 +982,14 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="c1637.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->Corpus developement</TD
+>Corpus development</TD
 ></TR
 ></TABLE
 ></DIV

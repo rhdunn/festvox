@@ -1,17 +1,17 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >Building letter-to-sound rules by hand</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
 REL="UP"
 TITLE="Lexicons"
-HREF="bsv-lexicons-ch.html"><LINK
+HREF="c1379.html"><LINK
 REL="PREVIOUS"
 TITLE="Out of vocabulary words"
 HREF="x1405.html"><LINK
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,19 +46,21 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x1405.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 7. Lexicons</TD
+>Lexicons</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
 HREF="x1469.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -71,7 +74,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AEN1429"
->7.4. Building letter-to-sound rules by hand</A
+>Building letter-to-sound rules by hand</A
 ></H1
 ><P
 > 
@@ -104,22 +107,22 @@ CLASS="LITERALLAYOUT"
 >(&nbsp;LC&nbsp;[&nbsp;alpha&nbsp;]&nbsp;RC&nbsp;=&#62;&nbsp;beta&nbsp;)</P
 ></BLOCKQUOTE
 >
-Which is interpreter as <TT
+Which is interpreter as <CODE
 CLASS="VARNAME"
->alpha</TT
+>alpha</CODE
 >, a string
 of one or more symbols on the input tape is written to 
-<TT
+<CODE
 CLASS="VARNAME"
->beta</TT
+>beta</CODE
 >, a string of zero or more symbols on
-the output tape, when in the presence of <TT
+the output tape, when in the presence of <CODE
 CLASS="VARNAME"
->LC</TT
+>LC</CODE
 >,
-a left context of zero or more input symbols, and <TT
+a left context of zero or more input symbols, and <CODE
 CLASS="VARNAME"
->RC</TT
+>RC</CODE
 >
 a right context on zero or more input symbols.  Note the input
 tape and the output tape are different, allthough the input and
@@ -144,15 +147,17 @@ CLASS="LITERALLAYOUT"
 ></BLOCKQUOTE
 >
 To deal with words like "christmas", and "chair".  Note the
-<TT
+<CODE
 CLASS="VARNAME"
->#</TT
+>#</CODE
 > symbol is special and used to denote
 a word boundary.  LTS rule may refer to word boundary but cannot refer
 to prevous or following words, you would need to do this with
 some form of post-lexical rule (See <A
-HREF="bsv-postlexical-sect.html"
->Section 7.6</A
+HREF="x1615.html"
+>the Section called <I
+>Post-lexical rules</I
+></A
 >)
 where the word is within some context.  In the above rules we are
 mapping <I
@@ -175,12 +180,12 @@ CLASS="EMPHASIS"
 >.  Also note the order of these rules.
 The first rule is more specific than the second.  This is should
 appear first to deal with the specific case.  In the order were
-reversed <TT
+reversed <CODE
 CLASS="VARNAME"
->k</TT
-> could never apply as the <TT
+>k</CODE
+> could never apply as the <CODE
 CLASS="VARNAME"
->ch</TT
+>ch</CODE
 >
 would cover that case too.</P
 ><P
@@ -188,9 +193,9 @@ would cover that case too.</P
 and typically end in a default case.  Their should be a default
 case for all individual letters in the language's alphabet without
 and context restrictions mapping to some default phone.  Therefore
-following the above rules there would be other <TT
+following the above rules there would be other <CODE
 CLASS="VARNAME"
->c</TT
+>c</CODE
 >
 rules with various contexts but the final one should probably be
 <A
@@ -222,17 +227,9 @@ that are required.</P
 >For some languages it is conveninet to write a number of rules sets.
 For example, one to map the input in lower case, and maybe deal with
 alternate treatments of accent characters e.g. re-write the ASCII "e'"
-as <TABLE
-BORDER="0"
-BGCOLOR="#E0E0E0"
-WIDTH="100%"
-><TR
-><TD
->RATIONALE:<P
->AWB: e acute</P
-></TD
-></TR
-></TABLE
+as <SPAN
+CLASS="COMMENT"
+>AWB: e acute</SPAN
 >.  Also we have used rule tests to
 post process the generated phone string to add stress and syllable
 breaks.</P
@@ -261,6 +258,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -272,6 +270,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x1405.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -280,6 +279,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -288,6 +288,7 @@ ALIGN="right"
 VALIGN="top"
 ><A
 HREF="x1469.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -302,7 +303,8 @@ WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="bsv-lexicons-ch.html"
+HREF="c1379.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD

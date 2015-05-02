@@ -318,7 +318,7 @@ the <filename>st/wav/</filename> directory converting them to NIST
 headers
 
 <blockquote><literallayout>
-  ./bin/sphinxtrain train
+  ./bin/sphinxtrain feats
 </literallayout></blockquote>
 
 </para>

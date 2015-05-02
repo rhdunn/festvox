@@ -37,6 +37,8 @@
 ##                                                                       ##
 ###########################################################################
 
+LANG=C; export LANG
+
 . etc/voice.defs
 
 if [ ! "$ESTDIR" ]
@@ -83,7 +85,6 @@ fi
 
 if [ "$1" = "setup" ]
 then
-
   mkdir st
   cd st
 
@@ -102,9 +103,10 @@ fi
 # Wave 2 feats
 if [ "$1" = "feats" ]
 then
-   for i in wav/*.wav
+   find wav -name \*.wav -print |
+   while read i
    do
-      $ESTDIR/bin/ch_wave -otype nist -o st/$i $i
+      $ESTDIR/bin/ch_wave -otype nist -F 16000 -o st/$i $i
    done
    (cd st; ./bin/make_feats etc/$FV_VOICENAME.fileids)
 fi
@@ -142,10 +144,15 @@ fi
 # Copy back lab files
 if [ "$1" = "labs" ]
 then
+   echo Convert Sphinx2 lab output to FestVox labs
    silence=`head -1 etc/mysilence`
    for i in st/lab/*.lab
    do
      cat $i | sed 's/;.*$//;s/(.*$//' | 
-              sed 's/SIL/'$silence'/;s/CAP//'>lab/`basename $i`
+              sed 's/SIL/'$silence'/;s/CAP//' |
+     awk '{if (NF == 3)
+             printf("%1.5f %s %s\n",0.012+$1,$2,$3);
+           else
+             print $0}' >lab/`basename $i`
    done
 fi

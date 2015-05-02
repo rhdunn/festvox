@@ -1,11 +1,11 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >Duration</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,19 +46,21 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x1803.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 8. Building prosodic models</TD
+>Building prosodic models</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
 HREF="x1973.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -71,7 +74,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AEN1900"
->8.4. Duration</A
+>Duration</A
 ></H1
 ><P
 >&#13;Like the above prosody phenomena, very simple solutions to predicting 
@@ -91,14 +94,14 @@ to customize them. </P
 >The simplest model for duration is a fixed duration for each phone. A 
 value of 100 milliseconds is a reasonable start. This type of model is 
 only of use at initial testing of a diphone database beyond that it 
-sounds too artificial. The Festival function <TT
+sounds too artificial. The Festival function <CODE
 CLASS="VARNAME"
->SayPhones</TT
+>SayPhones</CODE
 > uses a 
 fixed duration model, controlled by the value (in ms) in the variable 
-<TT
+<CODE
 CLASS="VARNAME"
->FP_duration</TT
+>FP_duration</CODE
 >. Although there is a fixed duration module in 
 Festival (see the manual) its worthwhile starting off with something 
 a little more interesting. </P
@@ -201,9 +204,9 @@ CLASS="LITERALLAYOUT"
 &nbsp;&nbsp;(Parameter.set&nbsp;'Duration_Method&nbsp;'Tree_ZScores)</P
 ></BLOCKQUOTE
 >
-Though in your voice use voice specific names for the <TT
+Though in your voice use voice specific names for the <CODE
 CLASS="VARNAME"
->simple_</TT
+>simple_</CODE
 > 
 variables otherwise you may class with other voices. </P
 ><P
@@ -217,9 +220,9 @@ CLASS="EMPHASIS"
 >, that is number of standard 
 deviations from the mean. The duration module used in the above is 
 actually designed to take a CART tree that returns zscores and uses the 
-information in <TT
+information in <CODE
 CLASS="VARNAME"
->duration_ph_info</TT
+>duration_ph_info</CODE
 > to change that into an absolute 
 duration. The two fields after the phone name are mean and standard 
 deviation. The interpretation of this tree and this phone info happens 
@@ -345,9 +348,9 @@ This will put all the features in the file <TT
 CLASS="FILENAME"
 >dur.feats</TT
 >. For 
-<TT
+<CODE
 CLASS="VARNAME"
->wagon</TT
+>wagon</CODE
 > we need to build a feature description file, we can 
 build a first approximation with the <TT
 CLASS="FILENAME"
@@ -369,40 +372,40 @@ CLASS="FILENAME"
 >dur.desc</TT
 > to change a number of 
 features from their categorical list (lots of numbers) into type 
-<TT
+<CODE
 CLASS="VARNAME"
->float</TT
+>float</CODE
 >. Specifically for the above list the features 
-<TT
+<CODE
 CLASS="VARNAME"
->segment_duration</TT
+>segment_duration</CODE
 >, 
-<TT
+<CODE
 CLASS="VARNAME"
->R:SylStructure.parent.parent.word_numsyls</TT
->, <TT
+>R:SylStructure.parent.parent.word_numsyls</CODE
+>, <CODE
 CLASS="VARNAME"
->pos_in_syl</TT
+>pos_in_syl</CODE
 >, 
-<TT
+<CODE
 CLASS="VARNAME"
->R:SylStructure.parent.pos_in_word</TT
+>R:SylStructure.parent.pos_in_word</CODE
 >, 
-<TT
+<CODE
 CLASS="VARNAME"
->R:SylStructure.parent.syl_in</TT
+>R:SylStructure.parent.syl_in</CODE
 >, 
-<TT
+<CODE
 CLASS="VARNAME"
->R:SylStructure.parent.syl_out</TT
+>R:SylStructure.parent.syl_out</CODE
 >, 
-<TT
+<CODE
 CLASS="VARNAME"
->R:SylStructure.parent.ssyl_in</TT
+>R:SylStructure.parent.ssyl_in</CODE
 > and 
-<TT
+<CODE
 CLASS="VARNAME"
->R:SylStructure.parent.ssyl_out</TT
+>R:SylStructure.parent.ssyl_out</CODE
 > should be declared as floats. </P
 ><P
 >We then need to split the data into training and test sets (and further 
@@ -496,6 +499,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -507,6 +511,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x1803.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -515,6 +520,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -523,6 +529,7 @@ ALIGN="right"
 VALIGN="top"
 ><A
 HREF="x1973.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -538,6 +545,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="c1637.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD

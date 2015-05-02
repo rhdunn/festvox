@@ -40,6 +40,12 @@
 
 ;;; Load any other required files
 
+;; Punctuation for the particular language
+(set! INST_LANG_VOX::token.punctuation "\"'`.,:;!?(){}[]")
+(set! INST_LANG_VOX::token.prepunctuation "\"'`({[")
+(set! INST_LANG_VOX::token.whitespace " \t\n\r")
+(set! INST_LANG_VOX::token.singlecharsymbols "")
+
 ;;; Voice/LANG token_to_word rules 
 (define (INST_LANG_VOX::token_to_words token name)
   "(INST_LANG_VOX::token_to_words token name)
@@ -63,6 +69,10 @@ Return list of words that pronounce this number in LANG."
   "(INST_LANG_VOX::select_tokenizer)
 Set up tokenizer for LANG."
   (Parameter.set 'Language 'INST_LANG)
+  (set! token.punctuation INST_LANG_VOX::token.punctuation)
+  (set! token.prepunctuation INST_LANG_VOX::token.prepunctuation)
+  (set! token.whitespace INST_LANG_VOX::token.whitespace)
+  (set! token.singlecharsymbols INST_LANG_VOX::token.singlecharsymbols)
 
   (set! token_to_words INST_LANG_VOX::token_to_words)
 )

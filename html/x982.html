@@ -1,17 +1,17 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >unit size and type</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
 REL="UP"
 TITLE="Limited domain synthesis"
-HREF="bsv-ldom-ch.html"><LINK
+HREF="c941.html"><LINK
 REL="PREVIOUS"
 TITLE="autolabeling issues"
 HREF="x973.html"><LINK
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,19 +46,21 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x973.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 5. Limited domain synthesis</TD
+>Limited domain synthesis</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
 HREF="x997.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -71,7 +74,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AEN982"
->5.4. unit size and type</A
+>unit size and type</A
 ></H1
 ><P
 >The basic cluster unit selection code available in festival uses 
@@ -109,9 +112,9 @@ the search, though it notable improves synthesis quality to. As we
 have constructed the database to have good coverage this is a practical 
 thing to do. </P
 ><P
->The feature function <TT
+>The feature function <CODE
 CLASS="VARNAME"
->clunit_name</TT
+>clunit_name</CODE
 > constructs the unit type for a 
 particular segment item. We have provided the above default (segment 
 name plus (downcased) word name), but it is easy to extend this. </P
@@ -121,9 +124,9 @@ in different prosody contexts. Particularly we wished to mark words us
 "questionable" so we can ask users for confirmation. To do this we 
 marked the "questionable" words in the prompts with a question mark 
 prefix. We then recorded them with appropriate intonation and then 
-defined our <TT
+defined our <CODE
 CLASS="VARNAME"
->clunit_name</TT
+>clunit_name</CODE
 > function in include "C_" is the word was 
 prefixed by a question mark. For example the following two prompts 
 will be read in a different manner 
@@ -169,6 +172,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -180,6 +184,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x973.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -188,6 +193,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -196,6 +202,7 @@ ALIGN="right"
 VALIGN="top"
 ><A
 HREF="x997.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -210,7 +217,8 @@ WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="bsv-ldom-ch.html"
+HREF="c941.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD

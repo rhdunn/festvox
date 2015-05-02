@@ -45,29 +45,31 @@ then
    echo '   csh% setenv ESTDIR /home/awb/projects/speech_tools/'
    exit 1
 fi
+
+LANG=C; export LANG
+
 SIG2FV=$ESTDIR/bin/sig2fv
 #SIG2FVPARAMS='-coefs melcep -delta melcep -melcep_order 12 -fbank_order 24 -shift 0.01 -factor 2.5 -preemph 0.97'
 SIG2FVPARAMS='-coefs melcep -melcep_order 12 -fbank_order 24 -shift 0.01 -factor 2.5 -preemph 0.97'
 
-
-if [ $# = 0 ]
-then
-   echo "Build MFCC files for acoustic measures"
-   echo "Usage:  bin/make_mcep wav/*.wav"
-   echo "Will create cepstrum parameters files in mcep/"
-   exit 1
-fi
 
 if [ ! -d mcep ]
 then
    mkdir mcep
 fi
 
-for i in $*
+PROMPTFILE=etc/txt.done.data
+if [ $# = 1 ]
+then
+   PROMPTFILE=$1
+fi
+
+awk '{print $2}' $PROMPTFILE |
+while read i
 do
-  fname=`basename $i .wav`
+  fname=$i
   echo $fname MCEP
-  $SIG2FV $SIG2FVPARAMS -otype est_binary $i -o mcep/$fname.mcep -pm pm/$fname.pm -window_type hamming
+  $SIG2FV $SIG2FVPARAMS -otype est_binary wav/$fname.wav -o mcep/$fname.mcep -pm pm/$fname.pm -window_type hamming
 done
 
 

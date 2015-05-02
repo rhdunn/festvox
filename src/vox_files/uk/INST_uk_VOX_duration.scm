@@ -37,7 +37,7 @@
 ;;; Load any necessary files here
 (require 'INST_uk_VOX_durdata)
 
-(define (INST_us_VOX::select_duration)
+(define (INST_uk_VOX::select_duration)
   "(INST_us_VOX::select_duration)
 Set up duration for English."
   (set! duration_cart_tree INST_uk_VOX::zdur_tree)

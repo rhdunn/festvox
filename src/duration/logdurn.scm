@@ -46,7 +46,7 @@
 	    (car (cdr di)))
 	 (car (cdr (cdr di))))      )
      (t
-      (/ (- (log (item.feat seg "segment_duration"))
+      (/ (- (log (item.feat seg "duration"))
 	    (car (cdr di)))
 	 (car (cdr (cdr di))))))))
 
@@ -60,11 +60,9 @@
 	    (car (cdr di)))
 	 (car (cdr (cdr di))))      )
      (t
-      (/ (- (item.feat seg "segment_duration")
+      (/ (- (item.feat seg "duration")
 	    (car (cdr di)))
 	 (car (cdr (cdr di))))))))
-
-
 
 (define (onset_has_ctype seg type)
   ;; "1" if onset contains ctype

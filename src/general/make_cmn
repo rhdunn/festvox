@@ -33,8 +33,10 @@
 ###########################################################################
 ##                                                                       ##
 ##  Normalize cepstrum parameters                                        ##
-##                                                                       ##
+##   note this is zscoring, not just mean normalization                  ##
 ###########################################################################
+
+LANG=C; export LANG
 
 if [ ! "$ESTDIR" ]
 then
@@ -55,9 +57,55 @@ then
    exit 1
 fi
 
-CMN=$FESTVOXDIR/src/general/cmn
-
 echo "Building meanstddev file"
+
+for i in $*
+do
+   $ESTDIR/bin/ch_track -otype ascii $i
+done |
+awk '{
+        for (i=1; i<=NF; i++)
+        {
+          count[i] += 1
+   	  sum[i] += $i
+	  sumsq[i] += $i*$i
+        } 
+        numchannels=NF;
+     }
+     function std (sum, sumx, n)
+     {
+	if (n==1)
+            n=2;
+        return sqrt(((n*sumx)-(sum*sum)) / (n*(n-1)))
+     }
+     function mean (sum,n)
+     {
+           return sum/n;
+     }
+     END {
+        for (i=1; i<=NF; i++)
+           printf("%3.3f %3.3f\n",mean(sum[i],count[i]),std(sum[i],sumsq[i],count[i]));
+     }' >etc/cep.meanstddev
+
+cat etc/cep.meanstddev |
+awk 'BEGIN {printf("BEGIN {\n")}
+     {printf("mean[%d]=%s; stddev[%d]=%s;\n",NR,$1,NR,$2);}
+     END {printf("}\n")}' >etc/norm.awk
+echo '{if (header==0)
+       {
+          print $0;
+          if ($1 == "EST_Header_End")
+             header=1;
+       }
+       else
+       {
+          printf("%s %s ",$1,$2)  
+          for (i=1; i<=(NF-2); i++)
+              printf("%f ",($(i+2)-mean[i])/stddev[i]);
+          printf("\n");
+       }}' >>etc/norm.awk
+
+exit   
 
 $CMN -findmsd -omsd etc/cep.meanstddev $*
 

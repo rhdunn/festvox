@@ -549,12 +549,12 @@ do
    echo letter $i STOP $STOP
    # Find training set for letter $i
    cat oald.train.feats |
-    awk '@{if ($6 == "'$i'") print $0@}' >ltsdataTRAIN.$i.feats
+    awk '{if ($6 == "'$i'") print $0}' >ltsdataTRAIN.$i.feats
    # split training set to get heldout data for stepwise testing
    traintest ltsdataTRAIN.$i.feats
    # Extract test data for letter $i
    cat oald.test.feats |
-    awk '@{if ($6 == "'$i'") print $0@}' >ltsdataTEST.$i.feats
+    awk '{if ($6 == "'$i'") print $0}' >ltsdataTEST.$i.feats
    # run wagon to predict model
    wagon -data ltsdataTRAIN.$i.feats.train -test ltsdataTRAIN.$i.feats.test \
           -stepwise -desc ltsOALD.desc -stop $STOP -output lts.$i.tree
@@ -579,7 +579,7 @@ this information can be removed as only the most probable will
 actually be predicted. This substantially reduces the size of the 
 tress. 
 <blockquote><literallayout>
-(merge_models 'oald_lts_rules "oald_lts_rules.scm")
+(merge_models 'oald_lts_rules "oald_lts_rules.scm" allowables)
 </literallayout></blockquote>
 (<filename>merge_models</filename> is defined within 
 <filename>lts_build.scm</filename> 

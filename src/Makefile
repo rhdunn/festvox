@@ -1,8 +1,7 @@
 ###########################################################################
 ##                                                                       ##
-##                   Carnegie Mellon University and                      ##
-##                   Alan W Black and Kevin A. Lenzo                     ##
-##                      Copyright (c) 1998-2000                          ##
+##                     Carnegie Mellon University                        ##
+##                         Copyright (c) 2005                            ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -36,9 +35,9 @@
 ###########################################################################
 TOP=..
 DIRNAME=src
-BUILD_DIRS = general diphones eval
-ALL_DIRS= db_example intonation duration unitsel \
-          ldom vox_diphone vox_files prosody st $(BUILD_DIRS)
+BUILD_DIRS = general diphones eval promptselect vc ehmm
+ALL_DIRS= db_example intonation duration unitsel clustergen \
+          ldom vox_diphone vox_files prosody st lts hts_build $(BUILD_DIRS)
 FILES = Makefile 
 
 ALL = 

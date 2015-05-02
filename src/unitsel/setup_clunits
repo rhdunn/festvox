@@ -83,13 +83,15 @@ then
    fi
 fi
 
+LANG=C; export LANG
+
 FV_INST=$1
 FV_LANG=$2
 FV_VOX=$3
 
 echo Making directories
 $FESTVOXDIR/src/general/make_dirs
-CURRENTDIR=`pwd`
+CURRENTDIR=`pwd | sed 's/ /\\ /g'`
 
 echo Copying relevant script files
 cp -p $FESTVOXDIR/src/unitsel/make_mcep bin
@@ -117,16 +119,25 @@ cp -p $FESTVOXDIR/src/general/traintest bin
 cp -p $FESTVOXDIR/src/general/emu_lab.tpl etc/emu_lab.tpl
 cp -p $FESTVOXDIR/src/general/emu_pm.tpl etc/emu_pm.tpl
 cp -p $FESTVOXDIR/src/general/emu_f0.tpl etc/emu_f0.tpl
+cp -p $FESTVOXDIR/src/general/emu_hier.tpl etc/emu_hier.tpl
+cp -p $FESTVOXDIR/src/general/make_samples bin
+cp -p $FESTVOXDIR/src/general/reduce_prompts bin
+cp -p $FESTVOXDIR/src/general/synthfile bin
 cp -p $FESTVOXDIR/src/st/sphinxtrain bin
 cp -p $FESTVOXDIR/src/st/sphinx_lab bin
 cp -p $FESTVOXDIR/src/st/build_st.scm festvox
 
+if [ "$FESTVOXTEMPLATEDIR" = "" ]
+then
+    FESTVOXTEMPLATEDIR=$FESTVOXDIR/src/vox_files
+fi
+
 if [ $# = 4 ]
 then
    echo Copying prompt file
-   if [ -f $FESTVOXDIR/src/vox_files/prompts/$4.data ]
+   if [ -f $FESTVOXTEMPLATEDIR/prompts/$4.data ]
    then
-       cp -p $FESTVOXDIR/src/vox_files/prompts/$4.data etc
+       cp -p $FESTVOXTEMPLATEDIR/prompts/$4.data etc
    else
       echo "***"
       echo "*** Unknown prompt set \""$4"\" you must create "etc/$4.data" yourself"
@@ -135,9 +146,14 @@ then
 fi
 
 # This is way too specific for the particular feature set
-cp -p $FESTVOXDIR/src/unitsel/unitsel.desc festival/clunits/all.desc
+if [ -f $FESTVOXTEMPLATEDIR/$FV_LANG/all.desc ]
+then
+   cp -p $FESTVOXTEMPLATEDIR/$FV_LANG/all.desc festival/clunits/all.desc
+else
+   cp -p $FESTVOXDIR/src/unitsel/unitsel.desc festival/clunits/all.desc
+fi
 
-if [ -d $FESTVOXDIR/src/vox_files/$FV_LANG ]
+if [ -d $FESTVOXTEMPLATEDIR/$FV_LANG ]
 then
    FV_LANG_SKELS=$FV_LANG
 else
@@ -154,7 +170,7 @@ echo "FV_FULLVOICENAME=\$FV_VOICENAME\"_\"\$FV_TYPE" >>etc/voice.defs
 echo Generating clunits specific voice and build files
 for i in $FESTVOXDIR/src/unitsel/CLUNITS_clunits.scm \
          $FESTVOXDIR/src/unitsel/build_clunits.scm \
-         $FESTVOXDIR/src/vox_files/$FV_LANG_SKELS/INST_*_VOX_*.scm
+         $FESTVOXTEMPLATEDIR/$FV_LANG_SKELS/INST_*_VOX_*.scm
 do
    f=`basename $i | sed 's/CLUNITS/'$FV_INST"_"$FV_LANG"_"$FV_VOX'/'`
    fname=`echo $f | sed 's/INST/'$FV_INST'/g' | sed 's/LANG/'$FV_LANG'/g' | sed 's/VOX/'$FV_VOX'/g'`
@@ -163,7 +179,7 @@ do
    sed 's%INST%'$FV_INST'%g' |
    sed 's%LANG%'$FV_LANG'%g' |
    sed 's%VOX%'$FV_VOX'%g' |
-   sed 's%CURRENTDIR%'$CURRENTDIR'%g' >festvox/$fname
+   sed 's%CURRENTDIR%'"$CURRENTDIR"'%g' >festvox/$fname
 done
 
 echo "Set up for "$FV_INST"_"$FV_LANG"_"$FV_VOX" complete"

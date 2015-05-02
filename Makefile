@@ -49,7 +49,7 @@
 TOP=.
 DIRNAME=.
 BUILD_DIRS = src 
-ALL_DIRS=config docbook festvox.org course $(BUILD_DIRS)
+ALL_DIRS=config docbook festvox.org $(BUILD_DIRS)
 CONFIG=configure configure.in config.sub config.guess \
        missing install-sh mkinstalldirs
 OTHERS = README ACKNOWLEDGEMENTS ANNOUNCE-1.1 ANNOUNCE-1.2 ANNOUNCE-2.0

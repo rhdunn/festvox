@@ -35,6 +35,8 @@
 ## extract wav from stereo recordings (check LAR really is channel 1)
 ##
 
+LANG=C; export LANG
+
 if [ $# = 0 ]
 then
    echo "Extract wave signal from recordings"
@@ -57,5 +59,5 @@ for i in $*
 do
    fname=`basename $i .wav`
    echo $fname
-   $ESTDIR/bin/ch_wave -c 0 $i -otype riff -scaleN 0.65 -o wav/$fname.wav
+   $ESTDIR/bin/ch_wave -F 16000 -c 0 $i -otype riff -scaleN 0.65 -o wav/$fname.wav
 done

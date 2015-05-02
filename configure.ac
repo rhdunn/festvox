@@ -34,8 +34,33 @@ AC_INIT(src/unitsel/make_mcep)
 
 AC_CANONICAL_SYSTEM
 AC_PROG_CC
+AC_PROG_RANLIB
+AC_PROG_INSTALL
+AC_CHECK_TOOL(AR, ar)
+AC_C_BIGENDIAN
 
-dnl Apple doesn't suppor the elif construct, so else if them ...
+if test "x$GCC" = "xyes"; then
+	CFLAGS="$CFLAGS -Wall"
+fi
+
+SHFLAGS=
+OTHERLIBS=
+if test "$shared" = true; then
+   case "$host_os" in
+	linux*)
+		SHFLAGS="-fPIC"
+        ;;
+	solaris*)
+		SHFLAGS="-fPIC"
+		OTHERLIBS="-lsocket -ldl"
+        ;;
+	*)
+	;;
+   esac
+fi
+AC_SUBST(SHFLAGS)
+
+dnl Apple doesn't support the elif construct, so else if them ...
 if test "x$ESTDIR" = x; then
   if test -f /usr/src/speech_tools-1.4.2/include/EST.h; then
     ESTDIR=/usr/src/speech_tools-1.4.2
@@ -92,13 +117,14 @@ if test "x$ESTDIR" = x; then
   fi
 fi
 if test "x$ESTDIR" = x; then
-  if test -f $PWD/../speech_tools/include/EST.h; then
-    ESTDIR=$PWD/../speech_tools
+  if test -f "$PWD/../speech_tools/include/EST.h"; then
+
+    ESTDIR="$PWD/../speech_tools"
   fi
 fi
 if test "x$ESTDIR" = x; then
-  if test -f $cwd/../speech_tools/include/EST.h; then
-    ESTDIR=$cwd/../speech_tools
+  if test -f "$cwd/../speech_tools/include/EST.h"; then
+    ESTDIR="$cwd/../speech_tools"
   fi
 fi
 if test "x$ESTDIR" = x; then
@@ -106,5 +132,6 @@ if test "x$ESTDIR" = x; then
 fi
 echo Edinburgh Speech Tools found in $ESTDIR
 AC_SUBST(ESTDIR)
+
 
 AC_OUTPUT(config/config)

@@ -1,17 +1,17 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >Telling the time</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
 REL="UP"
 TITLE="Limited domain synthesis"
-HREF="bsv-ldom-ch.html"><LINK
+HREF="c941.html"><LINK
 REL="PREVIOUS"
 TITLE="using limited domain synthesizers"
 HREF="x997.html"><LINK
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,19 +46,21 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x997.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 5. Limited domain synthesis</TD
+>Limited domain synthesis</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
 HREF="x1170.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -71,7 +74,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AEN1003"
->5.6. Telling the time</A
+>Telling the time</A
 ></H1
 ><P
 >&#13;Festival includes a very simple little script that speaks the current 
@@ -159,14 +162,14 @@ In earlier releases we only offered a command line based method for
 building voices and limited domain synthesizers. In order to make the 
 process easier and less prone to error we have introduced and graphical 
 front end to these scripts. This front end is called 
-<TT
+<CODE
 CLASS="VARNAME"
->pointyclicky</TT
+>pointyclicky</CODE
 > (as it offers a pointy-clicky interface). It is 
 particularly useful in the actual prompting and recording. Although 
-<TT
+<CODE
 CLASS="VARNAME"
->pointyclicky</TT
+>pointyclicky</CODE
 > is the recommend route in the section we go through the 
 process step by step to give a better understanding of what is required 
 and where problems may lie that require attention. </P
@@ -216,12 +219,12 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN1041"
->5.6.1. Designing the prompts</A
+>Designing the prompts</A
 ></H2
 ><P
->In this <TT
+>In this <CODE
 CLASS="VARNAME"
->saytime</TT
+>saytime</CODE
 > example the basic format of the utterance is 
 <A
 NAME="AEN1045"
@@ -313,7 +316,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN1055"
->5.6.2. Recording the prompts</A
+>Recording the prompts</A
 ></H2
 ><P
 >&#13;The best way to record the prompts is to use a professional speaker in a 
@@ -424,7 +427,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN1085"
->5.6.3. Autolabeling the prompts</A
+>Autolabeling the prompts</A
 ></H2
 ><P
 >The recorded prompt can be labeled by aligning them against 
@@ -479,13 +482,17 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN1099"
->5.6.4. Extracting pitchmarks and building LPC coefficients</A
+>Extracting pitchmarks and building LPC coefficients</A
 ></H2
 ><P
 >&#13;Getting good pitchmarks is important to the quality of the synthesis,
 see <A
-HREF="bsv-pitchmarks-sect.html"
->Section 4.7</A
+HREF="x862.html"
+>the Section called <I
+>Extracting pitchmarks from waveforms</I
+> in the Chapter called <I
+>Basic Requirements</I
+></A
 > for more detailed discussion
 on extrating pitchmarks from waveforms. For the limited domain
 synthesizers the pitch extract is a little less crucial that for
@@ -661,14 +668,16 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN1148"
->5.6.5. Building a clunit based synthesizer from the utterances</A
+>Building a clunit based synthesizer from the utterances</A
 ></H2
 ><P
 >Building a full clunit synthesizer is probably a little bit of over kill 
 but the technique basically works. See 
 <A
-HREF="bsv-unitsel-ch.html"
->Chapter 12</A
+HREF="c2641.html"
+>the Chapter called <I
+>Unit selection databases</I
+></A
 >
 for a more detailed discussion of unit selection technique. The basic 
 parameter file <TT
@@ -702,7 +711,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AEN1157"
->5.6.6. Testing and tuning</A
+>Testing and tuning</A
 ></H2
 ><P
 >To test the new voice start Festival as 
@@ -720,9 +729,9 @@ The function <TT
 CLASS="FILENAME"
 >(saytime)</TT
 > can now be called and it should 
-say the current time, or <TT
+say the current time, or <CODE
 CLASS="VARNAME"
->(saythistime "11:23")</TT
+>(saythistime "11:23")</CODE
 >. </P
 ><P
 >Note this synthesizer can <I
@@ -758,6 +767,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -769,6 +779,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x997.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -777,6 +788,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -785,6 +797,7 @@ ALIGN="right"
 VALIGN="top"
 ><A
 HREF="x1170.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -799,7 +812,8 @@ WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="bsv-ldom-ch.html"
+HREF="c941.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD

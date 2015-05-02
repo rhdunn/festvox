@@ -40,6 +40,8 @@
 ##  This makes more directories than you may need
 ##
 
+LANG=C; export LANG
+
 mkdir bin
 mkdir wav
 mkdir recording
@@ -50,6 +52,8 @@ mkdir mcep
 mkdir pm
 mkdir pm_lab
 mkdir wrd
+mkdir syl
+mkdir phr
 mkdir f0
 mkdir dic
 mkdir etc

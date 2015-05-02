@@ -2,7 +2,7 @@
 ;;;                                                                     ;;;
 ;;;                     Carnegie Mellon University                      ;;;
 ;;;                  and Alan W Black and Kevin Lenzo                   ;;;
-;;;                      Copyright (c) 1998-2000                        ;;;
+;;;                      Copyright (c) 1998-2005                        ;;;
 ;;;                        All Rights Reserved.                         ;;;
 ;;;                                                                     ;;;
 ;;; Permission is hereby granted, free of charge, to use and distribute ;;;
@@ -43,21 +43,21 @@
 ;;; Try to find the directory where the voice is, this may be from
 ;;; .../festival/lib/voices/ or from the current directory
 (if (assoc 'INST_LANG_VOX_clunits voice-locations)
-    (defvar INST_LANG_VOX::clunits_dir 
+    (defvar INST_LANG_VOX::dir 
       (cdr (assoc 'INST_LANG_VOX_clunits voice-locations)))
-    (defvar INST_LANG_VOX::clunits_dir (string-append (pwd) "/")))
+    (defvar INST_LANG_VOX::dir (string-append (pwd) "/")))
 
 ;;; Did we succeed in finding it
-(if (not (probe_file (path-append INST_LANG_VOX::clunits_dir "festvox/")))
+(if (not (probe_file (path-append INST_LANG_VOX::dir "festvox/")))
     (begin
      (format stderr "INST_LANG_VOX::clunits: Can't find voice scm files they are not in\n")
-     (format stderr "   %s\n" (path-append  INST_LANG_VOX::clunits_dir "festvox/"))
+     (format stderr "   %s\n" (path-append  INST_LANG_VOX::dir "festvox/"))
      (format stderr "   Either the voice isn't linked in Festival library\n")
      (format stderr "   or you are starting festival in the wrong directory\n")
      (error)))
 
 ;;;  Add the directory contains general voice stuff to load-path
-(set! load-path (cons (path-append INST_LANG_VOX::clunits_dir "festvox/") 
+(set! load-path (cons (path-append INST_LANG_VOX::dir "festvox/") 
 		      load-path))
 
 ;;; Voice specific parameter are defined in each of the following
@@ -86,13 +86,36 @@
 (defvar INST_LANG_VOX::clunits_added_extra_lex_items nil)
 
 ;;; You may wish to change this (only used in building the voice)
-(set! INST_LANG_VOX::closest_voice 'voice_kal_diphone)
+(set! INST_LANG_VOX::closest_voice 'voice_kal_diphone_LANG)
+
+(set! LANG_phone_maps
+      '(
+;        (M_t t)
+;        (M_dH d)
+        ))
+
+(define (voice_kal_diphone_LANG_phone_maps utt)
+  (mapcar
+   (lambda (s) 
+     (let ((m (assoc_string (item.name s) LANG_phone_maps)))
+       (if m
+           (item.set_feat s "us_diphone" (cadr m))
+           (item.set_feat s "us_diphone"))))
+   (utt.relation.items utt 'Segment))
+  utt)
+
+(define (voice_kal_diphone_LANG)
+  (voice_kal_diphone)
+  (set! UniSyn_module_hooks (list voice_kal_diphone_LANG_phone_maps ))
+
+  'kal_diphone_LANG
+)
 
 ;;;  These are the parameters which are needed at run time
 ;;;  build time parameters are added to his list in INST_LANG_VOX_build.scm
 (set! INST_LANG_VOX::dt_params
       (list
-       (list 'db_dir INST_LANG_VOX::clunits_dir)
+       (list 'db_dir INST_LANG_VOX::dir)
        '(name INST_LANG_VOX)
        '(index_name INST_LANG_VOX)
        '(f0_join_weight 0.0)
@@ -123,6 +146,18 @@
 ;       '(clunits_debug 1)
 ))
 
+(define (INST_LANG_VOX::nextvoicing i)
+  (let ((nname (item.feat i "n.name")))
+    (cond
+;     ((string-equal nname "pau")
+;      "PAU")
+     ((string-equal "+" (item.feat i "n.ph_vc"))
+      "V")
+     ((string-equal (item.feat i "n.ph_cvox") "+")
+      "CVox")
+     (t
+      "UV"))))
+
 (define (INST_LANG_VOX::clunit_name i)
   "(INST_LANG_VOX::clunit_name i)
 Defines the unit name for unit selection for LANG.  The can be modified
@@ -139,8 +174,30 @@ plus previous phone (or something else)."
 			(string-equal "h#" (item.feat i "p.name")))
 		    (string-equal "pau" (item.feat i "n.name")))))
       "ignore")
+     ;; Comment out this if you want a more interesting unit name
+     ((null nil)
+      name)
+
+     ;; Comment out the above if you want to use these rules
+     ((string-equal "+" (item.feat i "ph_vc"))
+      (string-append
+       name
+       "_"
+       (item.feat i "R:SylStructure.parent.stress")
+       "_"
+       (INST_LANG_VOX::nextvoicing i)))
+     ((string-equal name "pau")
+      (string-append
+       name
+       "_"
+       (INST_LANG_VOX::nextvoicing i)))
      (t
-      name))))
+      (string-append
+       name
+       "_"
+;       (item.feat i "seg_onsetcoda")
+;       "_"
+       (INST_LANG_VOX::nextvoicing i))))))
 
 (define (INST_LANG_VOX::clunits_load)
   "(INST_LANG_VOX::clunits_load)
@@ -151,7 +208,7 @@ SHould only be called once per session."
   (clunits:load_db clunits_params)
   (load (string-append
 	 (string-append 
-	  INST_LANG_VOX::clunits_dir "/"
+	  INST_LANG_VOX::dir "/"
 	  (get_param 'trees_dir dt_params "trees/")
 	  (get_param 'index_name dt_params "all")
 	  ".tree")))
@@ -182,7 +239,7 @@ Reset global variables back to previous voice."
 
 (define (voice_INST_LANG_VOX_clunits)
   "(voice_INST_LANG_VOX_clunits)
-Define voice for limited domain: LANG."
+Define voice for LANG."
   ;; *always* required
   (voice_reset)
 

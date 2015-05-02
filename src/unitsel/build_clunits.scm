@@ -2,7 +2,7 @@
 ;;;                                                                     ;;;
 ;;;                     Carnegie Mellon University                      ;;;
 ;;;                  and Alan W Black and Kevin Lenzo                   ;;;
-;;;                      Copyright (c) 1998-2000                        ;;;
+;;;                      Copyright (c) 1998-2005                        ;;;
 ;;;                        All Rights Reserved.                         ;;;
 ;;;                                                                     ;;;
 ;;; Permission is hereby granted, free of charge, to use and distribute ;;;
@@ -39,7 +39,7 @@
 ;;;                                                                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar INST_LANG_VOX::clunits_dir ".")
+(defvar INST_LANG_VOX::dir ".")
 
 (require 'clunits_build)
 
@@ -47,11 +47,13 @@
 ;;; parameter definition for run time.
 (load "festvox/INST_LANG_VOX_clunits.scm")
 
+(defvar cluster_feature_filename "all.desc")
+
 ;;; Add Build time parameters
 (set! INST_LANG_VOX::dt_params
       (cons
        ;; in case INST_LANG_VOX_clunits defines this too, put this at start
-       (list 'db_dir (string-append INST_LANG_VOX::clunits_dir "/"))
+       (list 'db_dir (string-append INST_LANG_VOX::dir "/"))
        (append
 	INST_LANG_VOX::dt_params
 	(list
@@ -70,46 +72,23 @@
 	 ;; Join weights in INST_LANG_VOX_clunits.scm
 	 ;; Features for extraction
 	 '(feats_dir "festival/feats/")
-	 '(feats 
-	   (occurid
-	    p.name p.ph_vc p.ph_ctype 
-	    p.ph_vheight p.ph_vlng 
-	    p.ph_vfront  p.ph_vrnd 
-	    p.ph_cplace  p.ph_cvox    
-	    n.name n.ph_vc n.ph_ctype 
-	    n.ph_vheight n.ph_vlng 
-	    n.ph_vfront  n.ph_vrnd 
-	    n.ph_cplace  n.ph_cvox
-	    segment_duration 
-	    seg_pitch p.seg_pitch n.seg_pitch
-	    R:SylStructure.parent.stress 
-	    seg_onsetcoda n.seg_onsetcoda p.seg_onsetcoda
-	    R:SylStructure.parent.accented 
-	    pos_in_syl 
-	    syl_initial
-	    syl_final
-	    R:SylStructure.parent.syl_break 
-	    R:SylStructure.parent.R:Syllable.p.syl_break
-	    R:SylStructure.parent.position_type
-	    pp.name pp.ph_vc pp.ph_ctype 
-	    pp.ph_vheight pp.ph_vlng 
-	    pp.ph_vfront  pp.ph_vrnd 
-	    pp.ph_cplace pp.ph_cvox
-            n.lisp_is_pau
-            p.lisp_is_pau
-	    R:SylStructure.parent.parent.gpos
-	    R:SylStructure.parent.parent.R:Word.p.gpos
-	    R:SylStructure.parent.parent.R:Word.n.gpos
-	    ))
+         ;; Feats as defined in all.desc
+         (list
+          'feats
+          (mapcar car (car (load (format nil "festival/clunits/%s" 
+                                    cluster_feature_filename) t))))
 	 ;; Wagon tree building params
-;	 (trees_dir "festvox/")  ;; in INST_LANG_VOX_clunits.scm
-	 '(wagon_field_desc "festival/clunits/all.desc")
+;	 (trees_dir "festival/trees/")  ;; in INST_LANG_VOX_clunits.scm
+         (list
+          'wagon_field_desc 
+          (format nil "festival/clunits/%s" 
+                  cluster_feature_filename))
 	 '(wagon_progname "$ESTDIR/bin/wagon")
 	 '(wagon_cluster_size 20)
 	 '(prune_reduce 0)
 	 '(cluster_prune_limit 40)
 	 ;; The dictionary of units used at run time
-;	 (catalogue_dir "festvox/")   ;; in INST_LANG_VOX_clunits.scm
+;	 (catalogue_dir "festival/clunits/")  ;; in INST_LANG_VOX_clunits.scm
 	 ;;  Run time parameters 
 	 ;; all in INST_LANG_VOX_clunits.scm
 	 ;; Files in db, filled in at build_clunits time
@@ -127,6 +106,7 @@ Build cluster synthesizer for the given recorded data and domain."
   "(build_clunits_init file)
 Get setup ready for (do_all) (or (do_init))."
   (eval (list INST_LANG_VOX::closest_voice))
+  (INST_LANG_VOX::select_phoneset)
 
   ;; Add specific fileids to the list for this run
   (set! INST_LANG_VOX::dt_params
@@ -147,7 +127,9 @@ Synthesize given text and save waveform and labels for prompts."
   (let ((utt1 (utt.synth (eval (list 'Utterance 'Text text)))))
     (utt.save utt1 (format nil "prompt-utt/%s.utt" name))
     (utt.save.segs utt1 (format nil "prompt-lab/%s.lab" name))
-    (utt.save.wave utt1 (format nil "prompt-wav/%s.wav" name))))
+    (if (member_string "Wave" (utt.relationnames utt1))
+        (utt.save.wave utt1 (format nil "prompt-wav/%s.wav" name)))
+    t))
 
 (define (build_prompts file)
   "(build_prompt file) 
@@ -158,8 +140,37 @@ labels for prompts and aligning."
  (let ((p (load file t)))
     (mapcar
      (lambda (l)
-       (format t "%s\n" (car l))
-       (do_prompt (car l) (cadr l))
+       (format t "%s PROMPTS\n" (car l))
+       (unwind-protect
+        (do_prompt (car l) (cadr l))
+        nil)
+       t)
+     p)
+    t))
+
+(define (find_silence_name)
+  (set! INST_LANG_VOX::clunits_prompting_stage t)
+  (voice_INST_LANG_VOX_clunits)
+  (set! silence (car (cadr (car (PhoneSet.description '(silences))))))
+  (set! sfd (fopen "etc/silence" "w"))
+  (format sfd "%s\n" silence)
+  (fclose sfd)
+)
+
+(define (build_prompts_no_wave file)
+  "(build_prompt file) 
+For each utterances in prompt file, synth and save waveform and
+labels for prompts and aligning."
+  (set! INST_LANG_VOX::clunits_prompting_stage t)
+  (voice_INST_LANG_VOX_clunits)
+  (Parameter.set 'Synth_Method 'None)
+ (let ((p (load file t)))
+    (mapcar
+     (lambda (l)
+       (format t "%s PROMPTS\n" (car l))
+       (unwind-protect
+        (do_prompt (car l) (cadr l))
+        nil)
        t)
      p)
     t))
@@ -173,8 +184,10 @@ to predicted labels building a new utetrances and saving it."
   (let ((p (load file t)))
     (mapcar
      (lambda (l)
-       (format t "%s\n" (car l))
-       (align_utt (car l) (cadr l))
+       (format t "%s UTTS\n" (car l))
+       (unwind-protect
+        (align_utt (car l) (cadr l))
+        nil)
        t)
      p)
     t))
@@ -183,12 +196,138 @@ to predicted labels building a new utetrances and saving it."
   "(align_utts file) 
 Synth an utterance and load in the actualed aligned segments and merge
 them into the synthesizer utterance."
-  (let ((utt1 (utt.synth (eval (list 'Utterance 'Text text))))
+  (let ((utt1 (utt.load nil (format nil "prompt-utt/%s.utt" name)))
+	;(utt1 (utt.synth (eval (list 'Utterance 'Text text))))
 	(silence (car (cadr (car (PhoneSet.description '(silences))))))
 	segments actual-segments)
 	
     (utt.relation.load utt1 'actual-segment 
 		       (format nil "lab/%s.lab" name))
+    (set! segments (utt.relation.items utt1 'Segment))
+    (set! actual-segments (utt.relation.items utt1 'actual-segment))
+
+    ;; These should align, but if the labels had to be hand edited
+    ;; then they may not, we cater here for insertions and deletions
+    ;; of silences int he corrected hand labelled files (actual-segments)
+    ;; If you need to something more elaborate you'll have to change the
+    ;; code below.
+    (while (and segments actual-segments)
+      (cond
+       ((string-equal (string-append "#" (item.name (car segments)))
+                      (item.name (car actual-segments)))
+        ;; junk unit that is to be ignored
+        (item.set_feat (car segments) "end"
+                       (item.feat (car actual-segments) "end"))
+        (item.set_feat (car segments) "ignore" "1")
+        (set! segments (cdr segments))
+        (set! actual-segments (cdr actual-segments)))
+       ((and (not (string-equal (item.name (car segments))
+				(item.name (car actual-segments))))
+	     (or (string-equal (item.name (car actual-segments)) silence)
+                 (string-equal (item.name (car actual-segments)) "ssil")
+		 (string-equal (item.name (car actual-segments)) "H#")
+		 (string-equal (item.name (car actual-segments)) "h#")))
+	(item.insert
+	 (car segments)
+	 (list silence (list (list "end" (item.feat 
+					(car actual-segments) "end"))))
+	 'before)
+	(set! actual-segments (cdr actual-segments)))
+       ((and (not (string-equal (item.name (car segments))
+				(item.name (car actual-segments))))
+             (string-equal (item.name (car segments)) silence))
+	(item.delete (car segments))
+	(set! segments (cdr segments)))
+       ((string-equal (item.name (car segments))
+		      (item.name (car actual-segments)))
+	(item.set_feat (car segments) "end" 
+		       (item.feat (car actual-segments) "end"))
+	(set! segments (cdr segments))
+	(set! actual-segments (cdr actual-segments)))
+       (t
+	(format stderr
+		"align missmatch at %s (%f) %s (%f)\n"
+		(item.name (car segments))
+		(item.feat (car segments) "end")
+		(item.name (car actual-segments))
+		(item.feat (car actual-segments) "end"))
+	(error)))
+      )
+
+    (mapcar
+     (lambda (a)
+      ;; shorten and split sliences
+      (while (and (string-equal (item.name a) silence)
+		  (> (item.feat a "segment_duration") 0.300))
+;              (format t "splitting %s silence of %f at %f\n"
+;		      (item.name a)
+;                      (item.feat a "segment_duration")
+;                      (item.feat a "end"))
+              (cond
+               ((string-equal "h#" (item.feat a "p.name"))
+                (item.set_feat (item.prev a) "end"
+                               (+ 0.150 (item.feat a "p.end"))))
+               ((and (string-equal silence (item.feat a "p.name"))
+                     (string-equal silence (item.feat a "p.p.name")))
+                (item.set_feat (item.prev a) "end"
+                               (+ 0.150 (item.feat a "p.end")))
+                (item.set_feat (item.prev a) "name" silence))
+               (t
+                (item.insert a
+                             (list silence
+                                   (list 
+                                    (list "end" 
+				      (+ 0.150 
+					(item.feat a "p.end")))))
+                             'before)))))
+     (utt.relation.items utt1 'Segment))
+
+    (utt.relation.delete utt1 'actual-segment)
+    (utt.set_feat utt1 "fileid" name)
+    ;; If we have an F0 add in targets too
+    (if (probe_file (format nil "f0/%s.f0" name))
+	(build::add_targets utt1))
+    (utt.save utt1 (format nil "festival/utts/%s.utt" name))
+    t))
+
+(define (rebuild_utts file)
+  "(rebuild_utts file) 
+Rebuild the utterances from the label files (lab, syl, wrd, phr). Used
+after hand correction, or when files come from somewhere else."
+  (set! INST_LANG_VOX::clunits_prompting_stage t)
+  (voice_INST_LANG_VOX_clunits)
+  (Parameter.set 'Synth_Method 'None)
+  (let ((p (load file t)))
+    (mapcar
+     (lambda (l)
+       (format t "rebuild %s UTTS\n" (car l))
+       (unwind-protect
+        (align_utt_rebuild (car l) (cadr l))
+        nil)
+       t)
+     p)
+    t))
+
+(define (align_utt_rebuild name text)
+  "(align_utts file) 
+Synth an utterance and load in the actualed aligned segments and merge
+them into the synthesizer utterance."
+  (let (; (utt1 (utt.load nil (format nil "prompt-utt/%s.utt" name)))
+	(utt1 (utt.synth (eval (list 'Utterance 'Text text))))
+	(silence (car (cadr (car (PhoneSet.description '(silences))))))
+	segments actual-segments)
+	
+    (utt.relation.load utt1 'actual-segment 
+		       (format nil "lab/%s.lab" name))
+
+    (if (probe_file (format nil "wrd/%s.wrd" name))
+	;; There more structure already on disk so adopt it
+	(build_word_structure utt1 name))
+
+    (if (probe_file (format nil "phr/%s.phr" name))
+	;; There more structure already on disk so adopt it
+	(build_phrase_structure utt1 name))
+
     (set! segments (utt.relation.items utt1 'Segment))
     (set! actual-segments (utt.relation.items utt1 'actual-segment))
 
@@ -273,10 +412,245 @@ them into the synthesizer utterance."
     (if (probe_file (format nil "f0/%s.f0" name))
 	(build::add_targets utt1))
     (utt.save utt1 (format nil "festival/utts/%s.utt" name))
+    (cl.utt.save.syllables utt1 (format nil "syl/%s.syl" name))
+    (cl.utt.save.words utt1 (format nil "wrd/%s.wrd" name))
+    (cl.utt.save.phr utt1 (format nil "phr/%s.phr" name))
     t))
 
+
+(define (build_labs file)
+  "(build_utts file) 
+For each utterances in prompt file, synthesize and merge aligned labels
+to predicted labels building a new utetrances and saving it."
+  (let ((p (load file t)))
+    (mapcar
+     (lambda (l)
+       (let ((name (car l)))
+	 (format t "%s\n" (car l))
+	 (set! utt1 (utt.load nil (format nil "festival/utts/%s.utt" name)))
+	 (cl.utt.save.labs utt1 (format nil "lab/%s.lab" name))
+	 (cl.utt.save.syllables utt1 (format nil "syl/%s.syl" name))
+	 (cl.utt.save.words utt1 (format nil "wrd/%s.wrd" name))
+	 (cl.utt.save.phr utt1 (format nil "phr/%s.phr" name))))
+     p)))
+
+(define (cl.utt.save.labs utt filename)
+"(utt.save.syllables UTT FILE)
+  Save syllables of UTT in a FILE in xlabel format."
+  (let ((fd (fopen filename "w")))
+    (format fd "#\n")
+    (mapcar
+     (lambda (s)
+       (format fd "%2.4f 100 %s%s\n"
+               (item.feat s "segment_end")
+	       (if (assoc 'ignore (item.features s))
+		   "#"
+		   "")
+               (item.name s))
+               )
+     (utt.relation.items utt 'Segment))
+    (fclose fd)
+    utt))
+
+(define (cl.safe_end i endname)
+  (let ((e (item.feat i endname)))
+    (if (and (equal? 0 e) (item.prev i))
+	(cl.safe_end (item.prev i) endname)
+	e)))
+
+(define (build_word_structure utt name)
+  "(build_word_structure utt)
+Build Word and Syllable, SylStructure and Segments from the labels
+on disk."
+  (let (wrd syl seg)
+  
+    (utt.relation.delete utt 'Word)
+    (utt.relation.delete utt 'SylSructure)
+    (utt.relation.delete utt 'Syllable)
+    (utt.relation.delete utt 'Segment)
+    (utt.relation.delete utt 'Phrase)
+
+    (utt.relation.load utt 'Word (format nil "wrd/%s.wrd" name))
+    (utt.relation.load utt 'Syllable (format nil "syl/%s.syl" name))
+    (utt.relation.load utt 'Segment (format nil "lab/%s.lab" name))
+
+    (mapcar
+     (lambda (syl)
+       (let ((s (item.name syl)))
+         (item.set_feat syl "stress" s)
+	 (item.set_name syl "syl")))
+     (utt.relation.items utt 'Syllable))
+
+    ;; Syllable and Word have h# so drop them
+    (if (string-equal "h#" (item.name (utt.relation.first utt 'Syllable)))
+        (item.delete (utt.relation.first utt 'Syllable)))
+    (if (string-equal "h#" (item.name (utt.relation.first utt 'Word)))
+        (item.delete (utt.relation.first utt 'Word)))
+    (if (string-equal "h#" (item.name (utt.relation.first utt 'Segment)))
+        (item.delete (utt.relation.first utt 'Segment)))
+
+    (utt.relation.create utt 'SylStructure)
+    (utt.relation.create utt 'Phrase)
+    (set! phr nil)
+    (set! syl (utt.relation.first utt 'Syllable))
+    (set! seg (utt.relation.first utt 'Segment))
+    (set! p_sylend 0)
+    (set! p_segend 0)
+    (mapcar
+     (lambda (w)
+       (if (not phr)
+	   (set! phr (utt.relation.append utt 'Phrase)))
+       (item.relation.append_daughter phr 'Phrase w)
+       (set! end (item.feat w "end"))
+       (item.remove_feature w "end")
+       (set! sw (utt.relation.append utt 'SylStructure w))
+       (while (and syl (< (/ (+ (item.feat syl "end") p_sylend) 2.0) end))
+	 (set! sylend (item.feat syl "end"))
+	 (item.remove_feature syl "end")
+	 (set! ss (item.relation.append_daughter sw 'SylStructure syl))
+	 (while (and seg (< (/ (+ (item.feat seg "end") p_segend) 2.0) sylend))
+	    (if (string-matches (item.name seg) "#.*")
+		(begin
+		  (item.set_feat seg "ignore" "1")
+		  (item.set_name seg (string-after (item.name seg) "#"))))
+	    (if (string-matches (item.name seg) "%.*")
+		(begin
+		  (item.set_feat seg "ignore" "1")
+		  (item.set_name seg (string-after (item.name seg) "%"))))
+	    (if (not (phone_is_silence (item.name seg)))
+		(item.relation.append_daughter ss 'SylStructure seg))
+	    (set! p_segend (item.feat seg "end"))
+	    (set! seg (item.next seg)))
+	 (set! p_sylend sylend)
+	 (set! syl (item.next syl)))
+       (if (or (null seg) (phone_is_silence (item.name seg)))
+	   (set! phr nil))
+       )
+     (utt.relation.items utt 'Word))
+
+    ;; We need to fix up *all* segment names to remove #, not just
+    ;; ones that fall within syllables (it was breaking for pauses)
+    (mapcar
+     (lambda (seg)
+       (if (string-matches (item.name seg) "#.*")
+	   (begin
+	     (item.set_feat seg "ignore" "1")
+	     (item.set_name seg (string-after (item.name seg) "#"))))
+       (if (string-matches (item.name seg) "%.*")
+	   (begin
+	     (item.set_feat seg "ignore" "1")
+	     (item.set_name seg (string-after (item.name seg) "%")))))
+     (utt.relation.items utt 'Segment))
+
+    (set! ls (utt.relation.last utt 'Segment))
+    (if (or (not ls) (not (phone_is_silence (item.name ls))))
+	(format t "final phone is not silence %s\n" (item.name ls)))
+
+    ;; Some day we'll get these from files
+    (utt.relation.delete utt 'Intonation)
+    (utt.relation.delete utt 'IntEvent)
+
+;    (find_lexical_stress utt)
+
+    (Intonation utt)
+;    (Duration utt)
+    (Int_Targets utt)
+    )
+)  
+
+(define (build_phrase_structure utt name)
+  "(build_phrase_structure utt)
+This builds phrasing, but is done in a different function from 
+from word structure as this may (for historical reasons) not
+exist on all dbs."
+  (let (phr wrd)
+  
+    (utt.relation.delete utt 'Phrase)
+
+    (utt.relation.load utt 'Phrase (format nil "phr/%s.phr" name))
+    (item.delete (utt.relation.first utt 'Phrase)) ;; delete h#
+
+    (mapcar
+     (lambda (p)
+       (item.set_feat p "phrase_type" (item.name p))
+       (item.set_name p "B"))
+     (utt.relation.items utt 'Phrase))
+    (item.set_name (utt.relation.last utt 'Phrase) "BB")
+
+    (set! wrd (utt.relation.first utt 'Word))
+    (set! phr (utt.relation.first utt 'Phrase))
+    (set! p_wordend 0)
+    (while phr
+      (while (and wrd (< (/ (+ (item.feat wrd "word_end") 
+			       (item.feat wrd "p.word_end")) 2.0)
+			 (item.feat phr "end")))
+	     (item.relation.append_daughter phr 'Phrase wrd)
+	     (set! wrd (item.next wrd)))
+      (item.remove_feature phr "end")
+      (set! phr (item.next phr)))
+
+))
+
+(define (cl.utt.save.syllables utt filename)
+"(utt.save.syllables UTT FILE)
+  Save syllables of UTT in a FILE in xlabel format."
+  (let ((fd (fopen filename "w")))
+    (format fd "#\n")
+    (format fd "%2.4f 100 h#\n" 
+	    (item.feat (utt.relation.first utt 'Syllable) "syllable_start"))
+    (mapcar
+     (lambda (syl)
+       (format fd "%2.4f 100 %s%s\n"
+               (cl.safe_end syl "syllable_end")
+               (item.feat syl "stress")
+               (cond
+                ((or (string-equal "none" (item.feat syl "accentedness"))
+		     (string-equal "0" (item.feat syl "accentedness")))
+                 "")
+                (t
+                  (item.feat syl "accentedness")))))
+     (utt.relation.items utt 'Syllable))
+    (fclose fd)
+    utt))
+
+(define (cl.utt.save.words utt filename)
+"(utt.save.words UTT FILE)
+  Save words of UTT in a FILE in xlabel format."
+  (let ((fd (fopen filename "w")))
+    (format fd "#\n")
+    (format fd "%2.4f 100 h#\n" 
+	    (item.feat (utt.relation.first utt 'Word) "word_start"))
+    (mapcar
+     (lambda (w)
+       (format fd "%2.4f 100 %s\n" 
+	       (cl.safe_end w "word_end")
+	       (downcase (item.name w))))
+     (utt.relation.items utt 'Word))
+    (fclose fd)
+    utt))
+
+(define (cl.utt.save.phr utt filename)
+"(utt.save.phr UTT FILE)
+  Save phrases of UTT in a FILE in xlabel format."
+  (let ((fd (fopen filename "w"))
+	(phrs (utt.relation.first utt 'Phrase)))
+    (format fd "#\n")
+    (format fd "%2.4f 100 h#\n" 
+	    (item.feat phrs 
+	     "daughter1.R:SylStructure.daughter1.daughter1.segment_start"))
+    (while phrs
+      (if (member_string (item.name phrs) '("H" "L"))
+	  (set! plab (item.name phrs))
+	  (set! plab "L"))
+      (format fd "%2.4f 100 %s\n" 
+	      (item.feat phrs "daughtern.word_end")
+	      plab)
+      (set! phrs (item.next phrs)))
+    (fclose fd)
+    utt))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;  Some prosody modelling code
+;;;  Some prosody modeling code
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (build::add_targets utt)
@@ -442,6 +816,11 @@ it as a simple assoc list."
   (suffstats.set_n x (+ (suffstats.n x) 1))
   (suffstats.set_sum x (+ (suffstats.sum x) d))
   (suffstats.set_sumx x (+ (suffstats.sumx x) (* d d)))
+)
+(define (suffstats.add_count x d c)
+  (suffstats.set_n x (+ (suffstats.n x) c))
+  (suffstats.set_sum x (+ (suffstats.sum x) (* c d)))
+  (suffstats.set_sumx x (+ (suffstats.sumx x) (* c (* d d))))
 )
 
 (define (suffstats.mean x)

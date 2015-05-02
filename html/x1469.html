@@ -1,23 +1,23 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
 >Building letter-to-sound rules automatically</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REL="HOME"
 TITLE="Building Synthetic Voices"
 HREF="book1.html"><LINK
 REL="UP"
 TITLE="Lexicons"
-HREF="bsv-lexicons-ch.html"><LINK
+HREF="c1379.html"><LINK
 REL="PREVIOUS"
 TITLE="Building letter-to-sound rules by hand"
 HREF="x1429.html"><LINK
 REL="NEXT"
 TITLE="Post-lexical rules"
-HREF="bsv-postlexical-sect.html"></HEAD
+HREF="x1615.html"></HEAD
 ><BODY
 CLASS="SECT1"
 BGCOLOR="#FFFFFF"
@@ -28,6 +28,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -45,19 +46,21 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="x1429.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 7. Lexicons</TD
+>Lexicons</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
-HREF="bsv-postlexical-sect.html"
+HREF="x1615.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -71,7 +74,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AEN1469"
->7.5. Building letter-to-sound rules automatically</A
+>Building letter-to-sound rules automatically</A
 ></H1
 ><P
 >For some languages the writing of a rule system is too difficult. 
@@ -210,9 +213,9 @@ CLASS="LITERALLAYOUT"
 ></BLOCKQUOTE
 >
 All letters that appear in the alphabet should (at least) map to 
-<TT
+<CODE
 CLASS="VARNAME"
->_epsilon_</TT
+>_epsilon_</CODE
 >, including any accented characters that appear in that 
 language. Note the last two hashes. These are used by to denote 
 beginning and end of word and are automatically added during training, 
@@ -255,35 +258,35 @@ CLASS="LITERALLAYOUT"
 >("abate"&nbsp;nil&nbsp;(ah&nbsp;b&nbsp;ey&nbsp;t))&nbsp;</P
 ></BLOCKQUOTE
 >
-Add <TT
+Add <CODE
 CLASS="VARNAME"
->ah</TT
-> to the allowables for letter <TT
+>ah</CODE
+> to the allowables for letter <CODE
 CLASS="VARNAME"
->a</TT
->, <TT
+>a</CODE
+>, <CODE
 CLASS="VARNAME"
->b</TT
+>b</CODE
 > to 
-<TT
+<CODE
 CLASS="VARNAME"
->b</TT
->, <TT
+>b</CODE
+>, <CODE
 CLASS="VARNAME"
->ey</TT
-> to <TT
+>ey</CODE
+> to <CODE
 CLASS="VARNAME"
->a</TT
-> and <TT
+>a</CODE
+> and <CODE
 CLASS="VARNAME"
->t</TT
-> to letter <TT
+>t</CODE
+> to letter <CODE
 CLASS="VARNAME"
->t</TT
+>t</CODE
 >. After 
-doing that restart festival and call <TT
+doing that restart festival and call <CODE
 CLASS="VARNAME"
->cummulate-pairs</TT
+>cummulate-pairs</CODE
 > again. 
 Incrementally add to the allowable pairs until the number of failures 
 becomes acceptable. Often there are entries for which there is no real 
@@ -294,129 +297,129 @@ in this way. </P
 ><P
 >It is worth while being consistent on defining your set of allowables. 
 (At least) two mappings are possible for the letter sequence 
-<TT
+<CODE
 CLASS="VARNAME"
->ch}---havin</TT
-> letter <TT
+>ch}---havin</CODE
+> letter <CODE
 CLASS="VARNAME"
->c</TT
-> go to phone <TT
+>c</CODE
+> go to phone <CODE
 CLASS="VARNAME"
->ch</TT
+>ch</CODE
 > and letter 
-<TT
+<CODE
 CLASS="VARNAME"
->h</TT
-> go to <TT
+>h</CODE
+> go to <CODE
 CLASS="VARNAME"
->_epsilon_</TT
-> and also letter <TT
+>_epsilon_</CODE
+> and also letter <CODE
 CLASS="VARNAME"
->c</TT
+>c</CODE
 > go to phone 
-<TT
+<CODE
 CLASS="VARNAME"
->_epsilon_</TT
-> and letter <TT
+>_epsilon_</CODE
+> and letter <CODE
 CLASS="VARNAME"
->h</TT
-> goes to <TT
+>h</CODE
+> goes to <CODE
 CLASS="VARNAME"
->ch</TT
+>ch</CODE
 >. However only 
-one should be allowed, we preferred <TT
+one should be allowed, we preferred <CODE
 CLASS="VARNAME"
->c</TT
-> to <TT
+>c</CODE
+> to <CODE
 CLASS="VARNAME"
->ch</TT
+>ch</CODE
 >. </P
 ><P
 >It may also be the case that some letters give rise to more than one 
-phone. For example the letter <TT
+phone. For example the letter <CODE
 CLASS="VARNAME"
->x</TT
+>x</CODE
 > in English is often pronounced as 
-the phone combination <TT
+the phone combination <CODE
 CLASS="VARNAME"
->k</TT
-> and <TT
+>k</CODE
+> and <CODE
 CLASS="VARNAME"
->s</TT
+>s</CODE
 >. To allow this, use the 
-multiphone <TT
+multiphone <CODE
 CLASS="VARNAME"
->k-s</TT
->. Thus the multiphone <TT
+>k-s</CODE
+>. Thus the multiphone <CODE
 CLASS="VARNAME"
->k-s</TT
+>k-s</CODE
 > will be predicted 
-for <TT
+for <CODE
 CLASS="VARNAME"
->x</TT
+>x</CODE
 > in some context and the model will separate it into two 
-phones while it also ignoring any predicted <TT
+phones while it also ignoring any predicted <CODE
 CLASS="VARNAME"
->_epsilons_</TT
+>_epsilons_</CODE
 >. Note that 
 multiphone units are relatively rare but do occur. In English, letter 
-<TT
+<CODE
 CLASS="VARNAME"
->x</TT
-> give rise to a few, <TT
+>x</CODE
+> give rise to a few, <CODE
 CLASS="VARNAME"
->k-s</TT
-> in <TT
+>k-s</CODE
+> in <CODE
 CLASS="VARNAME"
->taxi</TT
->, <TT
+>taxi</CODE
+>, <CODE
 CLASS="VARNAME"
->g-s</TT
+>g-s</CODE
 > in 
-<TT
+<CODE
 CLASS="VARNAME"
->example</TT
->, and sometimes <TT
+>example</CODE
+>, and sometimes <CODE
 CLASS="VARNAME"
->g-zh</TT
-> and <TT
+>g-zh</CODE
+> and <CODE
 CLASS="VARNAME"
->k-sh</TT
+>k-sh</CODE
 > in 
-<TT
+<CODE
 CLASS="VARNAME"
->luxury</TT
->. Others are <TT
+>luxury</CODE
+>. Others are <CODE
 CLASS="VARNAME"
->w-ah</TT
-> in <TT
+>w-ah</CODE
+> in <CODE
 CLASS="VARNAME"
->one</TT
->, <TT
+>one</CODE
+>, <CODE
 CLASS="VARNAME"
->t-s</TT
+>t-s</CODE
 > in 
-<TT
+<CODE
 CLASS="VARNAME"
->pizza</TT
->, <TT
+>pizza</CODE
+>, <CODE
 CLASS="VARNAME"
->y-uw</TT
-> in <TT
+>y-uw</CODE
+> in <CODE
 CLASS="VARNAME"
->new</TT
-> (British), <TT
+>new</CODE
+> (British), <CODE
 CLASS="VARNAME"
->ah-m</TT
+>ah-m</CODE
 > in 
-<TT
+<CODE
 CLASS="VARNAME"
->-ism</TT
+>-ism</CODE
 > etc. Three phone multiphone are much rarer but may exist, they 
 are not supported by this code as is, but such entries should probably 
-be ignored. Note the <TT
+be ignored. Note the <CODE
 CLASS="VARNAME"
->-</TT
+>-</CODE
 > sign in the multiphone examples is 
 significant and is used to identify multiphones. </P
 ><P
@@ -466,9 +469,9 @@ That information will be generated automatically from the training
 set. </P
 ><P
 >Once the number of failed matches is significantly low enough 
-let <TT
+let <CODE
 CLASS="VARNAME"
->cummulate-pairs</TT
+>cummulate-pairs</CODE
 > run to completion. This counts the number 
 of times each letter/phone pair occurs in allowable alignments. </P
 ><P
@@ -571,12 +574,12 @@ do<br>
 &nbsp;&nbsp;&nbsp;echo&nbsp;letter&nbsp;$i&nbsp;STOP&nbsp;$STOP<br>
 &nbsp;&nbsp;&nbsp;#&nbsp;Find&nbsp;training&nbsp;set&nbsp;for&nbsp;letter&nbsp;$i<br>
 &nbsp;&nbsp;&nbsp;cat&nbsp;oald.train.feats&nbsp;|<br>
-&nbsp;&nbsp;&nbsp;&nbsp;awk&nbsp;'@{if&nbsp;($6&nbsp;==&nbsp;"'$i'")&nbsp;print&nbsp;$0@}'&nbsp;&#62;ltsdataTRAIN.$i.feats<br>
+&nbsp;&nbsp;&nbsp;&nbsp;awk&nbsp;'{if&nbsp;($6&nbsp;==&nbsp;"'$i'")&nbsp;print&nbsp;$0}'&nbsp;&#62;ltsdataTRAIN.$i.feats<br>
 &nbsp;&nbsp;&nbsp;#&nbsp;split&nbsp;training&nbsp;set&nbsp;to&nbsp;get&nbsp;heldout&nbsp;data&nbsp;for&nbsp;stepwise&nbsp;testing<br>
 &nbsp;&nbsp;&nbsp;traintest&nbsp;ltsdataTRAIN.$i.feats<br>
 &nbsp;&nbsp;&nbsp;#&nbsp;Extract&nbsp;test&nbsp;data&nbsp;for&nbsp;letter&nbsp;$i<br>
 &nbsp;&nbsp;&nbsp;cat&nbsp;oald.test.feats&nbsp;|<br>
-&nbsp;&nbsp;&nbsp;&nbsp;awk&nbsp;'@{if&nbsp;($6&nbsp;==&nbsp;"'$i'")&nbsp;print&nbsp;$0@}'&nbsp;&#62;ltsdataTEST.$i.feats<br>
+&nbsp;&nbsp;&nbsp;&nbsp;awk&nbsp;'{if&nbsp;($6&nbsp;==&nbsp;"'$i'")&nbsp;print&nbsp;$0}'&nbsp;&#62;ltsdataTEST.$i.feats<br>
 &nbsp;&nbsp;&nbsp;#&nbsp;run&nbsp;wagon&nbsp;to&nbsp;predict&nbsp;model<br>
 &nbsp;&nbsp;&nbsp;wagon&nbsp;-data&nbsp;ltsdataTRAIN.$i.feats.train&nbsp;-test&nbsp;ltsdataTRAIN.$i.feats.test&nbsp;\<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-stepwise&nbsp;-desc&nbsp;ltsOALD.desc&nbsp;-stop&nbsp;$STOP&nbsp;-output&nbsp;lts.$i.tree<br>
@@ -627,7 +630,7 @@ NAME="AEN1586"
 CLASS="BLOCKQUOTE"
 ><P
 CLASS="LITERALLAYOUT"
->(merge_models&nbsp;'oald_lts_rules&nbsp;"oald_lts_rules.scm")</P
+>(merge_models&nbsp;'oald_lts_rules&nbsp;"oald_lts_rules.scm"&nbsp;allowables)</P
 ></BLOCKQUOTE
 >
 (<TT
@@ -638,18 +641,18 @@ CLASS="FILENAME"
 CLASS="FILENAME"
 >lts_build.scm</TT
 > 
-The given file will contain a <TT
+The given file will contain a <CODE
 CLASS="VARNAME"
->set!</TT
+>set!</CODE
 > for the given variable 
 name to an assoc list of letter to trained tree. Note the above 
 function naively assumes that the letters in the alphabet are 
 the 26 lower case letters of the English alphabet, you will need 
 to edit this adding accented letters if required. Note that 
 adding "'" (single quote) as a letter is a little tricky in scheme 
-but can be done---the command <TT
+but can be done---the command <CODE
 CLASS="VARNAME"
->(intern "'")</TT
+>(intern "'")</CODE
 > will give you 
 the symbol for single quote. </P
 ><P
@@ -701,9 +704,9 @@ them. For OALD this allows us to half the size of the lexicon, it could
 possibly allow more if a certain amount of fuzzy acceptance was allowed 
 (e.g. with schwa). For other languages the gain here can be very 
 significant, for German and French we can reduce the lexicon by over 90%. 
-The function <TT
+The function <CODE
 CLASS="VARNAME"
->reduce_lexicon</TT
+>reduce_lexicon</CODE
 > in <TT
 CLASS="FILENAME"
 >festival/lib/lts_build.scm</TT
@@ -731,6 +734,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -742,6 +746,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="x1429.html"
+ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
 ><TD
@@ -750,6 +755,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="book1.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -757,7 +763,8 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="bsv-postlexical-sect.html"
+HREF="x1615.html"
+ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
 ></TR
@@ -772,7 +779,8 @@ WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="bsv-lexicons-ch.html"
+HREF="c1379.html"
+ACCESSKEY="U"
 >Up</A
 ></TD
 ><TD
