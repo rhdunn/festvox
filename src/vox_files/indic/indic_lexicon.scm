@@ -30,6 +30,8 @@
 ;;; THIS SOFTWARE.                                                      ;;;
 ;;;                                                                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;        Alok Parlikar (aup@cs.cmu.edu)                               ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Lexicon, LTS and Postlexical rules for cmu_indic
 ;;;
@@ -41,23 +43,28 @@
 (define (delete_final_schwa)
   "(delete_final_schwa)
 Returns t if final schwa is deleted in the current language"
-  (member lex:language '(Hindi Bengali)))
+  (member lex:language '(Hindi Gujarati Rajasthani Bengali Assamese)))
 
 (define (delete_medial_schwa)
   "(delete_medial_schwa)
 Returns t if medial schwa in words is deleted in the current language"
-  (member lex:language '(Hindi )))
+  (member lex:language '(Hindi Gujarati Rajasthani)))
 
 (require 'lts)
 
 ;; Load Mapping of unicode characters into decimal integers
 (set! indic_char_ord_map
-	  (load "festvox/indic_utf8_ord_map.scm" t))
+	  (load (path-append 
+                 INST_LANG_VOX::dir
+                 "festvox/indic_utf8_ord_map.scm") t))
 
 
 ;; Load Mapping of unicode ordinal to SAMPA phones
 (set! indic_ord_phone_map
-	  (load "festvox/unicode_sampa_map_new.scm" t))
+	  (load 
+           (path-append
+            INST_LANG_VOX::dir
+           "festvox/unicode_sampa_map_new.scm") t))
 
 
 ;; Set classes of indic characters
@@ -93,6 +100,18 @@ Returns t if medial schwa in words is deleted in the current language"
 							(3214 3216)
 							(3218 3220)
 							(3296 3297)
+
+							;; Telugu
+							(3077 3084)
+							(3086 3088)
+							(3090 3092)
+							(3168 3169) ;; additional vowels for sanskrit
+
+							;; Gujarati
+                                                        (2693 2701)
+                                                        (2703 2705)
+                                                        (2707 2708)
+
 							 ))
 		(consonant         (
 							;; Devnagari
@@ -124,6 +143,19 @@ Returns t if medial schwa in words is deleted in the current language"
 							(3242 3251)
 							(3253 3257)
 							(3294 3294)
+
+							;; Telugu
+							(3093 3112)
+							(3114 3123)
+							(3125 3129)
+							(3157 3158) ;; historic phonetic variants
+
+							 ;; Gujarati
+                                                        (2709 2728)
+                                                        (2730 2736)
+                                                        (2738 2739)
+                                                        (2741 2745)
+
 							))
 
 		(vowel             (
@@ -151,6 +183,18 @@ Returns t if medial schwa in words is deleted in the current language"
 							(3270 3272)
 							(3274 3276)
 							(3298 3299)
+
+							;; Telugu
+							(3134 3140)
+							(3142 3144)
+							(3146 3148)
+							(3170 3171) ;; dependent vowels
+
+                                                        ;; Gujarati
+                                                        (2750 2757)
+                                                        (2759 2761)
+                                                        (2763 2764)
+
 							))
 
 		(anuswaar          (
@@ -165,6 +209,13 @@ Returns t if medial schwa in words is deleted in the current language"
 
 							;; Kannada
 							(3202 3202)
+
+							;; Telugu
+							(3073 3074)
+
+                                                        ;; Gujarati
+                                                        (2689 2690)
+
 							))
 
 		(visarga           (
@@ -179,6 +230,13 @@ Returns t if medial schwa in words is deleted in the current language"
 
 							;; Kannada
 							(3203 3203)
+	
+							;; Telugu
+							(3075 3075)
+
+                                                        ;; Gujarati
+                                                        (2691 2691)
+
 							))
 
 		(nukta             (
@@ -196,6 +254,12 @@ Returns t if medial schwa in words is deleted in the current language"
 
 							;; Kannada
 							(3260 3260)
+
+							;; Telugu does not seem to have nukta
+
+                                                        ;; Gujarati
+                                                        (2748 2748)
+
 							))
 
 		(avagraha          (
@@ -207,6 +271,13 @@ Returns t if medial schwa in words is deleted in the current language"
 
 							;; Kannada
 							(3261 3261)
+
+							;; Telugu
+							(3133 3133)
+	
+                                                        ;; Gujarati
+                                                        (2749 2749)
+
 							))
 
 		(halant            (                 ; Also known as Virama
@@ -221,6 +292,12 @@ Returns t if medial schwa in words is deleted in the current language"
 
 							;; Kannada
 							(3277 3277)
+
+							;; Telugu
+							(3149 3149)
+
+                                                        ;; Gujarati
+                                                        (2765 2765)
 							))
 
 		(digits            (
@@ -235,6 +312,13 @@ Returns t if medial schwa in words is deleted in the current language"
 
 							;; Kannada
 							(3302 3311)
+
+							;; Telugu
+							(3174 3183)
+
+                                                        ;; Gujarati
+                                                        (2790 2799)
+
 							))
 
 		(punc              (
@@ -288,6 +372,17 @@ Returns t if medial schwa in words is deleted in the current language"
 							(3285 3286)  ;; Vowel lengtheners. Ideally shouldn't be ignored. But not handled so far
 							(3300 3301)
 							(3326 3327)
+
+							;; Telugu
+							(3157 3158) ;; vowel length marks, ideally should not be ignored
+							(3192 3199) ;; fractions and weights
+
+			                                 ;; Gujarati
+                                                        (2768 2768) ;; om symbol
+                                                        (2784 2787) ;; sanskrit vowels, map?
+                                                        (2800 2800) ;; abbreviation symbol
+                                                        (2801 2801) ;; rupee symbol
+
 							))
 		))
 
@@ -815,6 +910,189 @@ t if this is a syl break, nil otherwise."
 		   syls))
 	syls))
 
+;;; CMU	SAMPA	Comments
+;;; devnagari
+(set! indic_eng_devn_phone_map
+'(
+(aa 	A:)
+(ae	e)	;;No equivalent, so using e. Can use ay too but not always.
+(ah	A)	;; Could map this to A hv too but not sure if it'll sound weird
+(ao	o)	;;ow is the correct mapping but is going to be very infrequent so use o instead
+(aw 	aU)
+(ax 	A)
+(axr	A)	;;No equivalent
+(ay	aI)
+(b	b)
+(ch	c)
+(d	dr)
+(dh	dB)
+(eh     e)
+(er 	E 9r)	;; not sure if this is correct but usage in CMUdict seems to be close to schwa-R
+(ey 	ay)
+(f	ph) 	;;f is the correct mapping but is going to be very infrequent so use ph instead
+(g	g)
+(hh	hv)
+(ih	i)
+(iy	i:)
+(jh	J) 
+(k	k)
+(l	l)
+(m	m)
+(n	nB)
+(nx	nB)
+(ng	nB)	;; no direct equivalent so mapping to n g	
+(ow	o)
+(oy	o j) 	;;ow j is the right mapping but will be infrequent so map to o j instead
+(p	p)
+(r	9r)
+(s	s)
+(sh	c}) 
+(t	tr) 
+(th	tBh)
+(uh	u)
+(uw	u:)
+(v	v)
+(w	v) 
+(y	j)
+(z	s)	;; z is the correct mapping but will be infrequent so mapping to Jh instead
+(zh	c})	;; in CMUdict usage this seems to be closer to c} than z so mapping to c}
+))
+
+(set! indic_eng_tamil_phone_map
+'(
+(aa 	A:)
+(ae	e:)	;;No equivalent, so using e. Can use ay too but not always.
+(ah	A)	;; Could map this to A hv too but not sure if it'll sound weird
+(ao	o)	;;ow is the correct mapping but is going to be very infrequent so use o instead
+(aw 	aU)
+(ax 	A)
+(axr	A)	;;No equivalent
+(ay	aI)
+(b	b)
+(ch	c)
+(d	dr)
+(dh	dB)
+(eh     e)
+(er 	A 9r)	;; not sure if this is correct but usage in CMUdict seems to be close to schwa-R
+(ey 	e:)
+(f	p) 	;;f is the correct mapping but is going to be very infrequent so use ph instead
+(g	k)
+(hh	hv)
+(ih	i)
+(iy	i:)
+(jh	J) 
+(k	k)
+(l	l)
+(m	m)
+(n	nB)
+(nx	nB)
+(ng	N)	;; no direct equivalent so mapping to n g	
+(ow	o)
+(oy	o j) 	;;ow j is the right mapping but will be infrequent so map to o j instead
+(p	p)
+(r	9r)
+(s	s)
+(sh	c}) 
+(t	tr) 
+(th	tB)
+(uh	u)
+(uw	u:)
+(v	v)
+(w	v) 
+(y	j)
+(z	s)	;; z is the correct mapping but will be infrequent so mapping to Jh instead
+(zh	c})	;; in CMUdict usage this seems to be closer to c} than z so mapping to c}
+))
+
+(set! indic_eng_telugu_phone_map
+'(
+(aa 	A:)
+(ae	e)	;;No equivalent, so using e. Can use ay too but not always.
+(ah	A)	;; Could map this to A hv too but not sure if it'll sound weird
+(ao	o)	;;ow is the correct mapping but is going to be very infrequent so use o instead
+(aw 	aU)
+(ax 	A)
+(axr	A)	;;No equivalent
+(ay	aI)
+(b	b)
+(ch	c)
+(d	dr)
+(dh	dB)
+(eh     e)
+(er 	A 9r)	;; not sure if this is correct but usage in CMUdict seems to be close to schwa-R
+(ey 	e:)
+(f	ph) 	;;f is the correct mapping but is going to be very infrequent so use ph instead
+(g	g)
+(hh	hv)
+(ih	i)
+(iy	i:)
+(jh	J) 
+(k	k)
+(l	l)
+(m	m)
+(n	nB)
+(nx	nB)
+(ng	nB)	;; no direct equivalent so mapping to n g	
+(ow	o)
+(oy	o j) 	;;ow j is the right mapping but will be infrequent so map to o j instead
+(p	p)
+(r	9r)
+(s	s)
+(sh	c}) 
+(t	tr) 
+(th	tBh)
+(uh	u)
+(uw	u:)
+(v	v)
+(w	v) 
+(y	j)
+(z	s)	;; z is the correct mapping but will be infrequent so mapping to Jh instead
+(zh	c})	;; in CMUdict usage this seems to be closer to c} than z so mapping to c}
+))
+
+
+(define (indic_ml_map_eng_phone p)
+  (let ((m (assoc_string 
+            p 
+            (cond
+             ((string-equal lex:language 'Tamil)
+              indic_eng_tamil_phone_map)
+             ((string-equal lex:language 'Telugu)
+              indic_eng_telugu_phone_map)
+             (t
+              ;; Note its really phone base not script based
+              indic_eng_devn_phone_map)))))
+    (cond
+     (m (cdr m))
+     (t ;; its not there ??
+      (list p))))
+)
+
+(define (indic_ml_lts_function word features)
+  ;; Deals with romanized words (treats them as English)
+  (cond
+   ((string-matches word "^[0-9a-zA-Z/:_-]+$")
+    (let ((eng_entry) (nnn_entry))
+      (lex.select "cmu") ;; English lexicon
+      (set! eng_entry (lex.lookup word features))
+      (lex.select "cmu_indic")    
+      (set! nnn_entry (list
+       (car eng_entry)
+       (cadr eng_entry)
+       (mapcar
+        (lambda (syl)
+          (list 
+           (apply append  ;; might be list of phones in the mapping
+           (mapcar
+            (lambda (seg) (indic_ml_map_eng_phone seg))
+            (car syl)))
+           (cadr syl) ;; stress
+           ))
+        (car (cddr eng_entry)))))
+;      (format t "%l\n" nnn_entry)
+      nnn_entry))
+   (t 
+    (indic_lts_function word features))))
 
 ;; Put it all together and define the functions to use for LTS
 (define (indic_lts_function word features)
@@ -844,8 +1122,9 @@ Return pronunciation of word not in lexicon."
 
 (lex.create "cmu_indic")
 (lex.set.phoneset "cmu_indic")
-(lex.set.lts.method 'indic_lts_function)
-
+;; We deal with English words too, and use the English lexicon to
+;; get a pronunciation then map these to the indic phones as necessary
+(lex.set.lts.method 'indic_ml_lts_function)
 
 (define (cmu_indic::select_lexicon)
   "(cmu_indic::select_lexicon)

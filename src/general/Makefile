@@ -53,7 +53,8 @@ SCRIPTS = find_unknowns.sh make_dirs make_lpc make_pm \
           find_powercontours contour_powernormalize \
           make_dist guess_voice_defs make_cmn do_build \
           make_samples reduce_prompts synthfile find_db_duration \
-          prune_silence find_num_available_cpu ws
+          prune_silence find_num_available_cpu ws prune_middle_silences \
+	  add_noise
 FILES = Makefile $(SCRIPTS) $(EMUTPL) $(WSTPL) $(SRCS) 
 
 ALL = find_unknowns phonealign fix_pm smooth_f0 powcont_norm cmn

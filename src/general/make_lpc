@@ -41,7 +41,7 @@ LANG=C; export LANG
 if [ $# = 0 ]
 then
    echo "Extract lpc coefficients and residuals"
-   echo "Usage:  bin/make_lpc wav/*.wav"
+   echo "Usage:  bin/make_lpc etc/txt.done.data"
    echo "Expects pm/*.pm to exist, and creates lpc/*.lpc and lpc/*.res"
    echo "If etc/powfacts exists, waveform will be power normalized"
    echo "for LPC and residual extraction, wav/*.wav will be unchanged though."

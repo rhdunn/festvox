@@ -95,7 +95,7 @@ WINDOW=$SPTKDIR/bin/window
 check_sptk_patch=$(head -c 1600 < /dev/urandom | \
 	$SPTKDIR/bin/x2x +sf | $SPTKDIR/bin/pitch -a 0 -H 200 -L 100 -p 80 -s 16 -o 5 | wc -c)
 
-if [ "$check_sptk_patch" != "160" ]
+if [ $check_sptk_patch != 160 ]
 then
 	echo $check_sptk_patch
 	echo "Verification of SPTK patch (for extracting strengths) failed."

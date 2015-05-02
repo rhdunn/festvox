@@ -69,6 +69,13 @@ then
    exit 1
 fi
 
+if [ "$SIODHEAPSIZE" = "" ]
+then
+   SIODHEAPSIZE=20000000
+   export SIODHEAPSIZE
+fi
+HEAPSIZE=$SIODHEAPSIZE
+
 . etc/voice.defs
 
 SILENCENAME=pau
@@ -88,9 +95,6 @@ then
 fi
 cat $PROMPTFILE |
 awk '{printf("festival/utts/%s.utt\n",$2)}' >uttfile
-
-SIODHEAPSIZE=5000000
-export SIODHEAPSIZE
 
 ## find the means and stddev for durations in database
 echo ";;; Finding mean durations and standard deviation of each phone type"
@@ -116,7 +120,7 @@ done >festival/dur/data/dur.data
 # Build description file
 echo ";;; Build feature description file"
 $ESTDIR/bin/make_wagon_desc festival/dur/data/dur.data festival/dur/etc/dur.feats festival/dur/etc/dur.desc
-$ESTDIR/../festival/bin/festival -b --heap 2000000 festvox/build_prosody.scm $VOICESCM safevoiceload.scm '(build_dur_feats_desc)'
+$ESTDIR/../festival/bin/festival -b --heap $HEAPSIZE festvox/build_prosody.scm $VOICESCM safevoiceload.scm '(build_dur_feats_desc)'
 
 # emacs festival/dur/etc/dur.desc
 
@@ -131,11 +135,11 @@ echo ";;; Build the duration model itself"
 $WAGON -data festival/dur/data/dur.data.train.train -desc festival/dur/etc/dur.desc -test festival/dur/data/dur.data.train.test -stop $STOP -output festival/dur/tree/$PREF.S$STOP.tree
 
 echo ";;; Test the duration model"
-$WAGON_TEST -heap 2000000 -data festival/dur/data/dur.data.test -desc festival/dur/etc/dur.desc -tree festival/dur/tree/$PREF.S$STOP.tree ) |
+$WAGON_TEST -heap $HEAPSIZE -data festival/dur/data/dur.data.test -desc festival/dur/etc/dur.desc -tree festival/dur/tree/$PREF.S$STOP.tree ) |
 tee dur.$PREF.S$STOP.out
 
 echo ";;; Constructing the duration model as a loadable scheme file"
-$ESTDIR/../festival/bin/festival -b --heap 2000000 festvox/build_prosody.scm $VOICESCM safevoiceload.scm '(finalize_dur_model "'$MODELNAME'" "'$PREF.S$STOP.tree'")'
+$ESTDIR/../festival/bin/festival -b --heap $HEAPSIZE festvox/build_prosody.scm $VOICESCM safevoiceload.scm '(finalize_dur_model "'$MODELNAME'" "'$PREF.S$STOP.tree'")'
 
 rm -f safevoiceload.scm
 

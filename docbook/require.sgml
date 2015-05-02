@@ -26,7 +26,7 @@ included citations and/or links to everything needed in this
 document. 
 </para>
 <para>
-We assume Festival 1.4.3 and the Edinburgh Speech Tools 1.2.3.
+We assume Festival 2.4 and the Edinburgh Speech Tools 2.4.
 </para>
 <para>
 Note that we make an extensive use of the Speech Tools programs, and you 
@@ -59,15 +59,16 @@ high quality microphone and a nearly soundproof recording environment
 will often be the compromise between these two extremes. 
 </para>
 <para>
-<indexterm><primary> CPU time </primary></indexterm>
-Many of the techniques described in here require a fair amount of 
-processing time to achieve, though machines are indeed getting faster 
-and this is becoming less of an issue. If you use the provided aligner 
-for labeling diphones you will need a processor of reasonable speed, 
-likewise for the various training techniques for intonation, duration 
-modeling and letter-to-sound rules. Nothing presented here takes weeks 
-though a number of processes may be over-night jobs, depending on the 
-speed of your machine, and size of your database. 
+<indexterm><primary> CPU time </primary></indexterm> Many of the
+techniques described in here require a fair amount of processing time
+to achieve, though machines are indeed getting faster and this is
+becoming less of an issue (though we always find ways to use up the
+more CPU time that is available). If you use the provided aligner for
+labeling diphones you will need a processor of reasonable speed,
+likewise for the various training techniques for intonation, duration
+modeling and letter-to-sound rules. Nothing presented here takes weeks
+though a number of processes may be over-night jobs, depending on the
+speed of your machine, and size of your database.
 </para>
 <para>
 Also we think that you will need a little patience. The process of 
@@ -224,7 +225,7 @@ think are distinctive may be so because of lots variation. For example
 Homer Simpson's voice is distinctive but it would be difficult to built 
 a synthesizer from. The Comic Book Guy (also from the Simpsons) also 
 has a very distinctive voice but is much less varied prosodically than 
-Homer's and hence it iss likely to be easier to build a synthesizer from 
+Homer's and hence it is likely to be easier to build a synthesizer from 
 his voice. Likewise, Patrick Stewart's voice should be easier than Jim 
 Carey's. 
 </para>

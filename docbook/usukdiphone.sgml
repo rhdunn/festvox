@@ -67,7 +67,7 @@ As with all parts of <filename>festvox</filename>, you must set the following
 environment variables to where you have installed versions of 
 the Edinburgh Speech Tools and the festvox distribution 
 <blockquote><literallayout>
-export ESTDIR=/home/awb/projects/1.4.1/speech_tools
+export ESTDIR=/home/awb/projects/speech_tools
 export FESTVOXDIR=/home/awb/projects/festvox
 </literallayout></blockquote>
 The next stage is to select a directory to build the voice. You will 
@@ -301,7 +301,7 @@ voice directory of Festival's English voices to the directory containing
 the new voice. First cd to festival's voice directory (this will vary 
 depending on where you installed festival) 
 <blockquote><literallayout>
-cd /home/awb/projects/1.4.1/festival/lib/voices/english/
+cd /home/awb/projects/festival/lib/voices/english/
 </literallayout></blockquote>
 add a symbolic link back to where your voice was built 
 <blockquote><literallayout>
@@ -329,7 +329,7 @@ Generate the distribution tarfile in the directory above the festival
 installation (the one where <filename>festival/</filename> and <filename>speech_tools/</filename> 
 directory is). 
 <blockquote><literallayout>
-cd /home/awb/projects/1.4.1/
+cd /home/awb/projects/
 tar zcvf festvox_cmu_us_awb_lpc.tar.gz \
   festival/lib/voices/english/cmu_us_awb_diphone/festvox/*.scm \
   festival/lib/voices/english/cmu_us_awb_diphone/COPYING \

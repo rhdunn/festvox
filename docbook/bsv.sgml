@@ -12,6 +12,7 @@
 <!ENTITY future SYSTEM "future.sgml">
 <!ENTITY install SYSTEM "install.sgml">
 <!ENTITY intro SYSTEM "intro.sgml">
+<!ENTITY grapheme SYSTEM "grapheme.sgml">
 <!ENTITY jpdiphone SYSTEM "jpdiphone.sgml">
 <!ENTITY ldom SYSTEM "ldom.sgml">
 <!ENTITY ldomfull SYSTEM "ldomfull.sgml">
@@ -41,11 +42,11 @@
   <author><firstname>Kevin A.</firstname><surname>Lenzo</surname></author>
   </authorgroup>
   <copyright>
-    <year>1999-2007</year>
+    <year>1999-2014</year>
     <holder>Alan W Black &amp; Kevin A. Lenzo</holder>
   </copyright>
-  <date>21st January 2007</date>
-  <edition>For FestVox 2.1</edition>
+  <date>30th September 2014</date>
+  <edition>For FestVox 2.7</edition>
   <affiliation>
   <address>
   Language Technologies Institute, Carnegie Mellon University
@@ -249,6 +250,7 @@ a set of appendices.
 <para>
 </para>
 </partintro>
+&grapheme;
 &jpdiphone;
 &usukdiphone;
 &ldomfull;

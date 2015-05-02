@@ -132,6 +132,14 @@ echo "FV_FULLVOICENAME=\$FV_VOICENAME\"_\"\$FV_TYPE" >>etc/voice.defs
 
 cp -p $CLUSTERGENDIR/do_clustergen bin
 cp -p $CLUSTERGENDIR/make_dur_model_mcep bin
+cp -p $CLUSTERGENDIR/make_dur_model_mcep_rf bin
+cp -p $CLUSTERGENDIR/build_rfs bin
+cp -p $CLUSTERGENDIR/wagon_rf bin
+cp -p $CLUSTERGENDIR/rf_post_build bin
+cp -p $CLUSTERGENDIR/build_cg_voice bin
+cp -p $CLUSTERGENDIR/build_cg_rfs_voice bin
+cp -p $CLUSTERGENDIR/do_move_label bin
+cp -p $CLUSTERGENDIR/do_move_label_me bin
 cp -p $CLUSTERGENDIR/make_voicing bin
 cp -p $CLUSTERGENDIR/get_str_sptk bin
 cp -p $CLUSTERGENDIR/find_nstates bin

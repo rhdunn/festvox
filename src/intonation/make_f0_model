@@ -66,6 +66,13 @@ then
    exit 1
 fi
 
+if [ "$SIODHEAPSIZE" = "" ]
+then
+   SIODHEAPSIZE=20000000
+   export SIODHEAPSIZE
+fi
+HEAPSIZE=$SIODHEAPSIZE
+
 SILENCENAME=pau
 VOICENAME='(voice_kal_diphone)'
 MODELNAME=cmu_us_kal
@@ -87,7 +94,7 @@ bin/traintest festival/f0/data/f0.data.train
 # Build description file
 echo ";;; Build feature description file"
 $ESTDIR/bin/make_wagon_desc festival/f0/data/f0.data festival/f0/etc/f0.feats festival/f0/etc/f0.desc
-festival -b --heap 2000000 festvox/build_prosody.scm $VOICENAME '(build_f0_feats_desc)'
+festival -b --heap $HEAPSIZE festvox/build_prosody.scm $VOICENAME '(build_f0_feats_desc)'
 
 STOP=15
 PREF=f0
@@ -97,20 +104,20 @@ echo ";;; Build the F0 models themselves"
 
 echo ";;; Build the syl_start F0 model"
 $WAGON -data festival/f0/data/f0.data.train.train -desc festival/f0/etc/f0.desc -test festival/f0/data/f0.data.train.test -stop $STOP -output festival/f0/tree/start.$PREF.S$STOP.tree -stepwise  -predictee syl_startpitch -ignore '(syl_midpitch syl_endpitch)'
-$WAGON_TEST -heap 2000000 -data festival/f0/data/f0.data.test -desc festival/f0/etc/f0.desc -tree festival/f0/tree/start.$PREF.S$STOP.tree -predictee syl_startpitch
+$WAGON_TEST -heap $HEAPSIZE -data festival/f0/data/f0.data.test -desc festival/f0/etc/f0.desc -tree festival/f0/tree/start.$PREF.S$STOP.tree -predictee syl_startpitch
 
 echo ";;; Build the syl_mid F0 model"
 $WAGON -data festival/f0/data/f0.data.train.train -desc festival/f0/etc/f0.desc -test festival/f0/data/f0.data.train.test -stop $STOP -output festival/f0/tree/mid.$PREF.S$STOP.tree -stepwise  -predictee syl_midpitch -ignore '(syl_startpitch syl_endpitch)'
-$WAGON_TEST -heap 2000000 -data festival/f0/data/f0.data.test -desc festival/f0/etc/f0.desc -tree festival/f0/tree/mid.$PREF.S$STOP.tree -predictee syl_midpitch
+$WAGON_TEST -heap $HEAPSIZE -data festival/f0/data/f0.data.test -desc festival/f0/etc/f0.desc -tree festival/f0/tree/mid.$PREF.S$STOP.tree -predictee syl_midpitch
 
 echo ";;; Build the syl_end F0 model"
 $WAGON -data festival/f0/data/f0.data.train.train -desc festival/f0/etc/f0.desc -test festival/f0/data/f0.data.train.test -stop $STOP -output festival/f0/tree/end.$PREF.S$STOP.tree -stepwise  -predictee syl_endpitch -ignore '(syl_startpitch syl_midpitch)'
-$WAGON_TEST -heap 2000000 -data festival/f0/data/f0.data.test -desc festival/f0/etc/f0.desc -tree festival/f0/tree/end.$PREF.S$STOP.tree -predictee syl_endpitch
+$WAGON_TEST -heap $HEAPSIZE -data festival/f0/data/f0.data.test -desc festival/f0/etc/f0.desc -tree festival/f0/tree/end.$PREF.S$STOP.tree -predictee syl_endpitch
 
 ) | tee $PREF.S$STOP.out
 
 echo ";;; Constructing the f0 model as a loadable scheme file"
-$ESTDIR/../festival/bin/festival -b --heap 2000000 festvox/build_prosody.scm $VOICENAME '(finalize_f0_model "'$MODELNAME'" "'$PREF.S$STOP.tree'")'
+$ESTDIR/../festival/bin/festival -b --heap $HEAPSIZE festvox/build_prosody.scm $VOICENAME '(finalize_f0_model "'$MODELNAME'" "'$PREF.S$STOP.tree'")'
 
 exit
 

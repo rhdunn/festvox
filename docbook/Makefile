@@ -39,9 +39,10 @@ DIRNAME=docbook
 BUILD_DIRS = 
 ALL_DIRS = figures
 TEXT = bsv.sgml \
-    eval.sgml concept.sgml corpus.sgml deploy.sgml diphone.sgml \
+   eval.sgml concept.sgml corpus.sgml deploy.sgml diphone.sgml \
    estman.sgml festival.sgml festman.sgml future.sgml \
-   install.sgml intro.sgml jpdiphone.sgml ldom.sgml ldomfull.sgml \
+   install.sgml intro.sgml \
+   grapheme.sgml jpdiphone.sgml ldom.sgml ldomfull.sgml \
    lexicons.sgml machlearn.sgml markup.sgml phonetable.sgml \
    prosody.sgml require.sgml resources.sgml scheme.sgml speech.sgml \
    text.sgml unitsel.sgml usukdiphone.sgml waveform.sgml  \

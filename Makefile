@@ -2,7 +2,7 @@
 ##                                                                       ##
 ##                   Carnegie Mellon University and                      ##
 ##                   Alan W Black and Kevin A. Lenzo                     ##
-##                      Copyright (c) 1998-2013                          ##
+##                      Copyright (c) 1998-2014                          ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -33,7 +33,7 @@
 ##                                                                       ##
 ##  Authors: Alan W Black (awb@cs.cmu.edu)                               ##
 ##           Kevin A. Lenzo (lenzo@cs.cmu.edu)                           ##
-##  Version: festvox-2.6 January 2013                                    ##
+##  Version: festvox-2.7 January 2014                                    ##
 ##                                                                       ##
 ###########################################################################
 ##                                                                       ##
@@ -42,8 +42,8 @@
 ##                                                                       ##
 ##  This project's home page is http://www.festvox.org                   ##
 ##                                                                       ##
-##  This release corresponds to the Festival 2.1 release (which          ##
-##  incorporates Edinburgh Speech Tools 2.1)                             ##
+##  This release corresponds to the Festival 2.4 release (which          ##
+##  incorporates Edinburgh Speech Tools 2.4)                             ##
 ##                                                                       ##
 ###########################################################################
 TOP=.

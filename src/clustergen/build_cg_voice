@@ -44,10 +44,6 @@ PARALLEL=parallel
 ./bin/do_build label
 ./bin/do_clustergen $PARALLEL build_utts
 
-# To save some space
-rm -rf ehmm/feat
-rm -rf ehmm/binfeat
-
 # Build first generation of voice
 
 # A slightly different set of duration features for flite (ok for festival)
@@ -64,9 +60,28 @@ then
 else
    # New extraction tools dependent on SPTK
    ./bin/do_clustergen $PARALLEL f0_v_sptk
+   # Because sometimes f0 extraction fails
+   mv etc/txt.done.data etc/txt.done.data.0
+   ./bin/reduce_prompts etc/txt.done.data.0 f0/* >etc/txt.done.data
    ./bin/do_clustergen $PARALLEL mcep_sptk
 fi
 ./bin/do_clustergen $PARALLEL combine_coeffs_v
+
+# Because sometimes the feature extraction fails (not sure why)
+# Lets be very careful here, and remove files that weren't processed well
+for i in ccoefs/*.mcep
+do
+   printf "$i "
+   $ESTDIR/bin/ch_track -info $i | grep "Number of channels:" | awk '{print $NF}'
+done | awk '{if ($NF != 52) print $1}' >bad.files
+cp -pr etc/txt.done.data etc/txt.done.data.precombine
+cat bad.files |
+while read x
+do
+   fname=`basename $x .mcep`
+   grep -v "^( "$fname" " etc/txt.done.data.xxx
+   mv etc/txt.done.data.xxx etc/txt.done.data
+done
 
 ./bin/traintest etc/txt.done.data
 
@@ -88,7 +103,6 @@ exit
 
 # Do 10 iterations of move label to improve build
 $FESTVOXDIR/src/clustergen/do_move_label $PARALLEL 20
-
 # Select the best build
 $FESTVOXDIR/src/clustergen/do_move_label select
 

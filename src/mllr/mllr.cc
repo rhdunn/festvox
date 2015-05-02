@@ -582,7 +582,6 @@ void init_cluster(Cluster*& comp,int d)
 
 void free_cluster(Cluster* comp)
 {
-	delete [] comp->indx;
 	free_gaussian(comp->gnormal);
 	free(comp);
 }

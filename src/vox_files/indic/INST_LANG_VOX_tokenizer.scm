@@ -92,6 +92,10 @@
   "(INST_LANG_VOX::token_to_words token name)
 Specific token to word rules for the voice INST_LANG_VOX.  Returns a list
 of words that expand given token with name."
+ (cond
+   ((string-matches name "^[0-9a-zA-Z/:_-]+$")
+    (english_token_to_words token name))
+   (t
 (let ((unicode_tokens (unicode_string_segment name))
         (words nil))
 
@@ -120,7 +124,7 @@ of words that expand given token with name."
      (t
       t))
 
-    words))
+    words))))
 
 
 (define (INST_LANG::number token name)

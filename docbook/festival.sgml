@@ -119,7 +119,7 @@ on APIs).
 This chapter covers the basic use of the system and is followed by
 more details of the internal structures, particularly the utterance
 sturcture, accessing methods and modules.  These later sections are
-probabaly more detail than one needs for building standard voices
+probably more detail than one needs for building standard voices
 described in the book, but the is information is necessary when more
 ambituous voice building tasks are attempted.
 </para>

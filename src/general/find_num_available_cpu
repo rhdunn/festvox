@@ -3,7 +3,7 @@
 ##                                                                       ##
 ##                   Carnegie Mellon University and                      ##
 ##                           Alok Parlikar                               ##
-##                      Copyright (c) 1998-2000                          ##
+##                         Copyright (c) 2012                            ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -41,7 +41,7 @@ if [ $SYS = "Darwin" ]
 then
   num_cpus=$(sysctl -n hw.ncpu)
 else
-  num_cpus=$(cat /proc/cpuinfo 2>/dev/null | grep 'processor' | wc -l )
+  num_cpus=$(cat /proc/cpuinfo 2>/dev/null | grep '^processor' | wc -l )
 fi
 
 if [ $num_cpus -gt 1 ]

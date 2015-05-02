@@ -7,7 +7,7 @@ create the speech waveform from a complete phonetic and prosodic
 description.
 </para>
 <para>
-Traditionally we can identify three different methods that are 
+Traditionally we can identify four different methods that are 
 used for creating waveforms from such descriptions. 
 </para>
 <para>
@@ -36,8 +36,14 @@ synthesizer for his speech.
 </para>
 <para>
 <emphasis>Concatenative synthesis</emphasis> is the third form
-which we will spend the most time on.  Here waveforms are created by 
-concatenating parts of natural speech record from humans.
+which we will spend the some time on.  Here waveforms are created by 
+concatenating parts of natural speech recording from humans.
+</para>
+<para>
+<emphasis>Statistical parametric synthesis</emphasis> is the fourth form
+which we will also spend some one.  Here waveforms are created by 
+building generative models by "average" data from natural speech
+recordings from humans.
 </para>
 <para>
 In the search for more natural synthesis there has been a move to use 

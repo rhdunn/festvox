@@ -69,6 +69,12 @@ then
    exit 1
 fi
 
+if [ "$SIODHEAPSIZE" = "" ]
+then
+   SIODHEAPSIZE=20000000
+   export SIODHEAPSIZE
+fi
+HEAPSIZE=$SIODHEAPSIZE
 
 if [ "$CLUSTERGENDIR" = "" ]
 then
@@ -101,9 +107,15 @@ then
 	PROMPTFILE=etc/txt.done.data
     fi
     
+    if [ ! -d tmpdir ]
+    then
+       # for the split promptfile
+       mkdir tmpdir
+    fi
+
     if [ "$ACTION" = "cluster" ]
     then
-	$ESTDIR/../festival/bin/festival --heap 10000000  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(begin (set! cg:parallel_tree_build t) (build_clustergen "'$PROMPTFILE'"))'
+	$ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(begin (set! cg:parallel_tree_build t) (build_clustergen "'$PROMPTFILE'"))'
 	exit 0
     fi
     # We use xargs to parallelize our work. We split our promptfile in 16
@@ -119,7 +131,7 @@ then
     # but its not a normal prompt file its ( fileid num_frames )\n ... 
     PROMPTFILE="$2"
 
-    $ESTDIR/../festival/bin/festival --heap 10000000  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(begin (set! cg:parallel_tree_build t) (clustergen::do_process_utts "'$PROMPTFILE'"))'
+    $ESTDIR/../festival/bin/festival --heap $HEAPSIZE  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(begin (set! cg:parallel_tree_build t) (clustergen::do_process_utts "'$PROMPTFILE'"))'
 
     exit 0
 fi
@@ -131,7 +143,7 @@ then
     INDEX="$4"
 
     # Get our partition of PROMPTFILE
-    SPLITPROMPTFILE=/tmp/dobuild_parallelworker.$$.$INDEX
+    SPLITPROMPTFILE=tmpdir/dobuild_parallelworker.$$.$INDEX
     cat $PROMPTFILE | awk "NR%16==$INDEX {print \$0}" > $SPLITPROMPTFILE
     
     # Run our task
@@ -721,7 +733,7 @@ fi
 
 if [ "$1" = "build_utts" ]
 then
-    $ESTDIR/../festival/bin/festival --heap 10000000 -b festvox/build_clunits.scm '(set! split_long_silences nil)' '(build_utts "'$PROMPTFILE'")'
+    $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/build_clunits.scm '(set! split_long_silences nil)' '(build_utts "'$PROMPTFILE'")'
    exit 0
 fi
 
@@ -838,19 +850,19 @@ fi
 
 if [ $1 = "cluster" ]
 then
-   $ESTDIR/../festival/bin/festival --heap 10000000  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_clustergen "'$PROMPTFILE'")'
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_clustergen "'$PROMPTFILE'")'
    exit 0
 fi
 
 if [ $1 = "trajectory" ]
 then
-   $ESTDIR/../festival/bin/festival --heap 10000000  -b festvox/clustergen_build.scm '(set! cluster_feature_filename "mceptraj.desc")' festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_clustergen_traj "'$PROMPTFILE'")'
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE  -b festvox/clustergen_build.scm '(set! cluster_feature_filename "mceptraj.desc")' festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_clustergen_traj "'$PROMPTFILE'")'
    exit 0
 fi
 
 if [ $1 = "trajectory_ola" ]
 then
-   $ESTDIR/../festival/bin/festival --heap 10000000  -b \
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE  -b \
       festvox/clustergen_build.scm \
       '(set! cluster_feature_filename "mceptraj.desc")' \
       '(set! cg::trajectory_ola t)' \
@@ -882,7 +894,7 @@ if [ $1 = "prune_frames" ]
 then
    PRUNE_THRESHOLD=50
 
-   $ESTDIR/../festival/bin/festival --heap 4000000  -b \
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE  -b \
        festvox/clustergen_build.scm \
        festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm \
        '(voice_'${FV_VOICENAME}'_cg)' \
@@ -906,7 +918,7 @@ then
    then
       mkdir cgv/lab
    fi
-   $ESTDIR/../festival/bin/festival --heap 4000000  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(begin (voice_'${FV_VOICENAME}'_cg) (cgv_label_clustergen "'$PROMPTFILE'" "cgv/lab") ) '
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(begin (voice_'${FV_VOICENAME}'_cg) (cgv_label_clustergen "'$PROMPTFILE'" "cgv/lab") ) '
    exit 0
 fi
 
@@ -940,7 +952,7 @@ fi
 
 if [ $1 = "cgv_cluster" ]
 then
-   $ESTDIR/../festival/bin/festival --heap 4000000  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_cgv_clustergen "'$PROMPTFILE'")'
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE  -b festvox/clustergen_build.scm festvox/build_clunits.scm festvox/${FV_VOICENAME}_cg.scm '(build_cgv_clustergen "'$PROMPTFILE'")'
    exit 0
 fi
 
@@ -1053,7 +1065,7 @@ then
               printf(")\n");
               }' >cgv/class.wfst
 
-   $WFST_TRAIN -heap 10000000 -wfst cgv/class.wfst -data cgv/class.data -o cgv/class_done.wfst
+   $WFST_TRAIN -heap $HEAPSIZE -wfst cgv/class.wfst -data cgv/class.data -o cgv/class_done.wfst
 
    exit 0
 fi
@@ -1104,10 +1116,16 @@ if [ $1 = "utt_by_utt" ]
 then
    # Synth every utt and sort them by their MCD score
    TDD=$2
-
-   if [ ! -d test/all ]
+   if [ $# = 3 ]
    then
-      mkdir -p test/all
+      ODIR=$3
+   else
+      ODIR=all
+   fi
+
+   if [ ! -d test/$ODIR ]
+   then
+      mkdir -p test/$ODIR
    fi
  
    cat $TDD |
@@ -1119,8 +1137,72 @@ then
       fname=`cat uu.$$.data | awk '{print $2}'`
       ./bin/do_clustergen cg_test resynth uu.$$ uu.$$.data
       mv test/uu.$$/scores test/uu.$$/$fname.scores 
-      mv test/uu.$$/* test/all
-      mv uu.$$.data test/all/$fname.data
+      mv test/uu.$$/* test/$ODIR
+      mv uu.$$.data test/$ODIR/$fname.data
+      rm -rf test/uu.$$ uu.$$.data
+   done
+   
+   exit 0
+fi
+
+if [ $1 = "utt_by_utt_tts" ]
+then
+   # tts every utt (this allows this to be parallelized)
+   TDD=$2
+   if [ $# = 3 ]
+   then
+      ODIR=$3
+   else
+      ODIR=all
+   fi
+
+   if [ ! -d test/$ODIR ]
+   then
+      mkdir -p test/$ODIR
+   fi
+ 
+   cat $TDD |
+   awk '{print NR}' |
+   while read x
+   do
+      # Do it this way so it'll preserve quoting
+      cat $TDD | awk '{ if (NR=='$x') print $0 }' >uu.$$.data
+      fname=`cat uu.$$.data | awk '{print $2}'`
+      ./bin/do_clustergen cg_test tts uu.$$ uu.$$.data
+      mv test/uu.$$/* test/$ODIR
+      rm -rf test/uu.$$ uu.$$.data
+   done
+   
+   exit 0
+fi
+
+if [ $1 = "utt_by_utt_mcd" ]
+then
+   # Synth every utt and sort them by their MCD score
+   TDD=$2
+   if [ $# = 3 ]
+   then
+      ODIR=$3
+   else
+      ODIR=all
+   fi
+
+   if [ ! -d test/$ODIR ]
+   then
+      mkdir -p test/$ODIR
+   fi
+ 
+   cat $TDD |
+   awk '{print NR}' |
+   while read x
+   do
+      # Do it this way so it'll preserve quoting
+      cat $TDD | awk '{ if (NR=='$x') print $0 }' >uu.$$.data
+      fname=`cat uu.$$.data | awk '{print $2}'`
+      ./bin/do_clustergen cg_test mcdf0 uu.$$ uu.$$.data
+      mv test/uu.$$/scores test/uu.$$/$fname.scores 
+      mv test/uu.$$/* test/$ODIR
+      mv uu.$$.data test/$ODIR/$fname.data
       rm -rf test/uu.$$ uu.$$.data
    done
    
@@ -1176,11 +1258,11 @@ then
     mkdir -p festival/lib/voices/${FV_LANG}
     ln -s ../../../.. festival/lib/voices/${FV_LANG}/${FV_VOICENAME}_cg
 
+    $ESTDIR/../festival/bin/festival --heap $HEAPSIZE  -b festvox/clustergen_build.scm festvox/${FV_VOICENAME}_cg.scm '(begin (voice_'${FV_VOICENAME}'_cg) ('${FV_VOICENAME}'::cg_dump_model_filenames "model_files") )'
+
     tar zcvf festvox_${FV_VOICENAME}_cg.tar.gz \
-         festival/lib/voices/$FV_LANG/${FV_VOICENAME}_cg/festival/trees/${FV_VOICENAME}_f0.tree \
-         festival/lib/voices/$FV_LANG/${FV_VOICENAME}_cg/festival/trees/${FV_VOICENAME}_mcep.tree \
-         festival/lib/voices/$FV_LANG/${FV_VOICENAME}_cg/festival/trees/${FV_VOICENAME}_mcep.params \
-         festival/lib/voices/$FV_LANG/${FV_VOICENAME}_cg/festvox/*.scm \
+         `cat model_files` \
+         festival/lib/voices/$FV_LANG/${FV_VOICENAME}_cg/festvox \
          festival/lib/voices/$FV_LANG/${FV_VOICENAME}_cg/README \
          festival/lib/voices/$FV_LANG/${FV_VOICENAME}_cg/COPYING
     rm -rf festival/lib

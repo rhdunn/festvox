@@ -284,7 +284,7 @@ As an alternative, or a Unix pathname
 <varlistentry>
 <term><emphasis>'s or TOKENs</emphasis></term>
 <listitem><para>
-An appended <quote><emphasis>s</emphasis></quote> to a non alphabetic token is probabaly 
+An appended <quote><emphasis>s</emphasis></quote> to a non alphabetic token is probably 
 some form of pluralization, removing it and recursing on the analysis 
 is a reasonable thing to try. 
 </para></listitem></varlistentry>
@@ -328,7 +328,7 @@ on each part before and after it may be reasonable.
 Remember the first purpose of text analysis is ensure you 
 can deal with <emphasis>anything</emphasis>, even if it is just saying 
 the word <quote><emphasis>unknown</emphasis></quote> (in the appropriate language). Also its 
-probabaly not worth spending time on rare token forms, though remember 
+probably not worth spending time on rare token forms, though remember 
 it not easy to judge what are rare and what are not. 
 </para>
 </sect1>

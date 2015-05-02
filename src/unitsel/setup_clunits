@@ -128,6 +128,8 @@ cp -p $FESTVOXDIR/src/general/reduce_prompts bin
 cp -p $FESTVOXDIR/src/general/synthfile bin
 cp -p $FESTVOXDIR/src/general/find_db_duration bin
 cp -p $FESTVOXDIR/src/general/prune_silence bin
+cp -p $FESTVOXDIR/src/general/prune_middle_silences bin
+cp -p $FESTVOXDIR/src/general/add_noise bin
 cp -p $FESTVOXDIR/src/st/sphinxtrain bin
 cp -p $FESTVOXDIR/src/st/sphinx_lab bin
 cp -p $FESTVOXDIR/src/st/build_st.scm festvox
@@ -191,7 +193,10 @@ if [ -f $FESTVOXTEMPLATEDIR/$FV_LANG_SKELS/other_files ]
 then
    for i in `cat $FESTVOXTEMPLATEDIR/$FV_LANG_SKELS/other_files`
    do
-      cp -p $FESTVOXTEMPLATEDIR/$FV_LANG_SKELS/$i festvox
+      cat $FESTVOXTEMPLATEDIR/$FV_LANG_SKELS/$i |
+      sed 's%INST%'$FV_INST'%g' |
+      sed 's%LANG%'$FV_LANG'%g' |
+      sed 's%VOX%'$FV_VOX'%g' > festvox/$i
    done
 fi
 

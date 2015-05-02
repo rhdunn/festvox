@@ -1348,12 +1348,12 @@ type, with the appropriate pathnames for you installation of
 the Edinburgh Speech Tools an Festvox itself. 
 <blockquote><literallayout>
 export FESTVOXDIR=/home/awb/projects/festvox
-export ESTDIR=/home/awb/projects/1.4.1/speech_tools
+export ESTDIR=/home/awb/projects/speech_tools
 </literallayout></blockquote>
 For <varname>csh</varname> and its derivative you should type 
 <blockquote><literallayout>
 setenv FESTVOXDIR /home/awb/projects/festvox
-setenv ESTDIR /home/awb/projects/1.4.1/speech_tools
+setenv ESTDIR /home/awb/projects/speech_tools
 </literallayout></blockquote>
 As the basic structure is so similar to the limited 
 domain building structure, first you should all that 
@@ -1681,7 +1681,7 @@ correlation of 0.58, on the test data. Note these values are not in the
 abosolute domain (i.e. seconds) they are in the zscore domain. 
 </para>
 <para>
-The final stage, probabaly after a number of iterations of the build 
+The final stage, probably after a number of iterations of the build 
 process we must package model into a scheme file that can be used with a 
 voice. This scheme file contains the means and standard deviations (so 
 we can convert the predicted values back into seconds) and the 

@@ -208,6 +208,83 @@ plus previous phone (or something else)."
 ;       "_"
        (INST_LANG_VOX::nextvoicing i))))))
 
+(define (INST_LANG_VOX::rfs_load_models)
+  (let ((c 1))
+    (set! INST_LANG_VOX:rfs_models nil)
+    (if (probe_file (format nil "%s/rf_models/mlist" INST_LANG_VOX::dir))
+        (set! INST_LANG_VOX:rfs_models
+              (mapcar
+               (lambda (c)
+                 (list
+                  (load (format nil "%s/rf_models/trees_%02d/INST_LANG_VOX_mcep.tree" INST_LANG_VOX::dir c) t)
+                  (track.load (format nil "%s/rf_models/trees_%02d/INST_LANG_VOX_mcep.params" INST_LANG_VOX::dir c))))
+               (load (format nil "%s/rf_models/mlist" INST_LANG_VOX::dir) t)))
+        ;; no mlist file so just load all of them
+        (while (<= c cg:rfs)
+               (set! INST_LANG_VOX:rfs_models
+                     (cons
+                      (list
+                       (load (format nil "%s/rf_models/trees_%02d/INST_LANG_VOX_mcep.tree" INST_LANG_VOX::dir c) t)
+                       (track.load (format nil "%s/rf_models/trees_%02d/INST_LANG_VOX_mcep.params" INST_LANG_VOX::dir c)))
+                      INST_LANG_VOX:rfs_models))
+               (set! c (+ 1 c))))
+    INST_LANG_VOX:rfs_models))
+
+(define (INST_LANG_VOX::rfs_load_dur_models)
+  (let ((c 1) (dur_tree))
+    (set! INST_LANG_VOX:rfs_dur_models nil)
+    (if (probe_file (format nil "%s/dur_rf_models/mlist" INST_LANG_VOX::dir))
+        (set! INST_LANG_VOX:rfs_dur_models
+         (mapcar
+          (lambda (c)
+            (load (format nil "%s/dur_rf_models/dur_%02d/INST_LANG_VOX_durdata_cg.scm" INST_LANG_VOX::dir c))
+            INST_LANG_VOX::zdur_tree)
+          (load (format nil "%s/dur_rf_models/mlist" INST_LANG_VOX::dir) t)))
+        ;; no mlist file so just load all of them
+        ;; Probably not viable for multiple voices at once
+        (while (<= c cg:rfs_dur)
+               (load (format nil "%s/dur_rf_models/dur_%02d/INST_LANG_VOX_durdata_cg.scm" INST_LANG_VOX::dir c))
+               (set! INST_LANG_VOX:rfs_dur_models
+                     (cons
+                      INST_LANG_VOX::zdur_tree
+                      INST_LANG_VOX:rfs_dur_models))
+               (set! c (+ 1 c))))
+    INST_LANG_VOX:rfs_dur_models))
+
+(define (INST_LANG_VOX::cg_dump_model_filenames ofile)
+  "(cg_dump_model_files ofile)
+Dump the names of the files that must be included in the distribution."
+  (let ((ofd (fopen ofile "w")))
+    (format ofd "festival/lib/voices/LANG/INST_LANG_VOX_cg/festival/trees/INST_LANG_VOX_f0.tree\n")
+    (if cg:rfs
+        (begin
+          (mapcar
+           (lambda (mn)
+             (format ofd "festival/lib/voices/LANG/INST_LANG_VOX_cg/rf_models/trees_%02d/INST_LANG_VOX_mcep.tree\n" mn)
+             (format ofd "festival/lib/voices/LANG/INST_LANG_VOX_cg/rf_models/trees_%02d/INST_LANG_VOX_mcep.params\n" mn))
+           (load "rf_models/mlist" t))
+          (format ofd "festival/lib/voices/LANG/INST_LANG_VOX_cg/rf_models/mlist\n")
+          ))
+    ;; Always include these too
+    (format ofd "festival/lib/voices/LANG/INST_LANG_VOX_cg/festival/trees/INST_LANG_VOX_mcep.tree\n")
+    (format ofd "festival/lib/voices/LANG/INST_LANG_VOX_cg/festival/trees/INST_LANG_VOX_mcep.params\n")
+
+    (if cg:rfs_dur
+        (begin
+          (mapcar
+           (lambda (mn)
+             (format ofd "festival/lib/voices/LANG/INST_LANG_VOX_cg/dur_rf_models/dur_%02d/INST_LANG_VOX_durdata_cg.scm\n" mn))
+           (load "dur_rf_models/mlist" t))
+          (format ofd "festival/lib/voices/LANG/INST_LANG_VOX_cg/dur_rf_models/mlist\n")
+          )
+        (begin
+          ;; basic dur build
+          ;; will get the duration tree from festvox/
+          t
+          ))
+    (fclose ofd))
+)
+
 (define (INST_LANG_VOX::cg_load)
   "(INST_LANG_VOX::cg_load)
 Function that actual loads in the databases and selection trees.
@@ -287,6 +364,12 @@ SHould only be called once per session."
                          (get_param 'index_name dt_params "all")
                          "_f0.tree") t)))))
 
+  ;; Random forests
+  (if (and cg:rfs (not (boundp 'INST_LANG_VOX:rfs_models)) )
+      (INST_LANG_VOX::rfs_load_models))
+  (if (and cg:rfs_dur (not (boundp 'INST_LANG_VOICE:rfs_dur_models)))
+      (INST_LANG_VOX::rfs_load_dur_models))
+
   (set! INST_LANG_VOX::cg_loaded t)
 )
 
@@ -316,6 +399,11 @@ Reset global variables back to previous voice."
 Define voice for LANG."
   ;; *always* required
   (voice_reset)
+
+  ;; We are going to force a load of the local clustergen.scm file 
+  ;; If we were more careful we could do this properly with parameters
+  ;; but I doubt we'd get it right.
+  (load (path-append INST_LANG_VOX::dir "festvox/clustergen.scm"))
 
   ;; Select appropriate phone set
   (INST_LANG_VOX::select_phoneset)
@@ -362,6 +450,22 @@ Define voice for LANG."
               ))
         (if (boundp 'INST_LANG_VOX::clustergen_f0_trees)
             (set! clustergen_f0_trees INST_LANG_VOX::clustergen_f0_trees))
+
+        (if cg:mixed_excitation
+            (set! me_filter_track 
+                  (track.load 
+                   (string-append INST_LANG_VOX::dir "/"
+                                  "festvox/mef.track"))))
+        (if cg:mlsa_lpf
+            (set! lpf_track 
+                  (track.load 
+                   (string-append INST_LANG_VOX::dir "/"
+                                  "festvox/lpf.track"))))
+        (if (and cg:rfs (boundp 'INST_LANG_VOX:rfs_models))
+            (set! cg:rfs_models INST_LANG_VOX:rfs_models))
+        (if (and cg:rfs_dur (boundp 'INST_LANG_VOX:rfs_dur_models))
+            (set! cg:rfs_dur_models INST_LANG_VOX:rfs_dur_models))
+
 	(Parameter.set 'Synth_Method 'ClusterGen)
       ))
 
