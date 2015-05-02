@@ -1,7 +1,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                                                                     ;;;
 ;;;                     Carnegie Mellon University                      ;;;
-;;;                      Copyright (c) 1998-2008                        ;;;
+;;;                      Copyright (c) 1998-2011                        ;;;
 ;;;                        All Rights Reserved.                         ;;;
 ;;;                                                                     ;;;
 ;;; Permission is hereby granted, free of charge, to use and distribute ;;;
@@ -243,6 +243,19 @@ SHould only be called once per session."
                      (get_param 'trees_dir dt_params "trees/")
                      (get_param 'index_name dt_params "all")
                      "_mcep_delta.tree") t))
+        (set! INST_LANG_VOX::str_param_vectors
+              (track.load
+               (string-append
+                INST_LANG_VOX::dir "/"
+                (get_param 'trees_dir dt_params "trees/")
+                (get_param 'index_name dt_params "all")
+                "_str.params")))
+        (set! INST_LANG_VOX::clustergen_str_mcep_trees
+              (load (string-append
+                     INST_LANG_VOX::dir "/"
+                     (get_param 'trees_dir dt_params "trees/")
+                     (get_param 'index_name dt_params "all")
+                     "_str.tree") t))
         (if (null (assoc 'cg::trajectory INST_LANG_VOX::clustergen_static_mcep_trees))
             (set! INST_LANG_VOX::clustergen_f0_trees
                   (load (string-append 
@@ -339,6 +352,9 @@ Define voice for LANG."
               (set! clustergen_mcep_trees INST_LANG_VOX::clustergen_static_mcep_trees)
               (set! clustergen_delta_param_vectors INST_LANG_VOX::delta_param_vectors)
               (set! clustergen_delta_mcep_trees INST_LANG_VOX::clustergen_delta_mcep_trees)
+              (set! clustergen_str_param_vectors INST_LANG_VOX::str_param_vectors)
+              (set! clustergen_str_mcep_trees INST_LANG_VOX::clustergen_str_mcep_trees)
+
               )
             (begin
               (set! clustergen_param_vectors INST_LANG_VOX::param_vectors)

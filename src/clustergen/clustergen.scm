@@ -1,7 +1,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                                                                       ;;
 ;;;                     Carnegie Mellon University                        ;;
-;;;                      Copyright (c) 2005-2006                          ;;
+;;;                      Copyright (c) 2005-2011                          ;;
 ;;;                        All Rights Reserved.                           ;;
 ;;;                                                                       ;;
 ;;;  Permission is hereby granted, free of charge, to use and distribute  ;;
@@ -62,11 +62,23 @@
 (set! cg:mcep_clustersize 50)
 (defvar cg:gmm_transform nil)
 (set! cg:mixed_excitation nil)
+(set! cg:spamf0 nil)
+(set! cg:spamf0_viterbi nil)
+
+;; Set Phrasyn Parameters
+(set! cg:phrasyn nil)
+(set! cg:phrasyn_grammar_ntcount 10)
+(set! cg:phrasyn_mode 'pos)
+;(set! cg:phrasyn_mode 'gpos)
+
 
 ;;; This isn't a good place for this, it assumes we are running in voice directory
 (if cg:mixed_excitation
     (set! me_mix_filters
           (load "etc/mix_excitation_filters.txt" t)))
+
+(if cg:spamf0
+    (require 'spamf0))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -96,6 +108,10 @@
         (cg_do_gmm_transform utt)  ;; GMM (MLPG again) and MLSA
         )
 
+    (if cg:spamf0
+	(set! utt (spamf0_utt utt))
+    )
+ 
     (cluster_synth_method utt) ;; standard MLSA only
 
     (if cg:save_param_track
@@ -712,7 +728,7 @@ Filter synthesized voice with transformation filter and reload waveform."
      (system
       (format 
        nil
-       "(cd %s && csh $FESTVOXDIR/vc/scripts/VConvFestival_cg.csh $FESTVOXDIR/src/vs/src param/source-target_param.list %s %s %s %s)"
+       "(cd %s && csh $FESTVOXDIR/src/vc/scripts/VConvFestival_cg.csh $FESTVOXDIR/src/vc/src param/source-target_param.list %s %s %s %s)"
        "vc"  ;; Need a way set this with the voice dir
        wfile1  ;; input file
        wfile3  ;; utterance  
@@ -793,6 +809,11 @@ Filter synthesized voice with transformation filter and reload waveform."
                (item.feat mcep cg_name_feature) 
                (if cg:multimodel
                    clustergen_delta_mcep_trees nil)))
+             (mcep_tree_str
+              (assoc_string
+               (item.feat mcep cg_name_feature)
+               (if (boundp 'clustergen_str_mcep_trees)
+                   clustergen_str_mcep_trees nil)))
              (f0_tree 
               (assoc_string 
 ;               "all"
@@ -828,14 +849,32 @@ Filter synthesized voice with transformation filter and reload waveform."
                (while (< j num_channels)
                   (if cg:multimodel
                       (begin
-                        (track.set param_track i j
+                        (if (and (boundp 'clustergen_str_mcep_trees)
+                                 (> j (* 2 (+ 50)))
+                                 (< j 112))
+                            (begin
+                              (track.set param_track i j
+                                 (/
+                                  (+
+                                   (track.get clustergen_str_param_vectors
+                                    (car (wagon mcep (cadr mcep_tree_str)))
+                                    (* (if cg:mlpg 1 2) j))
+                                   (track.get clustergen_delta_param_vectors
+                                    (car dframe) (* (if cg:mlpg 1 2) j))
+                                   (track.get clustergen_param_vectors
+                                    f (* (if cg:mlpg 1 2) j))
+                                   )
+                                   3.0)
+                                 ))
+                            (begin
+                              (track.set param_track i j
                                    (/
                                     (+
                                  (track.get clustergen_delta_param_vectors 
                                        (car dframe) (* (if cg:mlpg 1 2) j))
                                  (track.get clustergen_param_vectors 
                                             f (* (if cg:mlpg 1 2) j))
-                                 ) 2.0))
+                                 ) 2.0))))
                         )
                       (begin
                         (track.set param_track i j

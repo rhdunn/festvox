@@ -43,11 +43,11 @@
 ##                                                                   ##
 #######################################################################
 
-if ( $# == 0 ) then
-   echo "vc_train FROMWAVDIR TOWAVDIR"
-   echo "GMM voice conversion training script"
-   echo "e.g. $FESTVOXDIR/src/vc/scripts/vc_train diphones/kal wav/awb"
-endif
+#if ( $# == 0 ) then
+#   echo "vc_train FROMWAVDIR TOWAVDIR"
+#   echo "GMM voice conversion training script"
+#   echo "e.g. $FESTVOXDIR/src/vc/scripts/vc_train diphones/kal wav/awb"
+#endif
 
 ###########################################################
 #  You may want to change some of the following
@@ -66,6 +66,7 @@ set SYNORG = 2  # source is from CG voice
 set EXPAR = 1	# Parameter Extraction
 set F0STS = 1	# Calculation of Statistics of F0
 set TRSPC = 1	# Training of Spectral Conversion Function
+set TRSPCMLLR = 0	# Training of Spectral Conversion Function MLLR
 set GVSTS = 1	# Calculation of Statistics of Global Variance
 set CPPAR = 1	# Copy Parameter Files
 set CVWAV = 0	# Test of Voice Conversion

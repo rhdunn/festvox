@@ -1,9 +1,10 @@
 #!/usr/local/bin/perl
+use strict;
 ###########################################################################
 ##                                                                       ##
 ##                                                                       ##
 ##              Carnegie Mellon University, Pittsburgh, PA               ##
-##                         Copyright (c) 2007                            ##
+##                      Copyright (c) 2004-2005                          ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -33,140 +34,80 @@
 ###########################################################################
 ##                                                                       ##
 ##          Author :  S P Kishore (skishore@cs.cmu.edu)                  ##
-##          Date   :  Feb 2007                                           ##
+##          Date   :  June 2005                                          ##
 ##                                                                       ##
 ###########################################################################
 
-##NOTE: Pau Model and Short pause model configuration is fixed.
-
-$_pauS = 5;
-$_pauC = 3;
-$_pauG  = 2;
-$_spauS = 3;
-$_spauC = 2;
-$_spauG = 2;
-
-$nargs = $#ARGV + 1;
-if ($nargs < 5) {
-  print "Input: <prompt-file> <unit nstates pair-file>\n";
-  print "  - first line of prompt file is wave-file-name indicator\n";
-  print "Further Input: <no-of-gaussians> <no-of-connections> <feat-dim>\n";
-  print "Output: <moified prompt file> <target word list>\n";
-  print "Usage: perl file.pl <promp-file> <unit nstates pair-file> \n";
+my $nargs = $#ARGV + 1;
+if ($nargs != 2) {
+  print "Usage: perl file.pl <file1> <prompt-file>\n";
   exit;
 }
 
-$prmF  = $ARGV[0];
-$stF = $ARGV[1];
+my $inF = $ARGV[0];
+my $prmF = $ARGV[1];
 
-$ngau = $ARGV[2];
-$noc  = $ARGV[3];
-$fdim = $ARGV[4];
+my @ln = &Get_ProcessedLines($inF);
+my @para;
+my $p = 0;
 
-%uid = ();
-@sta = ();
-@stn = ();
-
-#Read unit nstates pair-file 
-@stL = &Get_Lines($stF);
-
-my $ou2F = $stF.".int";
-my $tF  = "tmp.txt";
-
-$id = 0;
-$tst = 0;
-
-open(fp_o1, ">$tF");
-for (my $i = 0; $i <= $#stL; $i++) {
-   my @wrd = &Get_Words($stL[$i]);
-   $uid{$wrd[0]} = $id;
-   $sta[$id] = $wrd[1];
-   $stn[$id] = $wrd[0];
-
-   ##Make use of silence name and ssil name;;
-   my $tstr = $wrd[0];
-   if ($tstr eq "SIL" || $tstr eq "pau" || $tstr eq "PAU" || $tstr eq "sil") {
-     $wrd[1] = $_pauS; #Fixing the silence states to be three...
-   }elsif ($tstr eq "ssil" || $tstr eq "SSIL")  {
-     $wrd[1] = $_spauS; #Fixing the short pause model to have only one state.....
-   }
-
-   print fp_o1 "$id $wrd[0] $wrd[1]\n";
-
-   $id++;
-   $tst += $wrd[1];
-}
-close(fp_o1);
-
-##Generate .int file...
-
-my @fL = &Get_Lines($tF);
-open(fp_o2, ">$ou2F");
-$nu = $#fL + 1;
-#NOW: 3 TOS: 9 NOG: 2 NOC: 2 DIM: 13 0   3
-
-print fp_o2 "NoWords: $nu\n";
-print fp_o2 "TotalSt: $tst\n";
-print fp_o2 "FDim: $fdim\n";
-
-##print fp_o2 "No.Gau: $ngau\n";
-##print fp_o2 "No.Con: $noc\n";
-
-for (my $i = 0; $i <= $#fL; $i++) {
-
-  my @nw = &Get_Words($fL[$i]);
-  my $noc1 = $noc;
-  my $ng1  = $ngau;
-
-  ##Make use of silence name and ssil name;;
-  if ($nw[1] eq "SIL" || $nw[1] eq "pau" || $nw[1] eq "PAU" || $nw[1] eq "sil") {
-     $nw[2] = $_pauS; #Fixing the silence states to be three...
-     $noc1  = $_pauC; #Allowing a skip state
-     $ng1   = $_pauG;
-  }elsif ($nw[1] eq "ssil" || $nw[1] eq "SSIL")  {
-     $nw[2] = $_spauS; #Fixing the short pause model to have only one state.....
-     $noc1  =  $_spauC;  #A self transition......
-     $ng1   =  $_spauG;
-     ###print "$noc1 --  $ngl\n";
-  }
-
-  for (my $z = 0; $z <= $#nw; $z++) {
-    print fp_o2 "$nw[$z] ";
-  }
-  print fp_o2 "$noc1 $ng1\n";
-
-}
-close(fp_o2);
-
-#change the promptfile; 
-
-$cpF = $prmF.".int";
-@prL = &Get_Lines($prmF);
-open(fp_o3, ">$cpF");
-$nnp = $#prL + 1;
-print fp_o3 "$nnp\n";
-
-for (my $i = 0; $i <= $#prL; $i++) {
-  my @wrd = &Get_Words($prL[$i]);
-  my $cn = $#wrd + 1;
-
-  if ($cn == 1) {
-    ##May be useful for ergodic models.....
-    print fp_o3 "$wrd[0] $nu ";
-    for (my $k = 0; $k < $nu; $k++) {
-       print fp_o3 "$k ";
-    }
-
+for (my $i = 0; $i <= $#ln; $i++) {
+  my @wrd = &Get_Words($ln[$i]);
+  my $nw = $#wrd + 1;
+  if ($nw == 0) { 
+    #print "$para[$p] \n ************\n";
+    $p = $p + 1; 
   }else {
-
-    print fp_o3 "$wrd[0] $#wrd ";
-    for (my $j = 1; $j <= $#wrd; $j++) {
-        print fp_o3 "$uid{$wrd[$j]} "; 
-    } 
-  }  
-  print fp_o3 "\n";
+    $para[$p] = $para[$p]." ".$ln[$i];
+  }
 }
-close(fp_o3);
+
+my $min = 1.0e+35;
+my $max = -1.0e+35;
+my $avg = 0;
+
+open(fp_prm, ">$prmF");
+
+for (my $j = 0; $j <= $#para; $j++) {
+  my @wrd = &Get_Words($para[$j]);
+  my $nw = $#wrd + 1;
+  print "Para $j - $nw\n";
+  if ($min > $nw) { $min = $nw; }
+  if ($max < $nw) { $max = $nw; }
+  $avg = $avg + $nw;
+
+  my $sid = &Get_ID($j);
+  my $cln = $para[$j];
+  &Make_SingleSpace(\$cln);
+  &Handle_Quote(\$cln);
+  print fp_prm "( emma_$sid \"$cln\") \n";
+  
+}
+close(fp_prm);
+$avg = $avg / ($#para + 1);
+$avg = int($avg);
+
+print "Min / Max: $min / $max ; Avg: $avg\n";
+
+sub Get_ID() {
+
+  my $id = shift(@_);
+  my $rv = "";
+  if ($id < 10) {
+    $rv = "000";
+  }elsif ($id < 100) {
+    $rv = "00";
+  } elsif ($id < 1000) {
+    $rv = "0";
+  }
+  $rv = $rv.$id;
+  return $rv;
+}
+
+sub Handle_Quote() {
+   chomp(${$_[0]});
+   ${$_[0]} =~ s/[\"]/\\"/g;
+}
 
 sub Make_SingleSpace() {
    chomp(${$_[0]});

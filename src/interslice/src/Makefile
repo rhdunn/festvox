@@ -2,7 +2,7 @@
 ##                                                                       ##
 ##                                                                       ##
 ##              Carnegie Mellon University, Pittsburgh, PA               ##
-##                         Copyright (c) 2007                            ##
+##                      Copyright (c) 2007-2010                          ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -43,13 +43,13 @@ TOP=../../../
 DIRNAME=src/interslice/src
 BUILD_DIRS = 
 ALL_DIRS = $(BUILD_DIRS)
-SRCS = interslice.cc
-H = islice_header.h
+SRCS = edec_v3.cc wavchop.cc
+H = header.h hmmstate.h hmmword.h my_header.h
 FILES = Makefile $(SRCS) $(H)
 
 ISLICEBINDIR=../bin
 
-ALL = $(ISLICEBINDIR)/interslice
+ALL = $(ISLICEBINDIR)/edec.exe $(ISLICEBINDIR)/wavchop.exe 
 
 include $(TOP)/config/common_make_rules
 
@@ -70,10 +70,17 @@ CXX=g++
 
 LOCAL_CLEAN = $(ALL)
 
-$(ISLICEBINDIR)/interslice: interslice.o $(H)
+$(ISLICEBINDIR)/edec.exe: edec_v3.o $(H)
 	if [ ! -d $(ISLICEBINDIR) ] ; \
         then \
            mkdir $(ISLICEBINDIR) ;\
 	fi
-	$(strip $(LINK_COMMAND)) -o $@ interslice.o
+	$(strip $(LINK_COMMAND)) -o $@ edec_v3.o
+
+$(ISLICEBINDIR)/wavchop.exe: wavchop.o $(H)
+	if [ ! -d $(ISLICEBINDIR) ] ; \
+        then \
+           mkdir $(ISLICEBINDIR) ;\
+	fi
+	$(strip $(LINK_COMMAND)) -o $@ wavchop.o
 

@@ -1,9 +1,10 @@
 #!/usr/local/bin/perl
+use strict;
 ###########################################################################
 ##                                                                       ##
 ##                                                                       ##
 ##              Carnegie Mellon University, Pittsburgh, PA               ##
-##                      Copyright (c) 2004-2007                          ##
+##                         Copyright (c) 2007                            ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -33,99 +34,39 @@
 ###########################################################################
 ##                                                                       ##
 ##          Author :  S P Kishore (skishore@cs.cmu.edu)                  ##
-##          Date   :  Feb 2007                                           ##
+##          Date   :  February 2007                                      ##
 ##                                                                       ##
 ###########################################################################
 
-$nargs = $#ARGV + 1;
-if ($nargs < 2) {
-  print "Usage: perl file.pl <in-file> <out-file>\n";
+my $nargs = $#ARGV + 1;
+if ($nargs != 3) {
+  print "Usage: perl file.pl <wave-file-list> <twavD> <large-wave-file>\n";
   exit;
 }
 
-$inF  = $ARGV[0];
-$ouF  = $ARGV[1];
+my $inF = $ARGV[0];
+my $twvD = $ARGV[1];
+my $wvF = $ARGV[2];
 
-my @ln = &Get_Lines($inF);
-
-open(fp_out, ">$ouF");
-
-for (my $i = 0; $i <= $#ln; $i++) {
-  
-  my @wrd = &Get_Words($ln[$i]);
-  if ($#wrd == -1) {
-     next;
-  }
-
-  for (my $j = 0; $j <= $#wrd; $j++) {
-
-     my $cw = $wrd[$j];
-     &Make_SingleSpace(\$cw);
-
-     if ($cw eq "'s") {
-       print fp_out "$cw"; #no space before 's
-       next;
-     }
-
-     #process each word;
-     $cw =~ s/^[\']+//g;
-     $cw =~ s/[\']+$//g;
-
-     $cw =~ s/^[\`]+//g;
-     $cw =~ s/[\`]+$//g;
-     $cw =~ s/[\`]+//g;
-
-     $cw =~ s/^[\"]+//g;
-     $cw =~ s/[\"]+$//g;
-     $cw =~ s/[\"]+//g;
-
-     $cw =~ s/[\;]+$/,/g;
-     $cw =~ s/^[\;]+/ /g;
-     $cw =~ s/[\;]+/ /g;
-
-     $cw =~ s/[\-]+$/ /g;
-     $cw =~ s/[\-]+/ /g;
-
-     $cw =~ s/[\_]+$/ /g;
-     $cw =~ s/[\_]+/ /g;
-
-     $cw =~ s/[\!]+/, /g;
-
-     $cw =~ s/[\?]+/, /g;
-
-     $cw =~ s/[\:]+$/, /g;
-     $cw =~ s/[\)]+/ /g;
-     $cw =~ s/[\(]+/ /g;
-
-     $cw =~ s/[\,]+$/,/g;
-
-     &Make_SingleSpace(\$cw);
-     print fp_out " $cw";
-  }
-  print fp_out "\n";
-}
-close(fp_out);
-
-
-my $twrd = 0;
-
-my @nnl = &Get_Lines($ouF);
-
-for (my $i = 0; $i <= $#nnl; $i++) {
-  my @nwrd = &Get_Words($nnl[$i]);
-  my $tt = $#nwrd + 1;
-  $twrd = $twrd + $tt;
+my $ESTDIR = `echo \$ESTDIR`;
+if ($ESTDIR eq "") {
+   print "DEFINE ESTDIR in the shell to proceed.. \n";
+   exit;
+}else {
+  &Make_SingleSpace(\$ESTDIR);
+  print "SPEECH TOOLS DIR Found as: $ESTDIR \n";
 }
 
-open(fp_out, ">$ouF");
-print fp_out "$twrd\n";
-for (my $i = 0; $i <= $#nnl; $i++) {
-  my $myL = $nnl[$i];
-  &Make_SingleSpace(\$myL);
-  print fp_out "$myL\n";
-}
-close(fp_out);
+my @inL = &Get_ProcessedLines($inF);
+my $lw = "";
 
+for (my $i = 0; $i <= $#inL; $i++) {
+  my $ln = $inL[$i];
+  my $twvF = $twvD."/".$ln;
+  $lw  = $lw." ".$twvF;
+}
+print "$ESTDIR/bin/ch_wave $lw -otype riff -scaleN 0.65 -F 16000 -o $wvF\n";
+system("$ESTDIR/bin/ch_wave $lw -otype riff -scaleN 0.65 -F 16000 -o $wvF");
 
 
 sub Make_SingleSpace() {

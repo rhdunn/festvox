@@ -95,6 +95,8 @@
 (defvar cg:multimodel nil) ;; for separated static/delta models
 (defvar cg:mixed_excitation nil)
 
+(defvar cg:parallel_tree_build nil)
+
 (defvar fileid "")
 
 (define (build_clustergen file)
@@ -104,6 +106,32 @@ Build cluster synthesizer for the given recorded data and domain."
   (build_clunits_init file)
   (do_clustergen file)
 )
+
+(set! actualSystem system)
+(set! cg:parallelSystemCommandList nil)
+
+(define (parallelSystemStore str)
+  "Stores command in a global list that will be executed later with parallelSystemFlush"
+  ;; Note we put these on the front of the list
+  ;; This means the "large" trees get build first which means long wagon
+  ;; builds don't wait until the end (which could mean trailing jobs)
+  (set! cg:parallelSystemCommandList
+        (cons str cg:parallelSystemCommandList))
+  t)
+
+(define (parallelSystemFlush)
+  (let ((tfn (make_tmp_filename)))
+    (set! psfd (fopen tfn "w"))
+    (mapcar
+     (lambda (s) (format psfd "%s\n" s))
+     cg:parallelSystemCommandList)
+    (fclose psfd)
+    (set! command (format nil "cat %s | xargs -d '\\n' -n 1 -P `./bin/find_num_available_cpu` sh -c\n" tfn))
+    (actualSystem command)
+    (delete-file tfn)
+    (set! cg:parallelSystemCommandList nil)
+    )
+  t)
 
 (define (do_clustergen datafile)
   (let ()
@@ -127,33 +155,27 @@ Build cluster synthesizer for the given recorded data and domain."
     (set! cg::durstats nil)
     (set! cg::unitid 0)
 
-    (mapcar
-     (lambda (f)
-       (format t "%s Processing\n" f)
-       (set! track_info_fd 
-             (fopen (format nil "festival/coeffs/%s.mcep" f) "w"))
-       (set! feat_info_fd 
-             (fopen (format nil "festival/coeffs/%s.feats" f) "w"))
-       (unwind-protect
-        (begin
-          (set! utt (utt.load nil (format nil "festival/utts/%s.utt" f)))
-          (set! fileid f)
-          (clustergen::load_hmmstates_utt utt clustergen_params)
-          (clustergen::load_ccoefs_utt utt clustergen_params)
-          ;; prune_frames: not very useful - off by default
-          (if (> cg:prune_frame_threshold 0.0)
-              (clustergen::score_frames f utt clustergen_params))
+    (set! file_number 0)
+    (set! numbered_files
+          (mapcar
+           (lambda (f)
+             (let ((fn (list f file_number)))
+               (set! ccc (track.load 
+                          (format 
+                           nil 
+                           (get_param 'cg_ccoefs_template 
+                                      clustergen_params 
+                                      "ccoefs/%s.mcep")
+                           f)))
+               (set! file_number (+ (track.num_frames ccc) 5 file_number))
+               fn)
+             )
+           (cadr (assoc 'files clustergen_params))))
 
-          (clustergen::collect_prosody_stats utt clustergen_params)
-          (utt.save utt (format nil "festival/utts_hmm/%s.utt" f))
-          (clustergen::name_units utt clustergen_params)
-          (clustergen::dump_vectors_and_feats_utt utt clustergen_params))
-        )
-       (fclose track_info_fd)
-       (fclose feat_info_fd)
-       t
-       )
-     (cadr (assoc 'files clustergen_params)))
+    ;; Dump features and vectors -- may be done in parallel
+    (if cg:parallel_tree_build
+        (clustergen::parallel_process_utts numbered_files clustergen_params)
+        (clustergen::process_utts numbered_files))
 
     ;; Build three models
 
@@ -173,6 +195,10 @@ Build cluster synthesizer for the given recorded data and domain."
 
     (format t "Extracting features by unittype\n")
     (clustergen::extract_unittype_all_files datafile cg::unittypes)
+    (set! cg::unittypes
+          (mapcar 
+           (lambda (u) (list (string-append u))) ;; unittypes as strings
+           (load "festival/disttabs/unittypes" t)))
 
 ;    (clustergen::extract_unittype_f0_files datafile cg::unittypes)
 
@@ -183,8 +209,18 @@ Build cluster synthesizer for the given recorded data and domain."
      clustergen_build_f0_tree "f0")
     (clustergen:collect_trees cg::unittypes clustergen_params "f0")
 
-    (if cg:multimodel
-        (begin
+    (cond
+     ((consp cg:multimodel)  ;; list of models to build
+      (mapcar
+       (lambda (x)
+         (format t "Build multimodels: %s\n" (car x))
+         (set! cg::cluster_feats (format nil "-track_feats %s" (cadr x)))
+         (clustergen::do_clustering 
+          cg::unittypes clustergen_params 
+          clustergen_build_mcep_tree (car x))
+         (clustergen:collect_mcep_trees cg::unittypes clustergen_params (car x)))
+       cg:multimodel))
+     (cg:multimodel  ;; old static plus dynamic
           ;; Build separate static and delta models
           ;; statics
           (format t "Building multimodels: static \n")
@@ -223,20 +259,90 @@ Build cluster synthesizer for the given recorded data and domain."
                  clustergen_build_mcep_tree "str")
                 (clustergen:collect_mcep_trees cg::unittypes clustergen_params "str")))
           )
-        (begin
-          ;; Build joint spectral models (the older way)
-          (format t "Building spectral model\n")
-
+     (t ;; Build joint spectral models (the older way)
+      (format t "Building spectral model\n")
 ;; was for PCA     (set! cg::cluster_feats "-track_feats 51-75")
-          (clustergen::do_clustering 
-           cg::unittypes clustergen_params 
-           clustergen_build_mcep_tree "mcep")
-          (clustergen:collect_mcep_trees cg::unittypes clustergen_params "mcep")
-          ))
+      (if cg:mixed_excitation
+          (set! cg::cluster_feats "-track_feats 1-55") ;; with str, w/o v
+          (set! cg::cluster_feats "-track_feats 1-50")) ;; w/o v
+      (clustergen::do_clustering 
+       cg::unittypes clustergen_params 
+       clustergen_build_mcep_tree "mcep")
+      (clustergen:collect_mcep_trees cg::unittypes clustergen_params "mcep")
+      ))
 
     (format t "Tree models and vector params dumped\n")
     
   )
+)
+
+(define (clustergen::process_utts numbered_files)
+  ;; This is pulled out in order to allow numbered_files to be split over
+  ;; multiple processors
+  (mapcar
+   (lambda (f)
+     (format t "%s Processing\n" (car f))
+     (set! track_info_fd 
+           (fopen (format nil "festival/coeffs/%s.mcep" (car f)) "w"))
+     (set! feat_info_fd 
+           (fopen (format nil "festival/coeffs/%s.feats" (car f)) "w"))
+     (unwind-protect
+      (begin
+        (set! utt (utt.load nil (format nil "festival/utts/%s.utt" (car f))))
+        (set! fileid (car f))
+        (clustergen::load_hmmstates_utt utt clustergen_params)
+        (clustergen::load_ccoefs_utt utt clustergen_params)
+        ;; prune_frames: not very useful - off by default
+        (if (> cg:prune_frame_threshold 0.0)
+            (clustergen::score_frames (car f) utt clustergen_params))
+
+        ;; (clustergen::collect_prosody_stats utt clustergen_params)
+        (utt.save utt (format nil "festival/utts_hmm/%s.utt" (car f)))
+        (clustergen::name_units_para utt (cadr f) clustergen_params)
+        (clustergen::dump_vectors_and_feats_utt utt clustergen_params))
+      )
+     (fclose track_info_fd)
+     (fclose feat_info_fd)
+     t
+     )
+   numbered_files)
+  )
+
+(define (clustergen::parallel_process_utts numbered_files clustergen_params)
+  ;; Dump the list of files and call the parallelizing script on
+  ;; the partitioning of the list of files
+  (let ((tfn (make_tmp_filename)))
+
+    (set! fpd (fopen tfn "w"))
+    (mapcar
+     (lambda (fn) (format fpd "%l\n" fn))
+     numbered_files)
+    (fclose fpd)
+
+    (set! cgpd (fopen "tmp_cgp.scm" "w"))
+    (mapcar
+     (lambda (fn) (format cgpd "%l\n" fn))
+     clustergen_params)
+    (fclose cgpd)
+
+    (system (format nil "./bin/do_clustergen parallel process_utts %s" tfn))
+
+    (delete-file tfn)
+    (delete-file "tmp_cgp.scm")
+
+    )
+)
+
+(define (clustergen::do_process_utts filename)
+  ;; We'll get called again for each partition of the filelist
+  ;; We dump the features and vectores for each utt in the filelist
+  ;; and do nothing else.
+  ;; The clustergen_params should have been dumped in tmp_cgp.scm
+  (set! ddd (load filename t))
+  (set! clustergen_params (load "tmp_cgp.scm" t))
+  (clustergen::process_utts 
+   (load filename t)
+   )
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -702,7 +808,7 @@ Find distance of t1.p1 wrt t2.p2 (with std)."
      (if (and (string-equal rel "HMMstate")
               (string-matches (item.name s) ".*_.*"))
          (format fd "%0.3f 125 %s %s\n" (item.feat s "end") 
-                 (string-after (item.name s) "_") "1" )
+                 (string-after (item.name s) "_") (string-before (item.name s) "_") )
          (format fd "%0.3f 125 %s\n" (item.feat s "end") (item.name s))))
    (utt.relation.items u rel))
   (fclose fd)
@@ -722,7 +828,7 @@ Find distance of t1.p1 wrt t2.p2 (with std)."
 ;    (set! zd (- (track.get t1 p1 51)
 ;                (track.get t2 p2 102)))
 ;    (set! score (* zd zd 5.0))
-    (while (< c (/ nc 2))
+    (while (< c 50)  ;; Aug 2011 -- better to opt on static+delta 
            (set! zd (/ (- (track.get t1 p1 c) 
                           (track.get t2 p2 (* c 2)))
                        1
@@ -1119,6 +1225,35 @@ a track file"
 			      (cons (list cname occurid) cg::unittypes)))
                         ))
                (item.set_feat s "occurid" occurid)
+               ))
+         t))
+     (reverse (utt.relation.items utt cg_relation))
+     )
+    t))
+
+(define (clustergen::name_units_para utt file_number params)
+  (let ((cg_name_feat (get_param 'clunit_name_feat params "name"))
+        (cg_relation (get_param 'clunit_relation params "Segment"))
+        (n 0))
+    ;; note name_units and dump_vectors_and_feats must traverse
+    ;; the units in the same order
+    ;; This is now a function without side-effects, for use in the
+    ;; the parallel case
+;    (set! cg_name_feat "R:mcep_link.parent.R:segstate.parent.name")
+    (mapcar
+     (lambda (s)
+       (let ((cname (item.feat s cg_name_feat)))
+         (if (or (string-equal cname "0")
+                 (string-equal cname "ignore")
+                 (> (item.feat s "cg_score") cg:prune_frame_threshold) ;; prune
+                 (if cg:vuv (vuv_mismatch s)) ;; hnm
+                 )
+             t ;; do nothing
+             (begin
+               (item.set_feat s "clunit_name" cname)
+               (set! occurid (+ file_number n))
+               (item.set_feat s "occurid" occurid)
+               (set! n (+ 1 n))
                ))
          t))
      (reverse (utt.relation.items utt cg_relation))
@@ -1556,12 +1691,18 @@ Load Combined Coefficients into this utt and link it in"
 (define (clustergen::do_clustering unittypes cg_params build_tree type)
   "(clustergen::do_clustering unittypes cg_params)
 Cluster different unit types."
+  (if cg:parallel_tree_build
+      (set! system parallelSystemStore)) ; Don't run system directly during tree building
   (mapcar
    (lambda (unittype)
      (format t "Clustergen %s tree build on: %s\n" type (car unittype))
      (build_tree (car unittype) cg_params)
      t)
    unittypes)
+  (if cg:parallel_tree_build
+      (begin
+	(parallelSystemFlush) ; Build trees in parallel
+	(set! system actualSystem))) ; Restore the system command
   t)
 
 (defvar wagon-balance-size 0)
@@ -1769,10 +1910,12 @@ replacing the leaf node with an index"
    (lambda (x) 
      ;; dump the mean and the std
      (format rawtrackfd "%f %f " 
-             (if (string-equal "nan" (car x) )
+             (if (or (string-equal "nan" (car x) )
+                     (string-equal "-nan" (car x) ))
                  0.0
                  (car x))
-             (if (string-equal "nan" (cadr x) )
+             (if (or (string-equal "nan" (cadr x) )
+                     (string-equal "-nan" (cadr x) ))
                  0.0
                  (cadr x))))
    (caar tree))
@@ -2336,7 +2479,12 @@ x))))
 ;     (ClusterGen_predict_cgv utt1) ;; predict vectors by viterbi
      (if (assoc 'cg::trajectory clustergen_mcep_trees)
         (ClusterGen_predict_trajectory utt1) ;; predict trajectory
-        (ClusterGen_predict_mcep utt1) ;; predict vector types
+               (cond
+                ((consp cg:multimodel)   ;; predict vector with multimodels
+                 (ClusterGen_predict_params_mm utt1)
+                 )
+                (t
+                 (ClusterGen_predict_mcep utt1)))
 ;        (ClusterGen_acoustic_predict_mcep utt1 real_track) 
         )
 
@@ -2349,7 +2497,12 @@ x))))
 ;           (ClusterGen_predict_cgv utt1) ;; predict vectors by viterbi
            (if (assoc 'cg::trajectory clustergen_mcep_trees)
                (ClusterGen_predict_trajectory utt1) ;; predict trajectory
-               (ClusterGen_predict_mcep utt1) ;; predict vector types
+               (cond
+                ((consp cg:multimodel)   ;; predict vector with multimodels
+                 (ClusterGen_predict_params_mm utt1)
+                 )
+                (t
+                 (ClusterGen_predict_mcep utt1))) ;; predict vector types
 ;               (ClusterGen_acoustic_predict_mcep utt1 real_track) 
                )
 ;     (ClusterGen_acoustic_target utt1)

@@ -99,7 +99,9 @@ $DURMEANSTD -output festival/dur/etc/durs.meanstd -from_file uttfile
 ## extract the features
 echo ";;; Extracting features from utterances"
 find festival/dur/feats -name *.feats -exec rm {} \;
-$DUMPFEATS -relation Segment -eval $VOICESCM -eval $VOICENAME -feats festival/dur/etc/dur.feats -output festival/dur/feats/%s.feats -eval festival/dur/etc/logdurn.scm -from_file uttfile
+echo '(set! '$FV_VOICENAME'::clunits_prompting_stage t)' >safevoiceload.scm
+echo $VOICENAME >>safevoiceload.scm
+$DUMPFEATS -relation Segment -eval $VOICESCM -eval safevoiceload.scm -feats festival/dur/etc/dur.feats -output festival/dur/feats/%s.feats -eval festival/dur/etc/logdurn.scm -from_file uttfile
 
 ## Save all features in one file removing silence phones
 echo ";;; Collecting features in training and test data"
@@ -114,7 +116,7 @@ done >festival/dur/data/dur.data
 # Build description file
 echo ";;; Build feature description file"
 $ESTDIR/bin/make_wagon_desc festival/dur/data/dur.data festival/dur/etc/dur.feats festival/dur/etc/dur.desc
-$ESTDIR/../festival/bin/festival -b --heap 2000000 festvox/build_prosody.scm $VOICESCM $VOICENAME '(build_dur_feats_desc)'
+$ESTDIR/../festival/bin/festival -b --heap 2000000 festvox/build_prosody.scm $VOICESCM safevoiceload.scm '(build_dur_feats_desc)'
 
 # emacs festival/dur/etc/dur.desc
 
@@ -133,7 +135,9 @@ $WAGON_TEST -heap 2000000 -data festival/dur/data/dur.data.test -desc festival/d
 tee dur.$PREF.S$STOP.out
 
 echo ";;; Constructing the duration model as a loadable scheme file"
-$ESTDIR/../festival/bin/festival -b --heap 2000000 festvox/build_prosody.scm $VOICESCM $VOICENAME '(finalize_dur_model "'$MODELNAME'" "'$PREF.S$STOP.tree'")'
+$ESTDIR/../festival/bin/festival -b --heap 2000000 festvox/build_prosody.scm $VOICESCM safevoiceload.scm '(finalize_dur_model "'$MODELNAME'" "'$PREF.S$STOP.tree'")'
+
+rm -f safevoiceload.scm
 
 exit
 

@@ -701,6 +701,7 @@ double kthsmallest (double* arr,int n,int k)
 	//random pivot selection, can be improved by generalized sampling
 	int i,pivot= rand()%n,j=1,l;
 	double *temparr;
+        double smallest;
 	temparr=(double*)calloc(n,sizeof(double));
 	temparr[0]=arr[pivot];
 	int rank=0;
@@ -716,10 +717,11 @@ double kthsmallest (double* arr,int n,int k)
 		j++;
 	}}
 	//Checking for the conditions
-	if(rank == k-1) return temparr[rank];
-	if(rank > k-1) return kthsmallest(temparr,rank,k);
-	if(rank < k-1) return kthsmallest(temparr+rank,n-rank,k-rank);
-	free (temparr); //FIXME: Mem leak! Fix this ahead of return
+	if(rank == k-1) smallest = temparr[rank];
+	if(rank > k-1) smallest = kthsmallest(temparr,rank,k);
+	if(rank < k-1) smallest = kthsmallest(temparr+rank,n-rank,k-rank);
+	free (temparr); 
+        return smallest;
 }
 
 double SymKL_divergence (Gaussian g1, Gaussian g2, int n)

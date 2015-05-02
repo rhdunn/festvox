@@ -1,4 +1,5 @@
 #!/usr/local/bin/perl
+use strict;
 ###########################################################################
 ##                                                                       ##
 ##                                                                       ##
@@ -33,51 +34,29 @@
 ###########################################################################
 ##                                                                       ##
 ##          Author :  S P Kishore (skishore@cs.cmu.edu)                  ##
-##          Date   :  Feb 2007                                           ##
+##          Date   :  February 2007                                      ##
 ##                                                                       ##
 ###########################################################################
 
-$nargs = $#ARGV + 1;
-if ($nargs < 2) {
-  print "Usage: perl file.pl <lab/*.lab> <map-file>\n";
+my $nargs = $#ARGV + 1;
+if ($nargs != 1) {
+  print "Usage: perl file.pl <time-stamp-file> \n";
   exit;
 }
 
-$mF  = $ARGV[1];
-@ml = &Get_ProcessedLines($mF);
-%map = ();
-
-##Since we changed from .map to .int, the first three lines are not used here..
-$stpnt = 3;
-
-for (my $i = $stpnt; $i <= $#ml; $i++) {
-   my @wd = &Get_Words($ml[$i]);
-  $map{$wd[0]} = $wd[1];
+my $inF = $ARGV[0];
+my @inL = &Get_ProcessedLines($inF);
+my $flag = 0;
+for (my $i = 0; $i <= $#inL; $i++) {
+  my @wrd = &Get_Words($inL[$i]);
+  if ($wrd[1] == $wrd[2]) {
+   print "Error found: line: $i uttid: $wrd[0]\n";
+   $flag++;
+  }
 }
 
-$labD = $ARGV[0];
-@list = `ls $labD`; # to cope with *large* dbs
-#print "@list";
-
-for (my $i = 0; $i <= $#list; $i++) {
-
- my $fl = "$labD/".$list[$i];
- if ($fl =~ /.lab$/) {
-     &Make_SingleSpace(\$fl);
-     print "Renaming phones in $fl\n";
-
-     my @pl = &Get_ProcessedLines($fl);
-
-     open(fp_out, ">$fl"); 
-     print fp_out "#\n";
-
-     for (my $j = 1; $j <= $#pl; $j++) {
-         my @wrd = &Get_Words($pl[$j]);
-         my $sym = $map{$wrd[2]};
-         print fp_out "$wrd[0] $wrd[1] $sym\n";
-     }
- }
- close(fp_out);
+if ($flag == 0) {
+  print "All utterances seem to be clean enough!\n";
 }
 
 sub Make_SingleSpace() {
