@@ -1,0 +1,380 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Modules</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+REL="HOME"
+TITLE="Building Synthetic Voices"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="A Practical Speech Synthesis System"
+HREF="bsv-festival-ch.html"><LINK
+REL="PREVIOUS"
+TITLE="Utterance structure"
+HREF="x261.html"><LINK
+REL="NEXT"
+TITLE="Utterance access"
+HREF="x492.html"></HEAD
+><BODY
+CLASS="SECT1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Building Synthetic Voices</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x261.html"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 3. A Practical Speech Synthesis System</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x492.html"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="AEN380"
+>3.3. Modules</A
+></H1
+><P
+>&#13;The basic synthesis process in Festival is viewed as applying 
+a set of <I
+CLASS="EMPHASIS"
+>modules</I
+> to an utterance. Each module will access 
+various relations and items and potentially generate new features, 
+items and relations. Thus as the modules are applied the utterance 
+structure is filled in with more and more relations until 
+ultimately the waveform is generated. </P
+><P
+>&#13;Modules may be written in C++ or Scheme. Which modules are executed are 
+defined in terms of the utterance <TT
+CLASS="VARNAME"
+>type</TT
+>, a simple feature on the 
+utterance itself. For most text-to-speech cases this is defined to be 
+of type <TT
+CLASS="VARNAME"
+>Tokens</TT
+>. The function <TT
+CLASS="VARNAME"
+>utt.synth</TT
+> simply looks up an 
+utterance's type and then looks up the definition of the defined 
+synthesis process for that type and applies the named modules. 
+Synthesis types maybe defined using the function <TT
+CLASS="VARNAME"
+>defUttType</TT
+>. 
+For example definition for utterances of type <TT
+CLASS="VARNAME"
+>Tokens</TT
+> 
+is 
+<A
+NAME="AEN394"
+></A
+><BLOCKQUOTE
+CLASS="BLOCKQUOTE"
+><P
+CLASS="LITERALLAYOUT"
+>(defUttType&nbsp;Tokens<br>
+&nbsp;&nbsp;(Token_POS&nbsp;utt)&nbsp;<br>
+&nbsp;&nbsp;(Token&nbsp;utt)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;(POS&nbsp;utt)<br>
+&nbsp;&nbsp;(Phrasify&nbsp;utt)<br>
+&nbsp;&nbsp;(Word&nbsp;utt)<br>
+&nbsp;&nbsp;(Pauses&nbsp;utt)<br>
+&nbsp;&nbsp;(Intonation&nbsp;utt)<br>
+&nbsp;&nbsp;(PostLex&nbsp;utt)<br>
+&nbsp;&nbsp;(Duration&nbsp;utt)<br>
+&nbsp;&nbsp;(Int_Targets&nbsp;utt)<br>
+&nbsp;&nbsp;(Wave_Synth&nbsp;utt)<br>
+&nbsp;&nbsp;)</P
+></BLOCKQUOTE
+>
+While a simpler case is when the input is phone names 
+and we don't wish to do all that text analysis and prosody 
+prediction. Then we use the type <TT
+CLASS="VARNAME"
+>Phones</TT
+> which simply 
+loads the phones, applies fixed prosody and the synthesizes 
+the waveform 
+<A
+NAME="AEN397"
+></A
+><BLOCKQUOTE
+CLASS="BLOCKQUOTE"
+><P
+CLASS="LITERALLAYOUT"
+>(defUttType&nbsp;Phones<br>
+&nbsp;&nbsp;(Initialize&nbsp;utt)<br>
+&nbsp;&nbsp;(Fixed_Prosody&nbsp;utt)<br>
+&nbsp;&nbsp;(Wave_Synth&nbsp;utt)<br>
+&nbsp;&nbsp;)</P
+></BLOCKQUOTE
+>
+In general the modules named in the type definitions are general and 
+actually allow further selection of more specific modules within 
+them. For example the <TT
+CLASS="VARNAME"
+>Duration</TT
+> module respects the global 
+parameter <TT
+CLASS="VARNAME"
+>Duration_Method</TT
+> and will call then desired duration 
+module depending on this value. </P
+><P
+>When building a new voice you will probably not need to change any of 
+these definitions, though you may wish to add a new module and we will 
+show how to do that without requiring any change to the synthesis 
+definitions in a later chapter. </P
+><P
+>There are many modules in the system, some simply wraparounds 
+to choose between other modules. However the basic modules 
+used for text-to-speech have the basic following function 
+<P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="VARNAME"
+>Token_POS</TT
+></DT
+><DD
+><P
+>&#13;basic token identification, used for homograph disambiguation </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>Token</TT
+></DT
+><DD
+><P
+>&#13;Apply the token to word rules building the <TT
+CLASS="VARNAME"
+>Word</TT
+> relation. </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>POS</TT
+></DT
+><DD
+><P
+>&#13;
+A standard part of speech tagger (if desired) </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>Phrasify</TT
+></DT
+><DD
+><P
+>&#13;Build the <TT
+CLASS="VARNAME"
+>Phrase</TT
+> relation using the specified method. Various 
+are offered, from statistically trained models to simple CART trees. </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>Word</TT
+></DT
+><DD
+><P
+>&#13;Lexical look up building the <TT
+CLASS="VARNAME"
+>Syllable</TT
+> and <TT
+CLASS="VARNAME"
+>Segment</TT
+> 
+relations and the <TT
+CLASS="VARNAME"
+>SylStructure</TT
+> related these together. </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>Pauses</TT
+></DT
+><DD
+><P
+>&#13;Prediction of pauses, inserting silence into the <TT
+CLASS="VARNAME"
+>Segment</TT
+> 
+relation, again through a choice of different prediction mechanisms. </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>Intonation</TT
+></DT
+><DD
+><P
+>&#13;Prediction of accents and boundaries, building the <TT
+CLASS="VARNAME"
+>IntEvent</TT
+> 
+relation and the <TT
+CLASS="VARNAME"
+>Intonation</TT
+> relation that links IntEvents 
+to syllables. This can easily be parameterized for most practical 
+intonation theories. </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>PostLex</TT
+></DT
+><DD
+><P
+>&#13;Post lexicon rules that can modify segments based on their 
+context. This is used for things like vowel reduction, 
+contractions, etc. </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>Duration</TT
+></DT
+><DD
+><P
+>&#13;Prediction of durations of segments. </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>Int_Targets</TT
+></DT
+><DD
+><P
+>&#13;The second part of intonation. This creates the <TT
+CLASS="VARNAME"
+>Target</TT
+> 
+relation representing the desired F0 contour. </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>Wave_Synth</TT
+></DT
+><DD
+><P
+>&#13;A rather general function that in turn calls the appropriate 
+method to actually generate the waveform. </P
+></DD
+></DL
+></DIV
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x261.html"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x492.html"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Utterance structure</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="bsv-festival-ch.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Utterance access</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

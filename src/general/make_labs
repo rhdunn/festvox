@@ -98,7 +98,7 @@ fi
 for i in $*
 do
    fname=`basename $i .wav`
-   echo $fname
+   echo $fname LABELING
    # Construct cepstrum files
    $SIG2FV $SIG2FVPARAMS -otype est $i -o prompt-cep/$fname.cep
    $SIG2FV $SIG2FVPARAMS -otype est_binary wav/$fname.wav -o cep/$fname.cep

@@ -45,8 +45,7 @@ Set up the CMU lexicon for US English."
 
   ;; Post lexical rules
   (set! postlex_rules_hooks (list postlex_apos_s_check))
-  (set! postlex_vowel_reduce_cart_tree 
-	postlex_vowel_reduce_cart_data)
+  (set! postlex_vowel_reduce_cart_tree nil) ; no reduction
 )
 
 (define (INST_us_VOX::reset_lexicon)

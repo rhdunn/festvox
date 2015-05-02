@@ -143,7 +143,7 @@ int main(int argc,char **argv)
   	    {
   		int cn = f0_in.num_frames();
   		f0_in.resize(
-  		    cn-1+((r->last()->F("end")-f0_in.end())/f0_in.shift()),
+  		    (int)(cn-1+((r->last()->F("end")-f0_in.end())/f0_in.shift())),
   		    f0_in.num_channels());
   		f0_in.fill_time(f0_in.shift());
   		for (i=cn; i<f0_in.num_frames(); i++)

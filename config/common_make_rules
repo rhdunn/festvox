@@ -50,8 +50,6 @@ ifeq ($(SYSTEM_LOADED),)
 	OSREV=
 endif
 
-
-
 all: .make_build_dirs $(ALL) nothing
 
 nothing:

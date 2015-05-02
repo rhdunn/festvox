@@ -61,7 +61,7 @@ if [ ! -f etc/voice.defs ]
 then
    $FESTVOXDIR/src/general/guess_voice_defs
 fi
-source etc/voice.defs
+. ./etc/voice.defs
 if [ ! -d versions ]
 then
    mkdir versions
@@ -88,6 +88,8 @@ then
          $fvdir/festival/trees/$FV_VOICENAME.tree \
          $fvdir/mcep/*.mcep \
          $fvsigdir/* 
+    # that symlink causes some people problesm in cp's 
+    rm $fvdir
 fi        
 
 # For storing forever, or at least a clean copy of the base form of
@@ -115,6 +117,14 @@ then
     $fvdir/mcep/*.mcep \
     $fvdir/wav/*.wav \
     $fvdir/lab/*.lab
+fi        
+
+if [ $1 = "recording" ]
+then
+    fvdir=.
+    tar zcvf versions/$FV_VOICENAME$OPTNAME"_orig".tar.gz \
+    $fvdir/etc/*.data \
+    $fvdir/rcording
 fi        
 
 if [ $1 = "devlite" ]

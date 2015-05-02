@@ -1,0 +1,782 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Building Synthetic Voices</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+REL="NEXT"
+TITLE="Speech Synthesis"
+HREF="bsv-speech-part.html"></HEAD
+><BODY
+CLASS="BOOK"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="BOOK"
+><A
+NAME="AEN1"
+></A
+><DIV
+CLASS="TITLEPAGE"
+><H1
+CLASS="TITLE"
+><A
+NAME="AEN2"
+>Building Synthetic Voices</A
+></H1
+><H3
+CLASS="AUTHOR"
+HREF="ln18.html"
+><A
+NAME="AEN5" HREF="http://www.cs.cmu.edu/~awb/"
+>Alan W Black</A
+>
+and
+<A
+NAME="AEN8" HREF="http://www.cs.cmu.edu/~lenzo/"
+>Kevin A. Lenzo</A
+></H3>
+<a href="http://www.speech.cs.cmu.edu/">
+Language Technologies Institute, Carnegie Mellon University
+</a> and
+<a href="http://www.cepstral.com">
+Cepstral, LLC
+</a>
+<hr>
+Thursday, 2nd January 2003<br>
+<br>
+Full distribution:
+<A HREF="http://festvox.org/festvox//festvox-2.0-release.tar.gz">
+festvox-2.0-release.tar.gz</A>
+document alone:
+<A HREF="bsv.ps.gz">bsv.ps.gz</A>
+<A HREF="bsv.pdf">bsv.pdf</A>
+<br>
+Updates and news on FestVox will be posted on 
+<A HREF="http://festvox.org">http://festvox.org</A>
+</P>
+<P>
+NOTE: this document is incomplete
+</P>
+<HR>
+<br
+><A
+>Copyright</A
+> &copy; 1999-2003 by Alan W Black &#38; Kevin A. Lenzo</P
+><HR></DIV
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>I. <A
+HREF="bsv-speech-part.html"
+>Speech Synthesis</A
+></DT
+><DD
+><DL
+><DT
+>1. <A
+HREF="bsv-intro-ch.html"
+>Overview of Speech Synthesis</A
+></DT
+><DD
+><DL
+><DT
+>1.1. <A
+HREF="bsv-intro-ch.html#AEN61"
+>History</A
+></DT
+><DT
+>1.2. <A
+HREF="x94.html"
+>Uses of Speech Synthesis</A
+></DT
+><DT
+>1.3. <A
+HREF="x98.html"
+>General Anatomy of a Synthesizer</A
+></DT
+></DL
+></DD
+><DT
+>2. <A
+HREF="bsv-speech-ch.html"
+>Speech Science</A
+></DT
+><DT
+>3. <A
+HREF="bsv-festival-ch.html"
+>A Practical Speech Synthesis System</A
+></DT
+><DD
+><DL
+><DT
+>3.1. <A
+HREF="bsv-festival-ch.html#AEN206"
+>Basic Use</A
+></DT
+><DT
+>3.2. <A
+HREF="x261.html"
+>Utterance structure</A
+></DT
+><DT
+>3.3. <A
+HREF="x380.html"
+>Modules</A
+></DT
+><DT
+>3.4. <A
+HREF="x492.html"
+>Utterance access</A
+></DT
+><DT
+>3.5. <A
+HREF="bsv-uttbuild-sect.html"
+>Utterance building</A
+></DT
+><DT
+>3.6. <A
+HREF="x688.html"
+>Extracting features from utterances</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+>II. <A
+HREF="bsv-bsv-part.html"
+>Building Synthetic Voices</A
+></DT
+><DD
+><DL
+><DT
+>4. <A
+HREF="c714.html"
+>Basic Requirements</A
+></DT
+><DD
+><DL
+><DT
+>4.1. <A
+HREF="c714.html#AEN719"
+>Hardware/software requirements</A
+></DT
+><DT
+>4.2. <A
+HREF="x740.html"
+>Voice in a new language</A
+></DT
+><DT
+>4.3. <A
+HREF="x759.html"
+>Voice in an existing language</A
+></DT
+><DT
+>4.4. <A
+HREF="x781.html"
+>Selecting a speaker</A
+></DT
+><DT
+>4.5. <A
+HREF="x793.html"
+>Who owns a voice</A
+></DT
+><DT
+>4.6. <A
+HREF="bsv-recording-sect.html"
+>Recording under Unix</A
+></DT
+><DT
+>4.7. <A
+HREF="bsv-pitchmarks-sect.html"
+>Extracting pitchmarks from waveforms</A
+></DT
+></DL
+></DD
+><DT
+>5. <A
+HREF="bsv-ldom-ch.html"
+>Limited domain synthesis</A
+></DT
+><DD
+><DL
+><DT
+>5.1. <A
+HREF="bsv-ldom-ch.html#AEN952"
+>designing the prompts</A
+></DT
+><DT
+>5.2. <A
+HREF="x969.html"
+>customizing the synthesizer front end</A
+></DT
+><DT
+>5.3. <A
+HREF="x973.html"
+>autolabeling issues</A
+></DT
+><DT
+>5.4. <A
+HREF="x982.html"
+>unit size and type</A
+></DT
+><DT
+>5.5. <A
+HREF="x997.html"
+>using limited domain synthesizers</A
+></DT
+><DT
+>5.6. <A
+HREF="x1003.html"
+>Telling the time</A
+></DT
+><DT
+>5.7. <A
+HREF="x1170.html"
+>Making it better</A
+></DT
+></DL
+></DD
+><DT
+>6. <A
+HREF="bsv-text-ch.html"
+>Text analysis</A
+></DT
+><DD
+><DL
+><DT
+>6.1. <A
+HREF="bsv-text-ch.html#AEN1203"
+>Non-standard words analysis</A
+></DT
+><DT
+>6.2. <A
+HREF="x1207.html"
+>Token to word rules</A
+></DT
+><DT
+>6.3. <A
+HREF="x1339.html"
+>Number pronunciation</A
+></DT
+><DT
+>6.4. <A
+HREF="x1357.html"
+>Homograph disambiguation</A
+></DT
+><DT
+>6.5. <A
+HREF="bsv-ttsmodes-sect.html"
+>TTS modes</A
+></DT
+><DT
+>6.6. <A
+HREF="bsv-makrup-sect.html"
+>Mark-up modes</A
+></DT
+></DL
+></DD
+><DT
+>7. <A
+HREF="bsv-lexicons-ch.html"
+>Lexicons</A
+></DT
+><DD
+><DL
+><DT
+>7.1. <A
+HREF="bsv-lexicons-ch.html#AEN1382"
+>Word pronunciations</A
+></DT
+><DT
+>7.2. <A
+HREF="x1396.html"
+>Lexicons and addenda</A
+></DT
+><DT
+>7.3. <A
+HREF="x1405.html"
+>Out of vocabulary words</A
+></DT
+><DT
+>7.4. <A
+HREF="x1429.html"
+>Building letter-to-sound rules by hand</A
+></DT
+><DT
+>7.5. <A
+HREF="x1469.html"
+>Building letter-to-sound rules automatically</A
+></DT
+><DT
+>7.6. <A
+HREF="bsv-postlexical-sect.html"
+>Post-lexical rules</A
+></DT
+><DT
+>7.7. <A
+HREF="x1630.html"
+>Building lexicons for new languages</A
+></DT
+></DL
+></DD
+><DT
+>8. <A
+HREF="c1637.html"
+>Building prosodic models</A
+></DT
+><DD
+><DL
+><DT
+>8.1. <A
+HREF="c1637.html#AEN1639"
+>Phrasing</A
+></DT
+><DT
+>8.2. <A
+HREF="x1748.html"
+>Accent/Boundary Assignment</A
+></DT
+><DT
+>8.3. <A
+HREF="x1803.html"
+>F0 Generation</A
+></DT
+><DT
+>8.4. <A
+HREF="x1900.html"
+>Duration</A
+></DT
+><DT
+>8.5. <A
+HREF="x1973.html"
+>Prosody Research</A
+></DT
+><DT
+>8.6. <A
+HREF="x1991.html"
+>Prosody Walkthrough</A
+></DT
+></DL
+></DD
+><DT
+>9. <A
+HREF="bsv-corpus-ch.html"
+>Corpus developement</A
+></DT
+><DT
+>10. <A
+HREF="bsv-waveform-ch.html"
+>Waveform Synthesis</A
+></DT
+><DT
+>11. <A
+HREF="bsv-diphone-ch.html"
+>Diphone databases</A
+></DT
+><DD
+><DL
+><DT
+>11.1. <A
+HREF="bsv-diphone-ch.html#AEN2205"
+>Diphone introduction</A
+></DT
+><DT
+>11.2. <A
+HREF="x2245.html"
+>Defining a diphone list</A
+></DT
+><DT
+>11.3. <A
+HREF="x2338.html"
+>Recording the diphones</A
+></DT
+><DT
+>11.4. <A
+HREF="x2354.html"
+>Labeling the diphones</A
+></DT
+><DT
+>11.5. <A
+HREF="x2463.html"
+>Extracting the pitchmarks</A
+></DT
+><DT
+>11.6. <A
+HREF="x2498.html"
+>Building LPC parameters</A
+></DT
+><DT
+>11.7. <A
+HREF="x2534.html"
+>Defining a diphone voice</A
+></DT
+><DT
+>11.8. <A
+HREF="x2540.html"
+>Checking and correcting diphones</A
+></DT
+><DT
+>11.9. <A
+HREF="x2560.html"
+>Diphone check list</A
+></DT
+></DL
+></DD
+><DT
+>12. <A
+HREF="bsv-unitsel-ch.html"
+>Unit selection databases</A
+></DT
+><DD
+><DL
+><DT
+>12.1. <A
+HREF="bsv-unitsel-ch.html#AEN2602"
+>Cluster unit selection</A
+></DT
+><DT
+>12.2. <A
+HREF="x3018.html"
+>Building a Unit Selection Cluster Voice</A
+></DT
+><DT
+>12.3. <A
+HREF="x3080.html"
+>Diphones from general databases</A
+></DT
+></DL
+></DD
+><DT
+>13. <A
+HREF="bsv-label-ch.html"
+>Labeling Speech</A
+></DT
+><DD
+><DL
+><DT
+>13.1. <A
+HREF="bsv-label-ch.html#AEN3120"
+>Labeling with Dynamic Time Warping</A
+></DT
+><DT
+>13.2. <A
+HREF="bsv-sphinx-sect.html"
+>Labeling with Full Acoustic Models</A
+></DT
+><DT
+>13.3. <A
+HREF="x3222.html"
+>Prosodic Labeling</A
+></DT
+></DL
+></DD
+><DT
+>14. <A
+HREF="bsv-eval-ch.html"
+>Evaluation and Improvements</A
+></DT
+><DD
+><DL
+><DT
+>14.1. <A
+HREF="bsv-eval-ch.html#AEN3228"
+>Evaluation</A
+></DT
+><DT
+>14.2. <A
+HREF="x3235.html"
+>Does it work at all?</A
+></DT
+><DT
+>14.3. <A
+HREF="x3261.html"
+>Formal Evaluation Tests</A
+></DT
+><DT
+>14.4. <A
+HREF="x3288.html"
+>Debugging voices</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+>III. <A
+HREF="bsv-interface-part.html"
+>Interfacing and Integration</A
+></DT
+><DD
+><DL
+><DT
+>15. <A
+HREF="bsv-markup-ch.html"
+>Markup</A
+></DT
+><DT
+>16. <A
+HREF="bsv-concept-ch.html"
+>Concept-to-speech</A
+></DT
+><DT
+>17. <A
+HREF="bsv-deploy-ch.html"
+>Deployment</A
+></DT
+></DL
+></DD
+><DT
+>IV. <A
+HREF="bsv-recipes-part.html"
+>Recipes</A
+></DT
+><DD
+><DL
+><DT
+>18. <A
+HREF="bsv-jpdiphone-ch.html"
+>A Japanese Diphone Voice</A
+></DT
+><DT
+>19. <A
+HREF="bsv-usukdiphone-ch.html"
+>US/UK English Diphone Synthesizer</A
+></DT
+><DT
+>20. <A
+HREF="bsv-ldomfull-ch.html"
+>ldom full example</A
+></DT
+><DT
+>21. <A
+HREF="bsv-nonenldom-ch.html"
+>Non-english ldom example</A
+></DT
+></DL
+></DD
+><DT
+>V. <A
+HREF="bsv-conclude-part.html"
+>Concluding Remarks</A
+></DT
+><DD
+><DL
+><DT
+>22. <A
+HREF="c3646.html"
+>Concluding remarks and future</A
+></DT
+></DL
+></DD
+><DT
+>23. <A
+HREF="bsv-festman-ch.html"
+>Festival Details</A
+></DT
+><DT
+>24. <A
+HREF="c3652.html"
+>Festival's Scheme Programming Language</A
+></DT
+><DD
+><DL
+><DT
+>24.1. <A
+HREF="c3652.html#AEN3670"
+>Overview</A
+></DT
+><DT
+>24.2. <A
+HREF="x3704.html"
+>Data Types</A
+></DT
+><DT
+>24.3. <A
+HREF="x3786.html"
+>Functions</A
+></DT
+><DD
+><DL
+><DT
+>24.3.1. <A
+HREF="x3786.html#AEN3789"
+>Core functions</A
+></DT
+><DT
+>24.3.2. <A
+HREF="x3786.html#AEN3855"
+>List functions</A
+></DT
+><DT
+>24.3.3. <A
+HREF="x3786.html#AEN3952"
+>Arithmetic functions</A
+></DT
+><DT
+>24.3.4. <A
+HREF="x3786.html#AEN3955"
+>I/O functions</A
+></DT
+><DT
+>24.3.5. <A
+HREF="x3786.html#AEN4088"
+>String functions</A
+></DT
+><DT
+>24.3.6. <A
+HREF="x3786.html#AEN4189"
+>System functions</A
+></DT
+><DT
+>24.3.7. <A
+HREF="x3786.html#AEN4248"
+>Utterance Functions</A
+></DT
+><DT
+>24.3.8. <A
+HREF="x3786.html#AEN4251"
+>Synthesis Functions</A
+></DT
+></DL
+></DD
+><DT
+>24.4. <A
+HREF="x4254.html"
+>Debugging and Help</A
+></DT
+><DT
+>24.5. <A
+HREF="x4257.html"
+>Adding new C++ functions to Scheme</A
+></DT
+><DT
+>24.6. <A
+HREF="x4260.html"
+>Regular Expressions</A
+></DT
+><DT
+>24.7. <A
+HREF="x4326.html"
+>Some Examples</A
+></DT
+></DL
+></DD
+><DT
+>25. <A
+HREF="bsv-estman-ch.html"
+>Edinburgh Speech Tools</A
+></DT
+><DT
+>26. <A
+HREF="bsv-machlearn-ch.html"
+>Machine Learning</A
+></DT
+><DT
+>27. <A
+HREF="c4337.html"
+>Resources</A
+></DT
+><DD
+><DL
+><DT
+>27.1. <A
+HREF="c4337.html#AEN4365"
+>Festival resources</A
+></DT
+><DT
+>27.2. <A
+HREF="x4400.html"
+>General speech resources</A
+></DT
+></DL
+></DD
+><DT
+>28. <A
+HREF="bsv-install-ch.html"
+>Tools Installation</A
+></DT
+><DT
+>29. <A
+HREF="c4436.html"
+>English phone lists</A
+></DT
+><DD
+><DL
+><DT
+>29.1. <A
+HREF="c4436.html#BSV-USPHONESET-SECT"
+>US phoneset</A
+></DT
+><DT
+>29.2. <A
+HREF="bsv-ukphoneset-sect.html"
+>UK phoneset</A
+></DT
+></DL
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="bsv-speech-part.html"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Speech Synthesis</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -45,10 +45,7 @@
 ESTDIR=@ESTDIR@
 
 ###########################################################################
-##  The location of your compiled Festival (1.4.1)                       ##
-##  For the unit selection and limit domain sections you'll need to      ##
-##  have compiled Festival with the line "ALSO_INCLUDE += clunits"       ##
-##  uncommented in festival/config/config                                ##
+##  The location of your compiled Festival (1.4.3)                       ##
 ###########################################################################
 
 FESTDIR=$(ESTDIR)/../festival

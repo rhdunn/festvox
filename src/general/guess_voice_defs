@@ -56,6 +56,6 @@ grep "^FV_....=" etc/voice.defs
 echo
 
 echo "sourcing etc/voice.defs"
-source etc/voice.defs
+. ./etc/voice.defs
 echo "FULLVOICENAME is "$FV_FULLVOICENAME
 

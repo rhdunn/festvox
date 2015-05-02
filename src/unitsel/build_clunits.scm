@@ -104,7 +104,7 @@
 	 ;; Wagon tree building params
 ;	 (trees_dir "festvox/")  ;; in INST_LANG_VOX_clunits.scm
 	 '(wagon_field_desc "festival/clunits/all.desc")
-	 '(wagon_progname "ESTDIR/bin/wagon")
+	 '(wagon_progname "$ESTDIR/bin/wagon")
 	 '(wagon_cluster_size 20)
 	 '(prune_reduce 0)
 	 '(cluster_prune_limit 40)
@@ -145,6 +145,7 @@ Get setup ready for (do_all) (or (do_init))."
   "(do_prompt name text) 
 Synthesize given text and save waveform and labels for prompts."
   (let ((utt1 (utt.synth (eval (list 'Utterance 'Text text)))))
+    (utt.save utt1 (format nil "prompt-utt/%s.utt" name))
     (utt.save.segs utt1 (format nil "prompt-lab/%s.lab" name))
     (utt.save.wave utt1 (format nil "prompt-wav/%s.wav" name))))
 
@@ -198,6 +199,14 @@ them into the synthesizer utterance."
     ;; code below.
     (while (and segments actual-segments)
       (cond
+       ((string-equal (string-append "#" (item.name (car segments)))
+                      (item.name (car actual-segments)))
+        ;; junk unit that is to be ignored
+        (item.set_feat (car segments) "end"
+                       (item.feat (car actual-segments) "end"))
+        (item.set_feat (car segments) "ignore" "1")
+        (set! segments (cdr segments))
+        (set! actual-segments (cdr actual-segments)))
        ((and (not (string-equal (item.name (car segments))
 				(item.name (car actual-segments))))
 	     (or (string-equal (item.name (car actual-segments)) silence)
