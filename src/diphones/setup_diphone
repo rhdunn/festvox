@@ -94,6 +94,8 @@ cp -p $FESTVOXDIR/src/general/make_pmlab_pm bin
 cp -p $FESTVOXDIR/src/general/make_pm_pmlab bin
 cp -p $FESTVOXDIR/src/general/make_pm_fix bin
 cp -p $FESTVOXDIR/src/general/make_f0 bin
+cp -p $FESTVOXDIR/src/general/get_lars bin
+cp -p $FESTVOXDIR/src/general/get_wavs bin
 cp -p $FESTVOXDIR/src/general/find_powerfactors bin
 cp -p $FESTVOXDIR/src/general/simple_powernormalize bin
 cp -p $FESTVOXDIR/src/general/find_powercontours bin
@@ -110,6 +112,13 @@ then
 else
    FV_LANG_SKELS=general
 fi
+
+echo "FV_INST=$FV_INST" >etc/voice.defs
+echo "FV_LANG=$FV_LANG" >>etc/voice.defs
+echo "FV_NAME=$FV_VOX" >>etc/voice.defs
+echo "FV_TYPE=diphone" >>etc/voice.defs
+echo "FV_VOICENAME=\$FV_INST\"_\"\$FV_LANG\"_\"\$FV_NAME" >>etc/voice.defs
+echo "FV_FULLVOICENAME=\$FV_VOICENAME\"_\"\$FV_TYPE" >>etc/voice.defs
 
 # Language/Vox scheme files
 echo Generating language/voice specific scheme files

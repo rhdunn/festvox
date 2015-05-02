@@ -134,7 +134,7 @@ A postlexical rule form correcting phenomena over word boundaries."
 (lex.set.phoneset "INST_LANG")
 (lex.set.lts.method 'INST_LANG_lts_function)
 ;;; If you have a compiled lexicon uncomment this
-;(lex.set.compile.file (path-append INST_LANG_VOX_dir "INST_LANG_lex.out"))
+;(lex.set.compile.file (path-append INST_LANG_VOX_dir "festvox/INST_LANG_lex.out"))
 (INST_LANG_addenda)
 
 

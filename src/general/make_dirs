@@ -37,11 +37,12 @@
 ############################################################################
 
 ##
-##  This make more directories than you may need
+##  This makes more directories than you may need
 ##
 
 mkdir bin
 mkdir wav
+mkdir recording
 mkdir lab
 mkdir lar
 mkdir lpc

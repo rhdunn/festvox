@@ -44,6 +44,7 @@ EMUTPL = emu_lab.tpl emu_sg.tpl emu_f0.tpl emu_pm.tpl emu_single_f0.tpl
 SCRIPTS = find_unknowns.sh make_dirs make_lpc make_pm \
           make_pm_epochs make_pm_wave make_f0 \
           make_pmlab_pm make_pm_pmlab \
+          get_lars get_wavs \
           display_sg display_f0 find_powerfactors \
           prompt_them make_labs play_them phonealign_test \
           align_phones make_pm_fix simple_powernormalize traintest \

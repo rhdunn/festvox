@@ -87,7 +87,7 @@ then
    fi
 fi
 
-$FESTVOXDIR/src/ldom/setup_clunits $FV_INST $FV_LDOM $FV_VOX
+#$FESTVOXDIR/src/ldom/setup_clunits $FV_INST $FV_LDOM $FV_VOX
 
 $FESTVOXDIR/src/prosody/make_dirs_prosody
 CURRENTDIR=`pwd`

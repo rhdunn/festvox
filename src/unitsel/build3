@@ -1,8 +1,9 @@
-########################################################-*-mode:Makefile-*-
+#!/bin/sh
+#####################################################-*-mode:shell-script-*-
 ##                                                                       ##
 ##                   Carnegie Mellon University and                      ##
 ##                   Alan W Black and Kevin A. Lenzo                     ##
-##                      Copyright (c) 1998-2001                          ##
+##                      Copyright (c) 2000-2001                          ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -31,12 +32,44 @@
 ##                                                                       ##
 ###########################################################################
 ##                                                                       ##
-##    Common make rules included in all Makefiles                        ##
+##  This build a three level multi-resolution synthesizer, it assumes    ##
+##  you have an appropriate festvox/build_clunits.scm with the syllabic  ##
+##  function defined                                                     ##
+##                                                                       ##
+##  This is still pretty experimental at the moment, dont expect too     ##
+##  much of this                                                         ##
+##                                                                       ##
+##                                                                       ##
+##  Replace INST LANG VOX and PROMPT with values appropriate for you db  ##
 ##                                                                       ##
 ###########################################################################
 
-PROJECT_NAME = Building Voices in Festival
-PROJECT_PREFIX = festvox
-PROJECT_VERSION = 1.6
-PROJECT_DATE = June 2001
-PROJECT_STATE = current
+  festival -b festvox/build_clunits.scm "(set! INST_LANG_VOX::build_stage 'phone)" '(build_clunits "etc/al2.data")'
+  cp -p festival/trees/INST_LANG_VOX.tree festival/trees/INST_LANG_VOX.phone.tree 
+  cp -p festival/clunits/INST_LANG_VOX.catalogue festival/clunits/INST_LANG_VOX.phone.catalogue
+
+  festival -b festvox/build_clunits.scm "(set! INST_LANG_VOX::build_stage 'diphone)" '(build_clunits "etc/al2.data")'
+  cp -p festival/trees/INST_LANG_VOX.tree festival/trees/INST_LANG_VOX.diphone.tree 
+  cp -p festival/clunits/INST_LANG_VOX.catalogue festival/clunits/INST_LANG_VOX.diphone.catalogue
+
+  festival -b festvox/build_clunits.scm "(set! INST_LANG_VOX::build_stage 'syllable)" '(build_clunits "etc/al2.data")'
+  cp -p festival/trees/INST_LANG_VOX.tree festival/trees/INST_LANG_VOX.syl.tree 
+  cp -p festival/clunits/INST_LANG_VOX.catalogue festival/clunits/INST_LANG_VOX.syl.catalogue
+
+for i in festival/clunits/INST_LANG_VOX.*.catalogue 
+do
+   sed '1,/EST_Header_End/d' $i
+done >festival/clunits/INST_LANG_VOX.log
+head -5 festival/clunits/INST_LANG_VOX.syl.catalogue | sed 's/^NumEntries .*$/NumEntries '`cat festival/clunits/INST_LANG_VOX.log | wc -l | awk '{printf("%s",$1)}'`'/' >festival/clunits/INST_LANG_VOX.head
+cat festival/clunits/INST_LANG_VOX.head festival/clunits/INST_LANG_VOX.log >festival/clunits/INST_LANG_VOX.catalogue
+
+echo "(set! clunits_selection_trees '(" >festival/trees/INST_LANG_VOX.tree
+for i in festival/trees/INST_LANG_VOX.*.tree
+do
+   sed '1,/clunits_selection_trees/d' $i
+done | grep -v "^))" >>festival/trees/INST_LANG_VOX.tree
+echo "))" >>festival/trees/INST_LANG_VOX.tree
+
+
+
+

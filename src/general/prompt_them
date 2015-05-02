@@ -69,11 +69,11 @@ then
 fi
 
 cat $1 | grep "(" |
-awk '{if (NR >= '$POSITION') print $0}' |
+awk '{if (NR >= '$POSITION') print NR,$0}' |
 while read lll
 do
    echo $lll
-   f=`echo $lll | awk '{print $2}'`
+   f=`echo $lll | awk '{print $3}'`
    duration=`$ESTDIR/bin/ch_wave -info prompt-wav/$f.wav | awk '{if ($1 == "Duration:") printf("%d\n",$2+1.5)}'`
    
    # If you don't want to hear the prompt comment out the following line
@@ -84,9 +84,9 @@ do
    echo ... end recording
 
    # If you don't want to hear the review comment out the following lines
-   echo Review $f
-   $ESTDIR/bin/na_play prompt-wav/$f.wav
-   $ESTDIR/bin/na_play wav/$f.wav
+#   echo Review $f
+#   $ESTDIR/bin/na_play prompt-wav/$f.wav
+#   $ESTDIR/bin/na_play wav/$f.wav
 
 done
 

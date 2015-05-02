@@ -65,12 +65,12 @@ v
     "jh" "k" "l" "m" "n" "ng" "nx" "ow" "oy" "p" "pau" "r" "s" "sh" "t"
     "th" "uh" "uw" "v" "w" "y" "z" "zh"
 )
-( n.ph_vc ignore
+( n.ph_vc
 +
 -
 0
 )
-( n.ph_ctype ignore
+( n.ph_ctype
 0
 a
 f
@@ -79,31 +79,31 @@ n
 r
 s
 )
-( n.ph_vheight ignore
+( n.ph_vheight
 0
 1
 2
 3
 )
-( n.ph_vlng ignore
+( n.ph_vlng
 0
 a
 d
 l
 s
 )
-( n.ph_vfront ignore
+( n.ph_vfront
 0
 1
 2
 3
 )
-( n.ph_vrnd ignore
+( n.ph_vrnd
 +
 -
 0
 )
-( n.ph_cplace ignore
+( n.ph_cplace
 0
 a
 b
@@ -113,7 +113,7 @@ l
 p
 v
 )
-( n.ph_cvox ignore
+( n.ph_cvox
 +
 -
 0
@@ -122,34 +122,35 @@ v
 ( seg_pitch ignore float )
 ( p.seg_pitch ignore float )
 ( n.seg_pitch ignore float )
-( R:SylStructure.parent.stress ignore
+( R:SylStructure.parent.stress
 0
 1
 )
-( seg_onsetcoda ignore
+( seg_onsetcoda
 coda
 onset
 )
-( n.seg_onsetcoda ignore
+( n.seg_onsetcoda 
 0
 coda
 onset
 )
-( p.seg_onsetcoda ignore
+( p.seg_onsetcoda
 0
 coda
 onset
 )
-( R:SylStructure.parent.accented ignore
+( R:SylStructure.parent.accented
 0
 1
 )
-( pos_in_syl ignore
+( pos_in_syl
 0
 1
 2
 3
 4
+5
 )
 ( syl_initial 
 0
@@ -172,6 +173,13 @@ onset
 2
 3
 4
+)
+( R:SylStructure.parent.position_type
+0
+initial
+single
+final
+mid
 )
 ( pp.name ignore
     0 "aa" "ae" "ah" "ao" "aw" "ax" "axr" "ay" "b" "brth" "ch" "d" "dh"
@@ -231,5 +239,43 @@ v
 +
 -
 0
+)
+( n.lisp_is_pau 0 1)
+( p.lisp_is_pau 0 1)
+( R:SylStructure.parent.parent.gpos
+0
+aux
+cc
+content
+det
+in
+md
+pps
+to
+wp
+)
+( R:SylStructure.parent.parent.R:Word.p.gpos
+0
+aux
+cc
+content
+det
+in
+md
+pps
+to
+wp
+)
+( R:SylStructure.parent.parent.R:Word.n.gpos
+0
+aux
+cc
+content
+det
+in
+md
+pps
+to
+wp
 )
 )

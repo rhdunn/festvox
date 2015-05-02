@@ -39,7 +39,9 @@
 ;;;                                                                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar INST_LANG_VOX::clunits_dir "CURRENTDIR")
+(defvar INST_LANG_VOX::clunits_dir ".")
+
+(require 'clunits_build)
 
 ;;; Basic voice definition file with voice defines and clunit
 ;;; parameter definition for run time.
@@ -60,12 +62,11 @@
 	 '(utts_dir "festival/utts/")
 	 '(utts_ext ".utt")
 	 '(dur_pen_weight 0.0)
+	 '(f0_pen_weight 0.0)
 	 '(get_stds_per_unit t)
 	 '(ac_left_context 0.8)
 	 '(ac_weights
-	   (5.0
-	    0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 
-	    ))
+	   (0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5))
 	 ;; Join weights in INST_LANG_VOX_clunits.scm
 	 ;; Features for extraction
 	 '(feats_dir "festival/feats/")
@@ -89,18 +90,24 @@
 	    syl_final
 	    R:SylStructure.parent.syl_break 
 	    R:SylStructure.parent.R:Syllable.p.syl_break
+	    R:SylStructure.parent.position_type
 	    pp.name pp.ph_vc pp.ph_ctype 
 	    pp.ph_vheight pp.ph_vlng 
 	    pp.ph_vfront  pp.ph_vrnd 
 	    pp.ph_cplace pp.ph_cvox
+            n.lisp_is_pau
+            p.lisp_is_pau
+	    R:SylStructure.parent.parent.gpos
+	    R:SylStructure.parent.parent.R:Word.p.gpos
+	    R:SylStructure.parent.parent.R:Word.n.gpos
 	    ))
 	 ;; Wagon tree building params
 ;	 (trees_dir "festvox/")  ;; in INST_LANG_VOX_clunits.scm
 	 '(wagon_field_desc "festival/clunits/all.desc")
 	 '(wagon_progname "ESTDIR/bin/wagon")
-	 '(wagon_cluster_size 10)
+	 '(wagon_cluster_size 20)
 	 '(prune_reduce 0)
-	 '(cluster_prune_limit 20)
+	 '(cluster_prune_limit 40)
 	 ;; The dictionary of units used at run time
 ;	 (catalogue_dir "festvox/")   ;; in INST_LANG_VOX_clunits.scm
 	 ;;  Run time parameters 

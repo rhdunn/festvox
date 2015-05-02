@@ -79,7 +79,7 @@ then
        mkdir -p `dirname $fvdir`
        (cd `dirname $fvdir`; ln -s ../../../.. $FV_FULLVOICENAME)
     fi
-    fvsigdir=$fvdir/lpc
+    fvsigdir=$fvdir/wav
     tar zcvf versions/festvox_$FV_FULLVOICENAME$OPTNAME.tar.gz \
          $fvdir/README \
          $fvdir/COPYING \

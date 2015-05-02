@@ -37,8 +37,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require_module 'clunits)
-(if (null (member 'clunits provided))
-    (load (path-append libdir "../src/modules/clunits/acost.scm")))
+(require 'clunits)
 
 (if (assoc 'INST_LDOM_VOX_ldom voice-locations)
     (defvar INST_LDOM_VOX::ldom_dir 
@@ -87,10 +86,9 @@
        (list 'db_dir INST_LDOM_VOX::ldom_dir)
        '(name INST_LDOM_VOX)
        '(index_name INST_LDOM_VOX)
+       '(f0_join_weight 0.0)
        '(join_weights
-         (10.0
-	   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5
-	   ))
+         (0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5))
        '(trees_dir "festival/trees/")
        '(catalogue_dir "festival/clunits/")
        '(coeffs_dir "mcep/")
@@ -240,7 +238,7 @@ back off to the defined closest voice (probably a diphone synthesizer)."
 	 (begin  ;; else use the backup voices
 	   (eval (list INST_LDOM_VOX::closest_voice))  ;; call backup voice
 	   (set! utt2 (INST_LDOM_VOX::copy_tokens utt))
-	   (set! utt (INST_LDOM_VOX::real_utt.synth utt2))
+	   (set! utt (utt.synth utt2))
 	   (voice_INST_LDOM_VOX_ldom)                 ;; return to ldom voice
 	   ))
      ))
@@ -306,7 +304,7 @@ Define voice for limited domain: LDOM."
   ;; we redefine utt.synth to our own (if we haven't already)
   (if (not (equal? utt.synth INST_LDOM_VOX::utt.synth))
       (begin
-	;; This actually isn't general enough, but twill do.
+	;; This actually isn't general enough, but it will do.
 	(set! tts_hooks (delq utt.synth tts_hooks))
 	(set! tts_hooks (cons INST_LDOM_VOX::utt.synth tts_hooks))
 	(set! INST_LDOM_VOX::real_utt.synth utt.synth)
@@ -321,6 +319,7 @@ Define voice for limited domain: LDOM."
 	(set! clunits_selection_trees 
 	      INST_LDOM_VOX::ldom_clunit_selection_trees)
 	(Parameter.set 'Synth_Method 'Cluster)))
+  
 
   (set! cluster_synth_pre_hooks (list INST_LDOM_VOX::fix_pauses))
 

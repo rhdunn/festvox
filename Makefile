@@ -2,7 +2,7 @@
 ##                                                                       ##
 ##                   Carnegie Mellon University and                      ##
 ##                   Alan W Black and Kevin A. Lenzo                     ##
-##                      Copyright (c) 1998-2000                          ##
+##                      Copyright (c) 1998-2001                          ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -33,7 +33,7 @@
 ##                                                                       ##
 ##  Authors: Alan W Black (awb@cs.cmu.edu)                               ##
 ##           Kevin A. Lenzo (lenzo@cs.cmu.edu)                           ##
-##  Version: festvox-1.2-beta July 2000                                  ##
+##  Version: festvox-1.5 2001                                            ##
 ##                                                                       ##
 ###########################################################################
 ##                                                                       ##
@@ -48,8 +48,8 @@
 ###########################################################################
 TOP=.
 DIRNAME=.
-BUILD_DIRS = src doc
-ALL_DIRS=config festvox.org course $(BUILD_DIRS)
+BUILD_DIRS = src doc 
+ALL_DIRS=config festvox.org course docbook $(BUILD_DIRS)
 OTHERS = README ACKNOWLEDGEMENTS ANNOUNCE-1.1 ANNOUNCE-1.2
 FILES = Makefile $(OTHERS)
 

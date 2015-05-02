@@ -63,7 +63,7 @@ fi
 TPLDIR=$FESTVOXDIR/src/general
 
 cp -p $1 /tmp/$$.`basename $1 .wav`.wav
-$ESTDIR/bin/pda -L -fmin 100 -fmax 320 -otype ssff /tmp/$$.`basename $1 .wav`.wav -o /tmp/$$.`basename $1 .wav`.f0
+$ESTDIR/bin/pda -L -fmin 70 -fmax 200 -otype ssff /tmp/$$.`basename $1 .wav`.wav -o /tmp/$$.`basename $1 .wav`.f0
 
 (cd /tmp;
 
