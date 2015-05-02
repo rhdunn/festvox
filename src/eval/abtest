@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ###########################################################################
 ##                                                                       ##
 ##                  Language Technologies Institute                      ##
@@ -47,7 +47,7 @@ then
     exit -1
 fi
 
-PLAY=na_play
+PLAY=$ESTDIR/bin/na_play
 #PLAY=play
 
 ls $1/*.wav | head -10 >/tmp/$$.aout

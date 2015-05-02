@@ -63,10 +63,10 @@ s
 a
 b
 d
-g
 l
 p
 v
+g
 -
 )
 ( R:mcep_link.parent.R:segstate.parent.p.ph_cvox
@@ -125,10 +125,10 @@ s
 a
 b
 d
-g
 l
 p
 v
+g
 -
 )
 ( R:mcep_link.parent.R:segstate.parent.n.ph_cvox
@@ -151,11 +151,15 @@ v
 ( R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.parent.R:Phrase.parent.lisp_cg_find_phrase_number float)
 ( lisp_cg_position_in_phrasep float)
 ( lisp_cg_position_in_phrase float)
-( R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.stress
-0
-1
+( R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.stress float)
+( R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.R:Syllable.p.stress
+float
+)
+( R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.R:Syllable.n.stress
+float
 )
 ( R:mcep_link.parent.R:segstate.parent.seg_onsetcoda
+0
 coda
 onset
 )

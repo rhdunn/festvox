@@ -219,7 +219,7 @@ then
 
    if [ "$2" = "tts" ]
    then
-      $TEXT2UTTS -all -odir test/$3 -itype data -otype wavs -eval festvox/${FV_VOICENAME}_clunits.scm -eval "(voice_"$FV_VOICENAME"_clunits)" $4
+    $ESTDIR/../festival/bin/festival --heap 20000000 -b festvox/${FV_VOICENAME}_clunits.scm "(voice_"$FV_VOICENAME"_clunits)" festvox/build_clunits.scm '(tts_test "'$4'" "'test/$3'")'
    fi
    if [ "$2" = "usm" ]
    then

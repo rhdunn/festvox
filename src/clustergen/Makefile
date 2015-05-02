@@ -46,7 +46,7 @@
 TOP=../..
 DIRNAME=src/clustergen
 SCHEMEFILES = CLUSTERGEN_cg.scm CLUSTERGEN_statenames.scm \
-              clustergen.scm clustergen_build.scm 
+              clustergen.scm clustergen_build.scm xsent.scm
 SCRIPTS = setup_cg make_dur_model_mcep do_clustergen cg_resynth \
           d2a.pl a2d.pl a2l.pl \
           cg_get_feats cg_get_f0_feats cg_get_track \
@@ -55,8 +55,14 @@ SCRIPTS = setup_cg make_dur_model_mcep do_clustergen cg_resynth \
 	  track_diff_n cg_mco cg_mlpg make_voicing \
           track_diff_mm track_diff_mm_z track_diff_mm_each track_diff_only \
           track_diff_lpc \
-          do_move_label
-OTHERS = mcep.desc mceptraj.desc statedur.feats statedur.feats_flite HOWTO
+          do_move_label do_move_label_me \
+          cg_get_mcd get_cd_dtw get_cd_dtw_mgc get_str_sptk \
+          build_cg_voice find_wstop find_nstates freq_response_vector_gen \
+          do_xsent find_dg
+OTHERS = mcep.desc mceptraj.desc statedur.feats statedur.feats_flite HOWTO \
+         mcep.desc.graph statedur.feats.graph statedur.feats_flite.graph \
+	 SPTK-3.6.patch xsent.desc
+
 MAINS = cg_lpc_resynth_main.c
 
 CGA = do_cga 

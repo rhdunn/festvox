@@ -89,15 +89,26 @@
 (defvar cg::trajectory_ola nil)
 (defvar cg::generate_resynth_waves t)  ;; during cg_test
 (defvar cg:mcep_clustersize 50)
+(defvar cg:vuv_predict_dump nil)
 
 (defvar cg:vuv nil) ;; superseded by the v coefficient
 (defvar cg:prune_frame_threshold 0.0)
 (defvar cg:multimodel nil) ;; for separated static/delta models
 (defvar cg:mixed_excitation nil)
+(defvar cg:ml_ignore_dur nil)
 
 (defvar cg:parallel_tree_build nil)
 
 (defvar fileid "")
+
+(if cg:vuv_predict_dump
+    (set! cg_vuv_predict_features
+          (append
+           '(lisp_v_value p.lisp_v_value n.lisp_v_value lisp_mcep_0
+             n.lisp_mcep_0 p.lisp_mcep_0 lisp_mcep_1 n.lisp_mcep_1 
+             p.lisp_mcep_1 lisp_mcep_2 n.lisp_mcep_2 p.lisp_mcep_2)
+           (cdr (mapcar car (car (load "festival/clunits/f0.desc" t)))))))
+
 
 (define (build_clustergen file)
   "(build_clustergen file)
@@ -263,8 +274,8 @@ Build cluster synthesizer for the given recorded data and domain."
       (format t "Building spectral model\n")
 ;; was for PCA     (set! cg::cluster_feats "-track_feats 51-75")
       (if cg:mixed_excitation
-          (set! cg::cluster_feats "-track_feats 1-55") ;; with str, w/o v
-          (set! cg::cluster_feats "-track_feats 1-50")) ;; w/o v
+          (set! cg::cluster_feats (format nil "-track_feats 1-%d" (+ (* 2 mcep_length) 5))) ;; with str, w/o v
+          (set! cg::cluster_feats (format nil "-track_feats 1-%d" (* 2 mcep_length)))) ;; w/o v
       (clustergen::do_clustering 
        cg::unittypes clustergen_params 
        clustergen_build_mcep_tree "mcep")
@@ -724,8 +735,8 @@ Find distance of t1.p1 wrt t2.p2 (with std)."
         (ClusterGen_predict_mcep utt1) ;; predict vector types
 ;        (ClusterGen_acoustic_predict_mcep utt1 real_track) 
         )
-     (utt.relation.load utt1 "HMMstateN"
-                        (format nil "lab/%s.sl" (utt.feat utt1 "fileid")))
+;     (utt.relation.load utt1 "HMMstateN"
+;                        (format nil "lab/%s.sl" (utt.feat utt1 "fileid")))
      ;;; keep these in core as weird thing happen if they are gc'd
      (set! xxx (cons (utt.feat utt1 "param_track") xxx))
      (set! sn 0)
@@ -746,6 +757,12 @@ Find distance of t1.p1 wrt t2.p2 (with std)."
               (set! p (item.feat s "R:mcep_link.daughtern.clustergen_param_frame"))
               (set! nfp (item.feat s "n.R:mcep_link.daughter1.frame_number"))
               (set! np (item.feat s "n.R:mcep_link.daughter1.clustergen_param_frame"))
+              (set! durp (ml_dur_score s))
+              (if (item.next s)
+                  (set! ndurp (ml_dur_score (item.next s)))
+                  (set! ndurp (* -1 durp)))
+              (set! durt (* durp ndurp))
+
               ;; The current distances, and if-moved distances
               (set! d1 (ml_mcep_distance 
                         real_track fp clustergen_param_vectors p))
@@ -759,7 +776,10 @@ Find distance of t1.p1 wrt t2.p2 (with std)."
                       (item.name s) d1 d2 dm1 dm2)
               ;; See if a move is worth it
               (cond
-               ((and t (< dm1 d1) 
+               ((and t (< dm1 d1)
+                     (if cg:ml_ignore_dur
+                         t
+                         (and (<= durt 0) (>= durp 0)))
                      (< (item.feat s "p.end")
                         (- (item.feat s "end") 0.006)))
                 ;; Move end towards beginning of file
@@ -772,6 +792,9 @@ Find distance of t1.p1 wrt t2.p2 (with std)."
                         (car x) (item.name s) sn)
                 )
                ((and t (< dm2 d2)
+                     (if cg:ml_ignore_dur
+                         t
+                         (and (<= durt 0) (>= durp 0)))
                      (> (item.feat s "n.end")
                         (+ (item.feat s "end") 0.006)))
                 ;; Move end towards end of file
@@ -799,6 +822,36 @@ Find distance of t1.p1 wrt t2.p2 (with std)."
    (load filename t))
   (set! cg_predict_unvoiced old_cg_predict_unvoiced)
   t)
+
+(require 'cart_aux)
+
+(define (ml_dur_score s)
+  (let ((d (item.feat s "lisp_cg_duration"))
+        (pzdur (wagon_predict s duration_cart_tree_cg))
+        (ph_info (assoc_string (item.name s) duration_ph_info_cg))
+        (azdur 0)
+        (x 0))
+
+    (set! azdur (/ (- d (car (cdr ph_info)))
+                   (car (cdr (cdr ph_info)))))
+    (cond
+     ((string-matches (item.name s) "pau_.*")
+      (set! x 0) ;; doesn't matter
+      )
+     ((< azdur pzdur)
+      (set! x -1)
+      (set! x (- azdur pzdur))
+      )  ;; its smaller than we want
+     ((> azdur pzdur)
+      (set! x 1)
+      (set! x (- azdur pzdur))
+      )   ;; its larger than we want
+     (t
+      (set! x 0))) ;; just right
+;    (format t "dur %s a %f az %f pz %f %l x %d\n"
+;            (item.name s) d azdur pzdur ph_info x)
+    x)
+)
 
 (define (ml.simple.save.relation u rel fname)
   (set! fd (fopen fname "w"))
@@ -1707,10 +1760,25 @@ Cluster different unit types."
 
 (defvar wagon-balance-size 0)
 
+(if (probe_file "festvox/unittype_stop_values.scm")
+    (set! unittype_stop_values (load "festvox/unittype_stop_values.scm" t)))
+
+(define (cg_find_stop_value unittype cg_params)
+  (if (boundp 'unittype_stop_values)
+      (begin
+        (let ((svp (assoc_string unittype unittype_stop_values)))
+          (if svp
+              (cadr svp)
+              (get_param 'wagon_cluster_size_mcep cg_params 100)))
+        )
+      (begin
+        (get_param 'wagon_cluster_size_mcep cg_params 100))))
+
 (define (clustergen_build_mcep_tree unittype cg_params)
 "Build tree with Wagon for this unittype."
 ;(format t "\n\nHSM\n\n")
   (defvar cg::cluster_feats "-track_start 1")
+  (set! stopvalue (cg_find_stop_value unittype cg_params))
   (let ((command 
 	 (format nil "%s %s %s -vertex_output mean -desc %s -data '%s' -test '%s' -balance %s -track '%s' -stop %s -output '%s' %s"
 		 (get_param 'wagon_progname cg_params "$ESTDIR/bin/wagon")
@@ -1724,7 +1792,7 @@ Cluster different unit types."
                          unittype)
 		 (get_param 'wagon_balance_size cg_params 0)
                  (format nil "festival/disttabs/%s.mcep" unittype)
-		 (get_param 'wagon_cluster_size_mcep cg_params 100)
+                 stopvalue
                  (format nil "festival/trees/%s_mcep.tree" unittype)
 		 (get_param 'wagon_other_params cg_params "")
 		 )))
@@ -2438,105 +2506,79 @@ x))))
 (define (ClusterGen_test_resynth filename testdir)
   ;; Tests from natural durations
 
-;    (set! traj::clustergen_param_vectors
-;          (track.load
-;  	 (string-append 
-;  	  cmu_us_slt_arctic::dir "/"
-;  	  "festival/trees/traj/"
-;  	  (get_param 'index_name dt_params "all")
-;  	  "_mcep.params")))
-;    (set! traj::clustergen_mcep_trees
-;          (load (string-append
-;                 (string-append 
-;                  cmu_us_slt_arctic::dir "/"
-;                  "festival/trees/traj/"
-;                  (get_param 'index_name dt_params "all")
-;                  "_mcep.tree")) t))
-
-  (set! clustergen_params 
-        (append
-         (list
-;            '(cg_ccoefs_template "hnm/%s.hnm")  ;; HNM
-            )
-         clustergen_params))
-
   (set! old_cg_predict_unvoiced cg_predict_unvoiced)
   (set! cg_predict_unvoiced nil)
   (mapcar 
    (lambda (x)
      (format t "CG test_resynth %s\n" (car x))
-     (set! fileid (car x))
-     (gc)
-     (set! real_track 
-           (track.load 
-            (format 
-             nil
-             (get_param 'cg_ccoefs_template clustergen_params "ccoefs/%s.mcep")
-             (car x))))
-     (set! utt1 (utt.load nil (format nil "festival/utts/%s.utt" (car x))))
-     (clustergen::load_hmmstates_utt utt1 clustergen_params)
-     (clustergen::load_ccoefs_utt utt1 clustergen_params)
-;     (ClusterGen_predict_cgv utt1) ;; predict vectors by viterbi
-     (if (assoc 'cg::trajectory clustergen_mcep_trees)
-        (ClusterGen_predict_trajectory utt1) ;; predict trajectory
-               (cond
-                ((consp cg:multimodel)   ;; predict vector with multimodels
-                 (ClusterGen_predict_params_mm utt1)
-                 )
-                (t
-                 (ClusterGen_predict_mcep utt1)))
-;        (ClusterGen_acoustic_predict_mcep utt1 real_track) 
-        )
-
-;     (ClusterGen_acoustic_target utt1)
-     (track.save (utt.feat utt1 "param_track") 
-                 (format nil "%s/%s.mcep" testdir (car x)))
-     (if (and cg::generate_resynth_waves (boundp 'mlsa_resynthesis)) ;; hnm
-         (begin
-           (set! cg_predict_unvoiced t)
-;           (ClusterGen_predict_cgv utt1) ;; predict vectors by viterbi
-           (if (assoc 'cg::trajectory clustergen_mcep_trees)
-               (ClusterGen_predict_trajectory utt1) ;; predict trajectory
-               (cond
-                ((consp cg:multimodel)   ;; predict vector with multimodels
-                 (ClusterGen_predict_params_mm utt1)
-                 )
-                (t
-                 (ClusterGen_predict_mcep utt1))) ;; predict vector types
-;               (ClusterGen_acoustic_predict_mcep utt1 real_track) 
-               )
-;     (ClusterGen_acoustic_target utt1)
-           (set! real_track 
-                 (track.load
-                  (format 
-                   nil
-                   (get_param 'cg_ccoefs_template clustergen_params "ccoefs/%s.mcep")
-                   (car x))))
-           (set! predicted_track (utt.feat utt1 "param_track"))
-           (set! i 0)
-           (mapcar
-            (lambda (m)
-              (if (> (track.get predicted_track i 0) 0)
-                  (begin
-                    (track.set predicted_track i 0
-                               (track.get real_track i 0))
-;                    (track.set_time predicted_track i
-;                                    (track.get_time real_track i))
-;                    (track.set predicted_track i 1
-;                               (track.get real_track i 1))
-                    ))
-              (set! i (+ 1 i)))
-            (utt.relation.items utt1 'mcep))
-           (set! cg_predict_unvoiced nil)
-           (cg_wave_synth utt1)
-           (wave.save
-            (utt.wave utt1)
-            (format nil "%s/%s.wav" testdir (car x)))
-           ))
+     (unwind-protect
+      (cg_do_test_resynth x testdir)
+      (format t "CG test_resynth %s Failed\n" (car x)))
      t)
    (load filename t))
   (set! cg_predict_unvoiced old_cg_predict_unvoiced)
   t)
+
+(define (cg_do_test_resynth x testdir)
+
+  (if cg:vuv_predict_dump
+      (begin
+        (set! cg_predict_unvoiced t) ;; needed for dumping and testing
+        (set! cg:vuv_predict_dump 
+              (fopen (format nil "vuv/%s.vuvfeats" (car x)) "w"))))
+  (set! fileid (car x))
+  (gc)
+  (set! real_track 
+        (track.load (format nil
+          (get_param 'cg_ccoefs_template clustergen_params "ccoefs/%s.mcep")
+          (car x))))
+  (set! utt1 (utt.load nil (format nil "festival/utts/%s.utt" (car x))))
+  (clustergen::load_hmmstates_utt utt1 clustergen_params)
+  (clustergen::load_ccoefs_utt utt1 clustergen_params)
+  (if (assoc 'cg::trajectory clustergen_mcep_trees)
+      (ClusterGen_predict_trajectory utt1) ;; predict trajectory
+      (cond
+       ((consp cg:multimodel) ;; predict vector with multimodels
+        (ClusterGen_predict_params_mm utt1)
+        )
+       (t
+        (ClusterGen_predict_mcep utt1))))
+
+  (set! xxx (cons (utt.feat utt1 "param_track") xxx)) ;; to stop gc bug
+  (track.save (utt.feat utt1 "param_track") 
+              (format nil "%s/%s.mcep" testdir (car x)))
+  (if (and cg::generate_resynth_waves (boundp 'mlsa_resynthesis)) ;; hnm
+      (begin
+        (set! cg_predict_unvoiced t)
+        (if (assoc 'cg::trajectory clustergen_mcep_trees)
+            (ClusterGen_predict_trajectory utt1) ;; predict trajectory
+            (cond
+             ((consp cg:multimodel) ;; predict vector with multimodels
+              (ClusterGen_predict_params_mm utt1))
+             (t
+              (ClusterGen_predict_mcep utt1))) )
+        (set! real_track 
+              (track.load
+               (format nil
+                (get_param 'cg_ccoefs_template clustergen_params "ccoefs/%s.mcep")
+                (car x))))
+        (set! predicted_track (utt.feat utt1 "param_track"))
+        (set! xxx (cons (list real_track predicted_track) xxx))
+        (set! i 0)
+        (mapcar       ;; copy f0
+         (lambda (m)
+           (if (> (track.get predicted_track i 0) 0)
+               (track.set predicted_track i 0 (track.get real_track i 0)))
+           (set! i (+ 1 i)))
+         (utt.relation.items utt1 'mcep))
+        (set! cg_predict_unvoiced nil)
+        (cg_wave_synth utt1)
+        (wave.save (utt.wave utt1)
+         (format nil "%s/%s.wav" testdir (car x)))
+        )) ;; end of resynth wave
+  (if cg:vuv_predict_dump
+      (fclose cg:vuv_predict_dump))
+)
 
 (define (ClusterGen_hsm_resynth filename testdir)
   ;; Tests from natural durations

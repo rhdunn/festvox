@@ -91,7 +91,7 @@ fi
 
 . ./etc/voice.defs
 
-if [ $1 = resynth ]
+if [ $1 = "resynth" ]
 then
    $0 test_resynth $EXPERIMENT $TESTFILE
    ( $0 test_resynth_costs $EXPERIMENT $TESTFILE ; 
@@ -102,7 +102,7 @@ then
    exit 0
 fi
 
-if [ $1 = mcdf0 ]
+if [ $1 = "mcdf0" ]
 then
    $0 test_mcdf0 $EXPERIMENT $TESTFILE
    $0 test_resynth_costs_f0 $EXPERIMENT $TESTFILE
@@ -111,7 +111,7 @@ then
    exit 0
 fi
 
-if [ $1 = lpcf0 ]
+if [ $1 = "lpcf0" ]
 then
    $0 test_lpcf0 $EXPERIMENT $TESTFILE
    ( $0 test_resynth_costs $EXPERIMENT $TESTFILE ; 
@@ -121,7 +121,7 @@ then
    exit 0
 fi
 
-if [ $1 = param_mm ]
+if [ $1 = "param_mm" ]
 then
    $0 test_lpcf0 $EXPERIMENT $TESTFILE
    # Show costs for partition of the params
@@ -132,7 +132,7 @@ then
    exit 0
 fi
 
-if [ $1 = resynth_n ]
+if [ $1 = "resynth_n" ]
 then
    $0 test_resynth $EXPERIMENT $TESTFILE
 #   $0 test_resynth_costs_f0 $EXPERIMENT $TESTFILE
@@ -147,7 +147,7 @@ then
    exit 0
 fi
 
-if [ $1 = synth ]
+if [ $1 = "synth" ]
 then
    $0 test_synth $EXPERIMENT $TESTFILE
    $0 test_synth_costs $EXPERIMENT $TESTFILE
@@ -156,7 +156,7 @@ fi
 
 if [ $1 = "test_synth" ]
 then
-   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE  -b festvox/$FV_VOICENAME"_cg.scm" $CLUSTERGENDIR/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (ClusterGen_test_set "'$TESTFILE'" "'test/$EXPERIMENT'"))'
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE  -b festvox/$FV_VOICENAME"_cg.scm" festvox/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (ClusterGen_test_set "'$TESTFILE'" "'test/$EXPERIMENT'"))'
    exit 0
 fi
 
@@ -186,19 +186,20 @@ fi
 if [ $1 = "test_resynth" ]
 then
 
-   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" $CLUSTERGENDIR/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (ClusterGen_test_resynth "'$TESTFILE'" "'test/$EXPERIMENT'"))'
+   #$ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" $CLUSTERGENDIR/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (ClusterGen_test_resynth "'$TESTFILE'" "'test/$EXPERIMENT'"))'
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" festvox/clustergen.scm festvox/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (ClusterGen_test_resynth "'$TESTFILE'" "'test/$EXPERIMENT'"))'
    exit 0
 fi
 
 if [ $1 = "test_mcdf0" ]
 then
-   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" $CLUSTERGENDIR/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (setq cg::generate_resynth_waves nil) (ClusterGen_test_resynth "'$TESTFILE'" "'test/$EXPERIMENT'"))'
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" festvox/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (setq cg::generate_resynth_waves nil) (ClusterGen_test_resynth "'$TESTFILE'" "'test/$EXPERIMENT'"))'
    exit 0
 fi
 
 if [ $1 = "test_lpcf0" ]
 then
-   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" $CLUSTERGENDIR/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (setq cg::generate_resynth_waves nil) (ClusterGen_test_resynth "'$TESTFILE'" "'test/$EXPERIMENT'"))'
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" festvox/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (setq cg::generate_resynth_waves nil) (ClusterGen_test_resynth "'$TESTFILE'" "'test/$EXPERIMENT'"))'
    exit 0
 fi
 
@@ -207,8 +208,11 @@ then
    for i in `cat $TESTFILE | awk '{print $2}'`
    do
       fname=$i
-      $CLUSTERGENDIR/track_diff ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep |
-      awk '{print $2,$6,$NF}'
+      if [ -f test/$EXPERIMENT/$i.mcep ]
+      then
+         $CLUSTERGENDIR/track_diff ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep |
+         awk '{print $2,$6,$NF}'
+      fi
    done |
    awk '{ n=1.0*$NF; sum+=$1*n; var+=$2*n; samples+=n}
         END {printf("all  mean %f std %f var %f n %d\n",sum/samples,sqrt(var/samples),var/samples,samples)}'
@@ -280,8 +284,11 @@ then
    do
       fname=$i
 #      echo $fname >/dev/tty
-      $CLUSTERGENDIR/track_diff_nof0 ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep |
-      awk '{print $2,$6,$NF}'
+      if [ -f test/$EXPERIMENT/$i.mcep ]
+      then
+         $CLUSTERGENDIR/track_diff_nof0 ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep |
+         awk '{print $2,$6,$NF}'
+      fi
    done |
    awk '{ n=1.0*$NF; sum+=$1*n; var+=$2*n; samples+=n}
         END {printf("noF0 mean %f std %f var %f n %d\n",sum/samples,sqrt(var/samples),var/samples,samples)}'
@@ -294,8 +301,11 @@ then
    do
       fname=$i
 #      echo $fname >/dev/tty
-      $CLUSTERGENDIR/track_diff_mcd ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep $4 $5|
-      awk '{print $2,$6,$NF}'
+      if [ -f test/$EXPERIMENT/$i.mcep ]
+      then
+         $CLUSTERGENDIR/track_diff_mcd ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep $4 $5|
+         awk '{print $2,$6,$NF}'
+      fi
    done |
    awk '{ n=1.0*$NF; sum+=$1*n; var+=$2*n; samples+=n}
         END {printf("MCD  mean %f std %f var %f n %d\n",sum/samples,sqrt(var/samples),var/samples,samples)}'
@@ -308,8 +318,11 @@ then
    do
       fname=$i
 #      echo $fname >/dev/tty
-      $CLUSTERGENDIR/track_diff_f0 ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep $4 $5|
-      awk '{print $2,$6,$NF}'
+      if [ -f test/$EXPERIMENT/$i.mcep ]
+      then
+         $CLUSTERGENDIR/track_diff_f0 ccoefs/$i.mcep test/$EXPERIMENT/$i.mcep $4 $5|
+         awk '{print $2,$6,$NF}'
+      fi
    done |
    awk '{ n=1.0*$NF; sum+=$1*n; var+=$2*n; samples+=n}
         END {printf("F0   mean %f std %f var %f n %d\n",sum/samples,sqrt(var/samples),var/samples,samples)}'
@@ -333,7 +346,7 @@ fi
 if [ $1 = "score_frames" ]
 then
    # not going to work any more
-   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" $CLUSTERGENDIR/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (ClusterGen_score_frames "'NotWorking'" "scores"))'
+   $ESTDIR/../festival/bin/festival --heap $HEAPSIZE -b festvox/$FV_VOICENAME"_cg.scm" festvox/clustergen_build.scm '(begin (voice_'$FV_VOICENAME'_cg) (ClusterGen_score_frames "'NotWorking'" "scores"))'
    exit 0
 fi
 
@@ -353,9 +366,34 @@ then
   exit 0
 fi
 
+if [ $1 = "tts_score" ]
+then
+   $0 tts $EXPERIMENT $TESTFILE
+   # We used the old mcep because its faster
+   $0 test_tts_costs_mcep $EXPERIMENT $TESTFILE
+
+   exit 0
+fi
+
+if [ $1 = "test_tts_costs_mgc" ]
+then
+   $FESTVOXDIR/src/clustergen/get_cd_dtw_mgc $TESTFILE wav test/$EXPERIMENT |
+   tee test/$EXPERIMENT/scores
+
+   exit 0
+fi
+
+if [ $1 = "test_tts_costs_mcep" ]
+then
+   $FESTVOXDIR/src/clustergen/get_cd_dtw $TESTFILE wav test/$EXPERIMENT |
+   tee test/$EXPERIMENT/scores
+
+   exit 0
+fi
+
 if [ $1 = "tts" ]
 then
-   $FESTVOXDIR/src/promptselect/text2utts -all -odir test/$EXPERIMENT -itype data -otype wavs -eval festvox/${FV_VOICENAME}_cg.scm -eval "(voice_"${FV_VOICENAME}"_cg)" $TESTFILE
+   $FESTVOXDIR/src/promptselect/text2utts -all -odir test/$EXPERIMENT -itype data -otype wavs -eval festvox/${FV_VOICENAME}_${FV_TYPE}.scm -eval "(voice_"${FV_VOICENAME}"_"${FV_TYPE}")" $TESTFILE
 
    exit 0
 fi

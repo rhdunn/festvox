@@ -1,9 +1,9 @@
-#!/usr/local/bin/perl
-###########################################################################
+#!/bin/sh
+####################################################-*-mode:shell-script-*-
 ##                                                                       ##
-##                                                                       ##
-##              Carnegie Mellon University, Pittsburgh, PA               ##
-##                      Copyright (c) 2004-2005                          ##
+##                     Carnegie Mellon University                        ##
+##                   Language Technologies Instutute                     ##
+##                         Copyright (c) 2012                            ##
 ##                        All Rights Reserved.                           ##
 ##                                                                       ##
 ##  Permission is hereby granted, free of charge, to use and distribute  ##
@@ -31,80 +31,61 @@
 ##  THIS SOFTWARE.                                                       ##
 ##                                                                       ##
 ###########################################################################
+##  Front end to KTH's Wavesurfer for festvox voices                     ##
+##  (from Alok Parlikar's examples)                                      ##
 ##                                                                       ##
-##          Author :  S P Kishore (skishore@cs.cmu.edu)                  ##
-##          Date   :  June 2005                                          ##
+##  ./bin/ws wav/arctic_a0001.wav                                        ##
+##                                                                       ##
+##  or for all waveforms                                                 ##
+##                                                                       ##
+##  ./bin/ws                                                             ##
 ##                                                                       ##
 ###########################################################################
 
-$nargs = $#ARGV + 1;
-if ($nargs < 2) {
-  print "This program extracts the wavefile names from the prompt-file \n";
-  print "Expected format: <text-id> unit sequence \n"; 
-  print "Usage: perl file.pl <promp-file> <out-file> \n";
-  exit;
-}
+LANG=C; export LANG
 
-$inF = $ARGV[0];
-$ouF = $ARGV[1];
+if [ ! "$ESTDIR" ]
+then
+   echo "environment variable ESTDIR is unset"
+   echo "set it to your local speech tools directory e.g."
+   echo '   bash$ export ESTDIR=/home/awb/projects/speech_tools/'
+   echo or
+   echo '   csh% setenv ESTDIR /home/awb/projects/speech_tools/'
+   exit 1
+fi
 
-open(fp_o, ">$ouF");
-%unit = ();
-@inL = &Get_Lines($inF);
-$nL = $#inL + 1;
-print fp_o "NoOfFiles: $nL\n";
-for (my $i = 0; $i <= $#inL; $i++) {
-  my @wrd = &Get_Words($inL[$i]);
-  #0th element is wavefile name...
-  print fp_o "$wrd[0]\n";
-}
-close(fp_o);
+if [ ! "$FESTVOXDIR" ]
+then
+   echo "environment variable FESTVOXDIR is unset"
+   echo "set it to your local festvox directory e.g."
+   echo '   bash$ export FESTVOXDIR=/home/awb/projects/festvox/'
+   echo or
+   echo '   csh% setenv FESTVOXDIR /home/awb/projects/festvox/'
+   exit 1
+fi
 
-sub Make_SingleSpace() {
-   chomp(${$_[0]});
-   ${$_[0]} =~ s/[\s]+$//;
-   ${$_[0]} =~ s/^[\s]+//;
-   ${$_[0]} =~ s/[\s]+/ /g;
-   ${$_[0]} =~ s/[\t]+/ /g;
-}
+if [ -f etc/ws_festvox.config ]
+then
+   CONFIG=etc/ws_festvox.conf 
+else
+   CONFIG=$FESTVOXDIR/src/general/ws_festvox.conf
+fi
 
-sub Check_FileExistence() {
-  my $inF = shift(@_); 
-  if (!(-e $inF)) { 
-    print "Cannot open $inF \n";
-    exit;
-  } 
-  return 1;
-}
+if [ $# = 0 ]
+then
+   # With no args is does all the waveforms
+   if [ ! -f etc/allfiles ]
+   then
+      ls wav/*.wav >etc/allfiles
+   fi
+   wavesurfer -config $CONFIG -filelist etc/allfiles
+else
+   # With args we pass them through (probably a waveform)
+   wavesurfer -config $CONFIG $*
+fi   
 
-sub Get_Lines() {
-  my $inF = shift(@_); 
-  &Check_FileExistence($inF);
-  open(fp_llr, "<$inF");
-  my @dat = <fp_llr>;
-  close(fp_llr);
-  return @dat;
-}
 
-sub Get_Words() {
-  my $ln = shift(@_);
-  &Make_SingleSpace(\$ln);
-  my @wrd = split(/ /, $ln);
-  return @wrd;
-}
 
-sub Get_ProcessedLines() {
-  my $inF = shift(@_);
-  &Check_FileExistence($inF);
-  open(fp_llr, "<$inF");
-  my @dat = <fp_llr>;
-  close(fp_llr);
 
-  my @nd;
-  for (my $i = 0; $i <= $#dat; $i++) {
-     my $tl = $dat[$i];
-     &Make_SingleSpace(\$tl);
-     $nd[$i]  = $tl;
-  }
-  return @nd;
-}
+
+

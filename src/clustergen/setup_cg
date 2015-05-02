@@ -133,6 +133,10 @@ echo "FV_FULLVOICENAME=\$FV_VOICENAME\"_\"\$FV_TYPE" >>etc/voice.defs
 cp -p $CLUSTERGENDIR/do_clustergen bin
 cp -p $CLUSTERGENDIR/make_dur_model_mcep bin
 cp -p $CLUSTERGENDIR/make_voicing bin
+cp -p $CLUSTERGENDIR/get_str_sptk bin
+cp -p $CLUSTERGENDIR/find_nstates bin
+cp -p $CLUSTERGENDIR/find_wstop bin
+cp -p $CLUSTERGENDIR/find_dg bin
 cp -p $CLUSTERGENDIR/statedur.feats festival/dur/etc
 if [ -f $FESTVOXTEMPLATEDIR/$FV_LANG/statedur.feats ]
 then

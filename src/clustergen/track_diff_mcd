@@ -112,7 +112,11 @@ $ESTDIR/bin/ch_track -otype ascii $TRACK1 |
 awk '{for (i=1; i<= '$ORDER'; i++)
          printf("%s ",$i);
       printf("\n");}' >actual.$$.mcep
-$ESTDIR/bin/ch_track -otype ascii $TRACK2 >test.$$.mcep
+$ESTDIR/bin/ch_track -otype ascii $TRACK2 |
+awk '{for (i=1; i<= '$ORDER'; i++)
+         printf("%s ",$i);
+      printf("\n");}' >test.$$.mcep
+
 paste actual.$$.mcep test.$$.mcep |
 awk '{t=0;
       if (channels == 0)
