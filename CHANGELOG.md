@@ -1,5 +1,9 @@
 # Change Log
 
+## [2.1-2] - 2016-03-02 Maintenance
+
+  * Backport the fix for running `wagon` in `build_lts_rules` from festvox 2.4.
+
 ## [2.1-1] - 2015-05-02 Maintenance
 
   * Build improvements from [1.1-1](#1.1-1).
